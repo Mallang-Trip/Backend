@@ -17,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.constant.ArticleType;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table
@@ -25,6 +27,8 @@ import mallang_trip.backend.constant.ArticleType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Where(clause = "deleted = false")
+@SQLDelete(sql = "UPDATE article SET deleted = true WHERE id = ?")
 public class Article extends BaseEntity {
 
 	@Id
