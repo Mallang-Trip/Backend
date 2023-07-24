@@ -1,13 +1,21 @@
 package mallang_trip.backend.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.Article;
 import mallang_trip.backend.domain.User;
-import mallang_trip.backend.domain.dto.article.CreateArticleRequest;
-import mallang_trip.backend.domain.dto.article.CreateArticleResponse;
+import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
+import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
+import mallang_trip.backend.domain.dto.article.ArticleIdResponse;
+import mallang_trip.backend.domain.dto.article.ArticleRequest;
 import mallang_trip.backend.repository.ArticleRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,32 +24,102 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArticleService {
 
-	private final ArticleRepository articleRepository;
+    private final ArticleRepository articleRepository;
 
-	public CreateArticleResponse create(CreateArticleRequest request){
-		Article article = Article.builder()
-			.user(getCurrentUser())
-			.type(request.getArticleType())
-			.title(request.getTitle())
-			.content(request.getContent())
-			.build();
-		return CreateArticleResponse.builder()
-			.articleId(articleRepository.save(article).getId())
-			.build();
-	}
+    // 작성
+    public ArticleIdResponse createArticle(ArticleRequest request) {
+        Article article = Article.builder()
+            .user(getCurrentUser())
+            .type(ArticleType.from(request.getType()))
+            .title(request.getTitle())
+            .content(request.getContent())
+            .build();
+        return ArticleIdResponse.builder()
+            .articleId(articleRepository.save(article).getId())
+            .build();
+    }
 
-	public void delete(Long id){
-		Article article = articleRepository.findById(id)
-			.orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
-		if(getCurrentUser().getId() != article.getUser().getId()){
-			throw new BaseException(BaseResponseStatus.Forbidden);
-		}
-		articleRepository.delete(article);
-	}
+    // 수정
+    public ArticleIdResponse changeArticle(Long id, ArticleRequest request) {
+        Article article = articleRepository.findById(id)
+            .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
+        if (getCurrentUser().getId() != article.getUser().getId()) {
+            throw new BaseException(BaseResponseStatus.Forbidden);
+        }
+        article.setType(ArticleType.from(request.getType()));
+        article.setTitle(request.getTitle());
+        article.setContent(request.getContent());
+        return ArticleIdResponse.builder()
+            .articleId(articleRepository.save(article).getId())
+            .build();
+    }
 
-	private User getCurrentUser(){
-		User user = User.builder().build();
-		user.setId(-1L);
-		return user;
-	}
+    // 삭제
+    public void deleteArticle(Long id) {
+        Article article = articleRepository.findById(id)
+            .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
+        if (getCurrentUser().getId() != article.getUser().getId()) {
+            throw new BaseException(BaseResponseStatus.Forbidden);
+        }
+        articleRepository.delete(article);
+    }
+
+    // 상세보기
+    // 파티정보, 작성자프로필사진, 댓글, 댓글수 추가 필요
+    public ArticleDetailsResponse getArticleDetails(Long id) {
+        Article article = articleRepository.findById(id)
+            .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
+        return ArticleDetailsResponse.builder()
+            .articleId(article.getId())
+            .userId(article.getUser().getId())
+            .userNickname(article.getUser().getNickname())
+            .type(article.getType().toString())
+            .title(article.getTitle())
+            .content(article.getContent())
+            .createdAt(article.getCreatedAt())
+            .updatedAt(article.getUpdatedAt())
+            .build();
+    }
+
+    // 타입 & 키워드 검색
+    public Page<ArticleBriefResponse> searchArticles(String type, String keyword, Pageable pageable) {
+        Page<Article> articleList;
+        if(type.equals("all")){
+            articleList = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                keyword, keyword, pageable);
+        }else{
+            articleList = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseAndType(
+                keyword, keyword, ArticleType.from(type), pageable);
+        }
+        List<ArticleBriefResponse> responseList = toArticleBriefResponseList(articleList);
+        return new PageImpl<>(responseList, pageable, articleList.getTotalElements());
+    }
+
+    // 내 글 조회
+    public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
+        User user = getCurrentUser();
+        Page<Article> articleList = articleRepository.findByUser(user, pageable);
+        List<ArticleBriefResponse> responseList = toArticleBriefResponseList(articleList);
+        return new PageImpl<>(responseList, pageable, articleList.getTotalElements());
+    }
+
+    private List<ArticleBriefResponse> toArticleBriefResponseList(Page<Article> articleList){
+        List<ArticleBriefResponse> responseList = new ArrayList<>();
+        for(Article article : articleList){
+            responseList.add(ArticleBriefResponse.builder()
+                .nickname(article.getUser().getNickname())
+                .title(article.getTitle())
+                .content(article.getContent())
+                .createdAt(article.getCreatedAt())
+                .updatedAt(article.getUpdatedAt())
+                .build());
+        }
+        return responseList;
+    }
+
+    private User getCurrentUser() {
+        User user = User.builder().build();
+        user.setId(-1L);
+        return user;
+    }
 }
