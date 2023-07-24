@@ -85,7 +85,7 @@ public class TokenProvider implements InitializingBean {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(refreshTokenValidity)
                 .compact();
-        Optional<mallang_trip.backend.domain.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+        Optional<mallang_trip.backend.domain.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
         findUser.get().setRefreshToken(refreshToken);
 
         return new TokensDto(accessToken, refreshToken);
@@ -149,7 +149,7 @@ public class TokenProvider implements InitializingBean {
                     .parseClaimsJws(refreshToken);
 
             Authentication authentication = getAuthentication(refreshToken);
-            Optional<mallang_trip.backend.domain.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+            Optional<mallang_trip.backend.domain.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
             if (!findUser.isPresent()) {
                 throw new BaseException(INVALID_JWT);
             }

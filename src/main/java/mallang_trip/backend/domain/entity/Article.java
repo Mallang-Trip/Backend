@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain;
+package mallang_trip.backend.domain.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

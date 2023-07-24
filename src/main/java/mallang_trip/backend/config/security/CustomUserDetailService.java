@@ -32,7 +32,7 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     /**Security User 정보를 생성한다. */
-    private User createUser(mallang_trip.backend.domain.User user) {
+    private User createUser(mallang_trip.backend.domain.entity.User user) {
         GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole());
 
         User result =  new User(

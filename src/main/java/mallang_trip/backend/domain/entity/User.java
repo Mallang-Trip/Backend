@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain;
+package mallang_trip.backend.domain.entity;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import mallang_trip.backend.domain.entity.BaseEntity;
 
 @Entity
 @Getter
