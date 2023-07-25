@@ -23,8 +23,8 @@ import org.hibernate.annotations.SQLDelete;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE reply SET deleted = true WHERE id = ?")
-public class Reply {
+@SQLDelete(sql = "UPDATE article_reply SET content = '삭제된 댓글입니다.', deleted = true WHERE id = ?")
+public class Reply extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

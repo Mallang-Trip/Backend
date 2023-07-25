@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "article_comment")
@@ -24,9 +23,8 @@ import org.hibernate.annotations.Where;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Where(clause = "deleted = false")
-@SQLDelete(sql = "UPDATE comment SET deleted = true WHERE id = ?")
-public class Comment extends BaseEntity{
+@SQLDelete(sql = "UPDATE article_comment SET content = '삭제된 댓글입니다.', deleted = true WHERE id = ?")
+public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,4 +40,5 @@ public class Comment extends BaseEntity{
 
     @Column(nullable = false)
     private String content;
+
 }

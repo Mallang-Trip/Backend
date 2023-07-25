@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final CommentService commentService;
 
     // 작성
     public ArticleIdResponse createArticle(ArticleRequest request) {
@@ -40,8 +41,8 @@ public class ArticleService {
     }
 
     // 수정
-    public ArticleIdResponse changeArticle(Long id, ArticleRequest request) {
-        Article article = articleRepository.findById(id)
+    public ArticleIdResponse changeArticle(Long ArticleId, ArticleRequest request) {
+        Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
         if (getCurrentUser().getId() != article.getUser().getId()) {
             throw new BaseException(BaseResponseStatus.Forbidden);
@@ -55,8 +56,8 @@ public class ArticleService {
     }
 
     // 삭제
-    public void deleteArticle(Long id) {
-        Article article = articleRepository.findById(id)
+    public void deleteArticle(Long ArticleId) {
+        Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
         if (getCurrentUser().getId() != article.getUser().getId()) {
             throw new BaseException(BaseResponseStatus.Forbidden);
@@ -65,29 +66,34 @@ public class ArticleService {
     }
 
     // 상세보기
-    // 파티정보, 작성자프로필사진, 댓글, 댓글수 추가 필요
-    public ArticleDetailsResponse getArticleDetails(Long id) {
-        Article article = articleRepository.findById(id)
+    // 파티, 작성자 프로필사진 추가 필요
+    public ArticleDetailsResponse getArticleDetails(Long ArticleId) {
+        Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
         return ArticleDetailsResponse.builder()
             .articleId(article.getId())
+            //.partyId()
             .userId(article.getUser().getId())
             .userNickname(article.getUser().getNickname())
+            //.userProfileImage()
             .type(article.getType().toString())
             .title(article.getTitle())
             .content(article.getContent())
+            .comments(commentService.getCommentsAndReplies(article))
+            .commentsCount(commentService.getCommentsCount(article))
             .createdAt(article.getCreatedAt())
             .updatedAt(article.getUpdatedAt())
             .build();
     }
 
     // 타입 & 키워드 검색
-    public Page<ArticleBriefResponse> searchArticles(String type, String keyword, Pageable pageable) {
+    public Page<ArticleBriefResponse> searchArticles(String type, String keyword,
+        Pageable pageable) {
         Page<Article> articleList;
-        if(type.equals("all")){
+        if (type.equals("all")) {
             articleList = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
                 keyword, keyword, pageable);
-        }else{
+        } else {
             articleList = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseAndType(
                 keyword, keyword, ArticleType.from(type), pageable);
         }
@@ -97,19 +103,19 @@ public class ArticleService {
 
     // 내 글 조회
     public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
-        User user = getCurrentUser();
-        Page<Article> articleList = articleRepository.findByUser(user, pageable);
+        Page<Article> articleList = articleRepository.findByUser(getCurrentUser(), pageable);
         List<ArticleBriefResponse> responseList = toArticleBriefResponseList(articleList);
         return new PageImpl<>(responseList, pageable, articleList.getTotalElements());
     }
 
-    private List<ArticleBriefResponse> toArticleBriefResponseList(Page<Article> articleList){
+    private List<ArticleBriefResponse> toArticleBriefResponseList(Page<Article> articleList) {
         List<ArticleBriefResponse> responseList = new ArrayList<>();
-        for(Article article : articleList){
+        for (Article article : articleList) {
             responseList.add(ArticleBriefResponse.builder()
                 .nickname(article.getUser().getNickname())
                 .title(article.getTitle())
                 .content(article.getContent())
+                .commentsCount(commentService.getCommentsCount(article))
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
                 .build());
