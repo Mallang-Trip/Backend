@@ -13,7 +13,6 @@ import mallang_trip.backend.domain.dto.comment.ReplyResponse;
 import mallang_trip.backend.domain.entity.Article;
 import mallang_trip.backend.domain.entity.Comment;
 import mallang_trip.backend.domain.entity.Reply;
-import mallang_trip.backend.domain.entity.User;
 import mallang_trip.backend.repository.ArticleRepository;
 import mallang_trip.backend.repository.CommentRepository;
 import mallang_trip.backend.repository.ReplyRepository;
@@ -29,13 +28,14 @@ public class CommentService {
     private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
+    private final UserService userService;
 
     // 댓글 작성
     public void createComment(Long articleId, CommentRequest request) {
         Article article = articleRepository.findById(articleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
         Comment comment = Comment.builder()
-            .user(getCurrentUser())
+            .user(userService.getCurrentUser())
             .article(article)
             .content(request.getContent())
             .build();
@@ -47,7 +47,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
         Reply reply = Reply.builder()
-            .user(getCurrentUser())
+            .user(userService.getCurrentUser())
             .comment(comment)
             .content(request.getContent())
             .build();
@@ -98,12 +98,7 @@ public class CommentService {
 
     // 내 댓글 & 대댓글 조회
     public Page<MyCommentResponse> getMyCommentsAndReplies(Pageable pageable) {
-        return commentRepository.getMyCommentsAndReplies(getCurrentUser(), pageable);
+        return commentRepository.getMyCommentsAndReplies(userService.getCurrentUser(), pageable);
     }
 
-    private User getCurrentUser() {
-        User user = User.builder().build();
-        user.setId(-1L);
-        return user;
-    }
 }

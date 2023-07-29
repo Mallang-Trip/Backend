@@ -3,6 +3,7 @@ package mallang_trip.backend.config.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,28 +24,29 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .httpBasic().disable()
-                .cors()
-                .and()
+            .httpBasic().disable()
+            .cors()
+            .and()
 
-                .csrf().disable()
-                .formLogin().disable()
+            .csrf().disable()
+            .formLogin().disable()
 
-                .exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(jwtAccessDeniedHandler)
+            .exceptionHandling()
+            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            .accessDeniedHandler(jwtAccessDeniedHandler)
 
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-                .and()
-                .authorizeRequests()
-                .antMatchers("/user/**").authenticated()
-                .anyRequest().permitAll()
+            .and()
+            .authorizeRequests()
+            .antMatchers("/signup", "/login").permitAll() // 토큰이 필요없는 uri
+            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .anyRequest().authenticated()
 
-                .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+            .and()
+            .apply(new JwtSecurityConfig(tokenProvider));
 
         return http.build();
     }

@@ -7,7 +7,6 @@ import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.entity.Article;
-import mallang_trip.backend.domain.entity.User;
 import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
 import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
 import mallang_trip.backend.domain.dto.article.ArticleIdResponse;
@@ -26,11 +25,12 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final CommentService commentService;
+    private final UserService userService;
 
     // 작성
     public ArticleIdResponse createArticle(ArticleRequest request) {
         Article article = Article.builder()
-            .user(getCurrentUser())
+            .user(userService.getCurrentUser())
             .type(ArticleType.from(request.getType()))
             .title(request.getTitle())
             .content(request.getContent())
@@ -44,7 +44,7 @@ public class ArticleService {
     public ArticleIdResponse changeArticle(Long ArticleId, ArticleRequest request) {
         Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
-        if (getCurrentUser().getId() != article.getUser().getId()) {
+        if (userService.getCurrentUser().getId() != article.getUser().getId()) {
             throw new BaseException(BaseResponseStatus.Forbidden);
         }
         article.setType(ArticleType.from(request.getType()));
@@ -59,14 +59,14 @@ public class ArticleService {
     public void deleteArticle(Long ArticleId) {
         Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
-        if (getCurrentUser().getId() != article.getUser().getId()) {
+        if (userService.getCurrentUser().getId() != article.getUser().getId()) {
             throw new BaseException(BaseResponseStatus.Forbidden);
         }
         articleRepository.delete(article);
     }
 
     // 상세보기
-    // 파티, 작성자 프로필사진 추가 필요
+    // 파티 정보 추가 필요
     public ArticleDetailsResponse getArticleDetails(Long ArticleId) {
         Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(BaseResponseStatus.Not_Found));
@@ -75,7 +75,7 @@ public class ArticleService {
             //.partyId()
             .userId(article.getUser().getId())
             .userNickname(article.getUser().getNickname())
-            //.userProfileImage()
+            .userProfileImage(article.getUser().getProfileImage())
             .type(article.getType().toString())
             .title(article.getTitle())
             .content(article.getContent())
@@ -103,7 +103,7 @@ public class ArticleService {
 
     // 내 글 조회
     public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
-        Page<Article> articleList = articleRepository.findByUser(getCurrentUser(), pageable);
+        Page<Article> articleList = articleRepository.findByUser(userService.getCurrentUser(), pageable);
         List<ArticleBriefResponse> responseList = toArticleBriefResponseList(articleList);
         return new PageImpl<>(responseList, pageable, articleList.getTotalElements());
     }
@@ -121,11 +121,5 @@ public class ArticleService {
                 .build());
         }
         return responseList;
-    }
-
-    private User getCurrentUser() {
-        User user = User.builder().build();
-        user.setId(-1L);
-        return user;
     }
 }
