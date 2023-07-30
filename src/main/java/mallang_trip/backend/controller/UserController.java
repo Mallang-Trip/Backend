@@ -1,7 +1,8 @@
 package mallang_trip.backend.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import javax.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
@@ -24,6 +25,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "signup", description = "회원가입")
     @PostMapping("/signup")
     public BaseResponse<String> signup(
         @RequestPart(value = "img", required = false) MultipartFile file,
