@@ -38,7 +38,7 @@ jobs:
     - run: mkdir ./src/main/resources
     - run: touch ./src/main/resources/application.yml
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
-    - run: cat ./src/main/resources/application.properties
+    - run: cat ./src/main/resources/application.yml
 
     # (4) Gradle build (Test 제외)
     - name: Build with Gradle
