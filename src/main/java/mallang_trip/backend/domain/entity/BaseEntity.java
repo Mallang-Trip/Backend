@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain;
+package mallang_trip.backend.domain.entity;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;

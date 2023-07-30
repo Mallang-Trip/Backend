@@ -85,7 +85,7 @@ public class TokenProvider implements InitializingBean {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(refreshTokenValidity)
                 .compact();
-        Optional<mallang_trip.backend.domain.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+        Optional<mallang_trip.backend.domain.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
         findUser.get().setRefreshToken(refreshToken);
 
         return new TokensDto(accessToken, refreshToken);
@@ -115,7 +115,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     // 토큰 검증
-    public boolean validateToken(String token){
+    public boolean validateToken(String token, HttpServletRequest request){
         try{
             Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -125,15 +125,19 @@ public class TokenProvider implements InitializingBean {
         }
         catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("변조된 JWT 토큰입니다.");
+            request.setAttribute("exception", "10002");
         }
         catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
+            request.setAttribute("exception", "10003");
         }
         catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
+            request.setAttribute("exception", "10002");
         }
         catch (IllegalArgumentException e) {
             log.info("잘못된 JWT 토큰입니다.");
+            request.setAttribute("exception", "10002");
         }
 
         return false;
@@ -149,7 +153,7 @@ public class TokenProvider implements InitializingBean {
                     .parseClaimsJws(refreshToken);
 
             Authentication authentication = getAuthentication(refreshToken);
-            Optional<mallang_trip.backend.domain.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+            Optional<mallang_trip.backend.domain.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
             if (!findUser.isPresent()) {
                 throw new BaseException(INVALID_JWT);
             }

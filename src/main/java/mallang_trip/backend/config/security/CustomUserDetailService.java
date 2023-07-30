@@ -24,7 +24,7 @@ public class CustomUserDetailService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
         log.info("user details at username = {}", id);
-        return userRepository.findById(Long.valueOf(id))
+        return userRepository.findByLoginId(id)
                 .map(user -> createUser(user))
                 .orElseThrow(() -> new UsernameNotFoundException(id + "Not Found"));
 
@@ -32,8 +32,8 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     /**Security User 정보를 생성한다. */
-    private User createUser(mallang_trip.backend.domain.User user) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole());
+    private User createUser(mallang_trip.backend.domain.entity.User user) {
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole().toString());
 
         User result =  new User(
                 String.valueOf(user.getId()),

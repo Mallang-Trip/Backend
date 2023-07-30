@@ -2,14 +2,11 @@ package mallang_trip.backend.config.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mallang_trip.backend.controller.io.ExceptionResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,19 +18,31 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
-                         AuthenticationException authException) throws IOException, ServletException {
+        AuthenticationException authException) throws IOException {
 
-        ExceptionResponse exceptionResponse = new ExceptionResponse("잘못된 접근입니다. UNAUTHORIZED");
-        try{
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        String exception = (String) request.getAttribute("exception");
 
-            JSONObject responseJson = new JSONObject();
-            responseJson.put("message", "entry point");
-            responseJson.put("statusCode", 10003);
-            response.getWriter().print(responseJson);
+        if (exception == null) {
+            setResponseJson(response, "JWT가 비어있습니다.", 10001);
+        } else if (exception.equals("10003")) {
+            setResponseJson(response, "JWT가 만료되었습니다.", 10003);
+        } else {
+            setResponseJson(response, "JWT에 오류가 있습니다.", 10002);
+        }
+
+    }
+
+    private void setResponseJson(HttpServletResponse response, String message, int code)
+        throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        JSONObject responseJson = new JSONObject();
+        try {
+            responseJson.put("message", message);
+            responseJson.put("statusCode", code);
         } catch (JSONException e) {
             log.error("JSON 생성 에러 {}", e);
         }
+        response.getWriter().print(responseJson);
     }
 }
