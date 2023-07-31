@@ -41,7 +41,8 @@ public class SecurityConfig {
 
             .and()
             .authorizeRequests()
-            .antMatchers("/check", "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs", "/signup", "/login").permitAll() // 토큰이 필요없는 uri
+            .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs").permitAll() // swagger
+            .antMatchers("/check", "/signup", "/login", "/refresh-token").permitAll() // 토큰이 필요없는 uri
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
 

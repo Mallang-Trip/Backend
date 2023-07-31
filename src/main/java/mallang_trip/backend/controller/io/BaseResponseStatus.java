@@ -10,7 +10,7 @@ public enum BaseResponseStatus {
     Unauthorized(401, "인증되지 않은 사용자입니다."),
     Forbidden(403, "잘못된 접근입니다."),
     Not_Found(404, "찾을 수 없습니다."),
-    Conflict(409, "중복된 리소스입니다."),
+    Conflict(409, "리소스 충돌 발생."),
 
     FILE_CONVERT_ERROR(10000, "파일 변환에 실패하였습니다."),
     EMPTY_JWT(10001, "JWT가 비어있습니다."),

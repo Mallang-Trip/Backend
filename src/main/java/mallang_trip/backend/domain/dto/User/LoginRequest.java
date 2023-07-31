@@ -1,6 +1,5 @@
 package mallang_trip.backend.domain.dto.User;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +10,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 public class LoginRequest {
 
     @NotBlank
-    @Email
     private String id;
 
     @NotBlank

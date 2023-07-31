@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestControllerAdvice
 public class ExceptionController {
@@ -47,20 +48,13 @@ public class ExceptionController {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseBody
     public ExceptionResponse invalidRequest(DataIntegrityViolationException e) {
-        return ExceptionResponse.builder().message("데이터 제약조건 위반: " + e.getMessage()).build();
+        return ExceptionResponse.builder().message("잘못된 요청입니다.").build();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseBody
     public ExceptionResponse invalidRequest(ConstraintViolationException e) {
-        return ExceptionResponse.builder().message("요청 형식이 올바르지 않습니다.").build();
-    }
-
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(ExpiredJwtException.class)
-    @ResponseBody
-    public ExceptionResponse invalidRequest(ExpiredJwtException e) {
-        return ExceptionResponse.builder().message("만료된 JWT 토큰입니다.").build();
+        return ExceptionResponse.builder().message("잘못된 요청입니다.").build();
     }
 }
