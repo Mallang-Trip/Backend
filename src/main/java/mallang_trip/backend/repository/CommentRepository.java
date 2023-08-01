@@ -1,8 +1,8 @@
 package mallang_trip.backend.repository;
 
 import java.util.List;
-import mallang_trip.backend.domain.entity.Article;
-import mallang_trip.backend.domain.entity.Comment;
+import mallang_trip.backend.domain.entity.community.Article;
+import mallang_trip.backend.domain.entity.community.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

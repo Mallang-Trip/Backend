@@ -3,7 +3,7 @@ package mallang_trip.backend.domain.dto.comment;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.Reply;
+import mallang_trip.backend.domain.entity.community.Reply;
 
 @Getter
 @Builder

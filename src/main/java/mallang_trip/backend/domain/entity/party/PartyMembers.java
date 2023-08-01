@@ -1,6 +1,5 @@
-package mallang_trip.backend.domain.entity;
+package mallang_trip.backend.domain.entity.party;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -14,31 +13,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
+import mallang_trip.backend.domain.entity.BaseEntity;
+import mallang_trip.backend.domain.entity.User;
 
 @Entity
-@Table(name = "article_comment")
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
+@Table(name = "party_members")
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE article_comment SET content = '삭제된 댓글입니다.', deleted = true WHERE id = ?")
-public class Comment extends BaseEntity {
+@NoArgsConstructor
+public class PartyMembers extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    private User user;
+    @JoinColumn(name = "party_id", nullable = false)
+    private Party party;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "article_id", nullable = false, updatable = false)
-    private Article article;
-
-    @Column(nullable = false)
-    private String content;
-
+    @JoinColumn(name = "member_id", nullable = false)
+    private User member;
 }

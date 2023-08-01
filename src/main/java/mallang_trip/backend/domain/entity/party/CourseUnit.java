@@ -1,5 +1,6 @@
-package mallang_trip.backend.domain.entity;
+package mallang_trip.backend.domain.entity.party;
 
+import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,30 +15,32 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
+import mallang_trip.backend.domain.entity.BaseEntity;
 
 @Entity
-@Table(name = "article_reply")
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
+@Table(name = "course_unit")
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE article_reply SET content = '삭제된 댓글입니다.', deleted = true WHERE id = ?")
-public class Reply extends BaseEntity {
+@NoArgsConstructor
+public class CourseUnit extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    private User user;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id", nullable = false, updatable = false)
-    private Comment comment;
+    @JoinColumn(name = "destination_id", nullable = false)
+    private Destination destination;
 
-    @Column(nullable = false)
-    private String content;
+    @Column
+    private LocalDate date;
+
+    @Column
+    private int index;
 }

@@ -46,7 +46,8 @@ public class UserController {
 
     @GetMapping("/login")
     @ApiOperation(value = "로그인", notes = "로그인 성공 시 access token, refresh token 발급")
-    public BaseResponse<TokensDto> login(@RequestBody @Valid LoginRequest request) throws BaseException {
+    public BaseResponse<TokensDto> login(@RequestBody @Valid LoginRequest request)
+        throws BaseException {
         return new BaseResponse<>(userService.login(request));
     }
 

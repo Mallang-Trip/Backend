@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import mallang_trip.backend.domain.entity.Comment;
+import mallang_trip.backend.domain.entity.community.Comment;
 
 @Getter
 @Setter

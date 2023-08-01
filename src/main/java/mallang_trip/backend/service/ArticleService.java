@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponseStatus;
-import mallang_trip.backend.domain.entity.Article;
+import mallang_trip.backend.domain.entity.community.Article;
 import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
 import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
 import mallang_trip.backend.domain.dto.article.ArticleIdResponse;

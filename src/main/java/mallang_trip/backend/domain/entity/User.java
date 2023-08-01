@@ -29,48 +29,48 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column(name = "login_id", nullable = false, unique = true)
-    String loginId;
+    private String loginId;
 
     @Column(nullable = false)
-    String password;
+    private String password;
 
     @Column(nullable = false, unique = true)
-    String email;
+    private String email;
 
     @Column(nullable = false, unique = true, updatable = false)
-    String name;
+    private String name;
 
     @Column(nullable = false)
-    LocalDate birthday;
+    private LocalDate birthday;
 
     @Enumerated(EnumType.STRING)
-    Country country;
+    private Country country;
 
     @Enumerated(EnumType.STRING)
-    Gender gender;
+    private Gender gender;
 
     @Column(nullable = false, unique = true)
-    String nickname;
+    private String nickname;
 
     @Column(name = "phone_number", nullable = false, unique = true, updatable = false)
-    String phoneNumber;
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
-    Role role;
+    private Role role;
 
     @Column(name = "refresh_token")
-    String refreshToken;
+    private String refreshToken;
 
-    String introduction;
+    private String introduction;
 
     @Column(name = "profile_image")
-    String profileImage;
+    private String profileImage;
 
     @Column(columnDefinition = "TINYINT", length = 1)
     @Builder.Default()
-    Boolean suspended= false;
+    private Boolean suspended= false;
 
 }
