@@ -1,5 +1,7 @@
 package mallang_trip.backend.controller.party;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 // 여행지, 리뷰 중복 제한 이슈
 // 여행지 CRUD 권한 이슈
+@Api(tags = "Destination API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/destination")
@@ -30,6 +33,7 @@ public class DestinationController {
     private final DestinationService destinationService;
 
     @PostMapping
+    @ApiOperation(value = "여행지 추가")
     public BaseResponse<DestinationIdResponse> createDestination(
         @RequestBody DestinationRequest request)
         throws BaseException {
@@ -37,6 +41,7 @@ public class DestinationController {
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "여행지 삭제")
     public BaseResponse<String> deleteDestination(@PathVariable Long id)
         throws BaseException {
         destinationService.deleteDestination(id);
@@ -44,6 +49,7 @@ public class DestinationController {
     }
 
     @GetMapping
+    @ApiOperation(value = "여행지 키워드 검색")
     public BaseResponse<List<DestinationBriefResponse>> searchDestination(
         @RequestParam String keyword)
         throws BaseException {
@@ -51,6 +57,7 @@ public class DestinationController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation(value = "여행지 수정")
     public BaseResponse<String> changeDestination(@PathVariable Long id,
         @RequestBody DestinationRequest request)
         throws BaseException {
@@ -59,12 +66,14 @@ public class DestinationController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "여행지 상세 조회")
     public BaseResponse<DestinationDetailsResponse> getDestinationDetails(@PathVariable Long id)
         throws BaseException {
         return new BaseResponse<>(destinationService.getDestinationDetails(id));
     }
 
     @PostMapping("/review/{id}")
+    @ApiOperation(value = "여행지 리뷰 등록")
     public BaseResponse<String> createDestinationReview(@PathVariable Long id,
         @RequestBody DestinationReviewRequest request)
         throws BaseException {
@@ -73,6 +82,7 @@ public class DestinationController {
     }
 
     @PutMapping("/review/{id}")
+    @ApiOperation(value = "여행지 리뷰 수정")
     public BaseResponse<String> changeDestinationReview(@PathVariable Long id,
         @RequestBody DestinationReviewRequest request)
         throws BaseException {
@@ -81,6 +91,7 @@ public class DestinationController {
     }
 
     @DeleteMapping("/review/{id}")
+    @ApiOperation(value = "여행지 리뷰 삭제")
     public BaseResponse<String> deleteDestinationReview(@PathVariable Long id)
         throws BaseException {
         destinationService.deleteDestinationReview(id);
@@ -88,6 +99,7 @@ public class DestinationController {
     }
 
     @PostMapping("/dibs/{id}")
+    @ApiOperation(value = "여행지 찜하기")
     public BaseResponse<String> createDestinationDibs(@PathVariable Long id)
         throws BaseException {
         destinationService.createDestinationDibs(id);
@@ -95,6 +107,7 @@ public class DestinationController {
     }
 
     @DeleteMapping("/dibs/{id}")
+    @ApiOperation(value = "여행지 찜하기 취소")
     public BaseResponse<String> deleteDestinationDibs(@PathVariable Long id)
         throws BaseException {
         destinationService.deleteDestinationDibs(id);
@@ -102,6 +115,7 @@ public class DestinationController {
     }
 
     @GetMapping("/dibs")
+    @ApiOperation(value = "내가 찜한 여행지 조회")
     public BaseResponse<List<DestinationBriefResponse>> getMyDestinationDibs()
         throws BaseException {
         return new BaseResponse<>(destinationService.getMyDestinationDibs());
