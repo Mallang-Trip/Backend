@@ -1,6 +1,8 @@
-package mallang_trip.backend.domain.entity.party;
+package mallang_trip.backend.domain.entity.destination;
 
+import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -31,8 +33,12 @@ public class Destination extends BaseEntity {
     private String address;
 
     @Column
-    private String image;
+    private String content;
+
+    @ElementCollection
+    private List<String> images;
 
     @Column
-    private String region;
+    @Builder.Default()
+    private Integer views = 0;
 }

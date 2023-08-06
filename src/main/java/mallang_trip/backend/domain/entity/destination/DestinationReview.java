@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity.party;
+package mallang_trip.backend.domain.entity.destination;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,29 +15,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.destination.Destination;
+import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@Table(name = "course_unit")
+@Table(name = "destination_review")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseUnit extends BaseEntity {
+public class DestinationReview extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "day_id", nullable = false)
-    private CourseDay courseDay;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destination_id", nullable = false)
     private Destination destination;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column
-    private int sequence;
+    private Double rate;
+
+    @Column
+    private String content;
 }

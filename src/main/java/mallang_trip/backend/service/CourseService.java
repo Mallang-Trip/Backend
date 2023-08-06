@@ -15,10 +15,10 @@ import mallang_trip.backend.domain.dto.course.CourseDayRequest;
 import mallang_trip.backend.domain.dto.course.DestinationResponse;
 import mallang_trip.backend.domain.entity.party.Course;
 import mallang_trip.backend.domain.entity.party.CourseDay;
-import mallang_trip.backend.domain.entity.party.Destination;
+import mallang_trip.backend.domain.entity.destination.Destination;
 import mallang_trip.backend.repository.party.CourseDayRepository;
 import mallang_trip.backend.repository.party.CourseRepository;
-import mallang_trip.backend.repository.party.DestinationRepository;
+import mallang_trip.backend.repository.destination.DestinationRepository;
 import org.springframework.stereotype.Service;
 
 @Service
