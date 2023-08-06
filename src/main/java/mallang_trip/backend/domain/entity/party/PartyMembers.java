@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.party;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -14,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.User;
+import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
@@ -36,4 +37,7 @@ public class PartyMembers extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private User member;
+
+    @Column
+    private int headcount;
 }

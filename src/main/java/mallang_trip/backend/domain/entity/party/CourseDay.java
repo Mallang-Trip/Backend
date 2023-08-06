@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.party;
 
+import java.time.LocalTime;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -10,42 +11,46 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
 @Setter
 @Builder
+@Table(name = "course_day")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Course extends BaseEntity {
+public class CourseDay extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+    @Column
+    private int day;
+
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    @Column
+    private int hours;
+
+    @Column
+    private int price;
 
     @ElementCollection
-    private List<String> images;
-
-    @Column(name = "total_days")
-    private int totalDays;
-
-    @Column
-    private String name;
-
-    @Column
-    private int capacity;
-
-    @Column(name = "total_price")
-    private int totalPrice;
+    private List<Long> destinations;
 }

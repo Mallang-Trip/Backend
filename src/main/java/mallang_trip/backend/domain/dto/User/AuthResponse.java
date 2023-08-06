@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mallang_trip.backend.domain.entity.User;
+import mallang_trip.backend.domain.entity.user.User;
 
 @Builder
 @Getter

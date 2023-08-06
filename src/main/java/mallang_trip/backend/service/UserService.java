@@ -12,8 +12,8 @@ import mallang_trip.backend.domain.dto.TokensDto;
 import mallang_trip.backend.domain.dto.User.AuthResponse;
 import mallang_trip.backend.domain.dto.User.LoginRequest;
 import mallang_trip.backend.domain.dto.User.SignupRequest;
-import mallang_trip.backend.domain.entity.User;
-import mallang_trip.backend.repository.UserRepository;
+import mallang_trip.backend.domain.entity.user.User;
+import mallang_trip.backend.repository.user.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -88,6 +88,7 @@ public class UserService {
         if(isDuplicate) throw new BaseException(Conflict);
     }
 
+    // 현재 유저
     public User getCurrentUser() {
         final Authentication authentication = SecurityContextHolder.getContext()
             .getAuthentication();

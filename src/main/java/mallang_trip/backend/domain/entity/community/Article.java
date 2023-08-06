@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.User;
+import mallang_trip.backend.domain.entity.user.User;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 

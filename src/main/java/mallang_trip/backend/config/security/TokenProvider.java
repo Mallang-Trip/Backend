@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.TokensDto;
-import mallang_trip.backend.repository.UserRepository;
+import mallang_trip.backend.repository.user.UserRepository;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -85,7 +85,7 @@ public class TokenProvider implements InitializingBean {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(refreshTokenValidity)
                 .compact();
-        Optional<mallang_trip.backend.domain.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+        Optional<mallang_trip.backend.domain.entity.user.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
         findUser.get().setRefreshToken(refreshToken);
 
         return new TokensDto(accessToken, refreshToken);
@@ -153,7 +153,7 @@ public class TokenProvider implements InitializingBean {
                     .parseClaimsJws(refreshToken);
 
             Authentication authentication = getAuthentication(refreshToken);
-            Optional<mallang_trip.backend.domain.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+            Optional<mallang_trip.backend.domain.entity.user.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
             if (!findUser.isPresent()) {
                 throw new BaseException(INVALID_JWT);
             }

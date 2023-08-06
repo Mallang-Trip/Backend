@@ -1,4 +1,4 @@
-package mallang_trip.backend.repository;
+package mallang_trip.backend.repository.community;
 
 import java.util.List;
 import mallang_trip.backend.domain.entity.community.Article;

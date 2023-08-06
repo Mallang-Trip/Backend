@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity;
+package mallang_trip.backend.domain.entity.user;
 
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,8 @@
-package mallang_trip.backend.domain.entity.party;
+package mallang_trip.backend.domain.entity.user;
 
-import java.time.LocalDate;
+import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,9 +17,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mallang_trip.backend.constant.PartyStatus;
+import mallang_trip.backend.constant.DriverStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
@@ -26,7 +26,7 @@ import mallang_trip.backend.domain.entity.user.User;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Party extends BaseEntity {
+public class Driver extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,23 +36,22 @@ public class Party extends BaseEntity {
     @JoinColumn(name = "driver_id", nullable = false)
     private User driver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(name = "license_img", nullable = false)
+    private String licenceImg;
 
-    @Column(nullable = false)
-    private String region;
+    @Column(name = "vehicle_type", nullable = false)
+    private String vehicleType;
 
-    @Column(nullable = false)
-    private int headcount;
+    @Column(name = "vehicle_number", nullable = false)
+    private String vehicleNumber;
 
-    @Column(name= "start_date", nullable = false)
-    private LocalDate startDate;
+    @Column(name = "vehicle_capacity", nullable = false)
+    private String vehicleCapacity;
 
-    @Column(name= "end_date", nullable = false)
-    private LocalDate endDate;
+    @ElementCollection
+    private List<String> regions;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()
-    private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
+    private DriverStatus status = DriverStatus.WAITING;
 }

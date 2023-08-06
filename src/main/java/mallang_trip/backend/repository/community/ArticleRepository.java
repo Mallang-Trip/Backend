@@ -1,8 +1,8 @@
-package mallang_trip.backend.repository;
+package mallang_trip.backend.repository.community;
 
 import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.domain.entity.community.Article;
-import mallang_trip.backend.domain.entity.User;
+import mallang_trip.backend.domain.entity.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

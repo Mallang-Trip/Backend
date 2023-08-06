@@ -11,7 +11,7 @@ import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
 import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
 import mallang_trip.backend.domain.dto.article.ArticleIdResponse;
 import mallang_trip.backend.domain.dto.article.ArticleRequest;
-import mallang_trip.backend.repository.ArticleRepository;
+import mallang_trip.backend.repository.community.ArticleRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

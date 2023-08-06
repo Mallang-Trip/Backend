@@ -2,6 +2,8 @@ package mallang_trip.backend.domain.entity.party;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,8 +16,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.User;
+import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
@@ -42,10 +45,17 @@ public class PartyProposal extends BaseEntity {
     @JoinColumn(name = "proposer_id", nullable = false, updatable = false)
     private User proposer;
 
+    @Column
+    private int headcount;
+
     @Column(name = "agreement_need", nullable = false)
     private int agreementNeed;
 
     @Column(name = "agreement_count", nullable = false)
     @Builder.Default()
     private int agreementCount = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default()
+    private ProposalStatus status = ProposalStatus.WAITING;
 }

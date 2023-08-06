@@ -1,6 +1,5 @@
 package mallang_trip.backend.domain.entity.party;
 
-import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -31,16 +30,13 @@ public class CourseUnit extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "day_id", nullable = false)
+    private CourseDay courseDay;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destination_id", nullable = false)
     private Destination destination;
 
     @Column
-    private LocalDate date;
-
-    @Column
-    private int index;
+    private int sequence;
 }

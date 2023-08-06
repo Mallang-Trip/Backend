@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.constant.AgreementStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.User;
 
 @Entity
 @Getter
@@ -37,8 +36,8 @@ public class PartyAgreement extends BaseEntity {
     private PartyProposal proposal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private User member;
+    @JoinColumn(name = "members_id", nullable = false)
+    private PartyMembers members;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()

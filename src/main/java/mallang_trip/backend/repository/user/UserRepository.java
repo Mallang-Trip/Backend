@@ -1,7 +1,7 @@
-package mallang_trip.backend.repository;
+package mallang_trip.backend.repository.user;
 
 import java.util.Optional;
-import mallang_trip.backend.domain.entity.User;
+import mallang_trip.backend.domain.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {
