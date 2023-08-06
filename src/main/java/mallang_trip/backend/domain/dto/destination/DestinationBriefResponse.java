@@ -19,7 +19,7 @@ public class DestinationBriefResponse {
     public static DestinationBriefResponse of(Destination destination, Boolean dibs, Double rate){
         return DestinationBriefResponse.builder()
             .destinationId(destination.getId())
-            .image(destination.getImages().get(0))
+            .image(destination.getImages().isEmpty() ? null : destination.getImages().get(0))
             .rate(rate)
             .views(destination.getViews())
             .name(destination.getName())

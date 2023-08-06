@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
 
     @Query(value = "select * from destination d\n"
-        + "    where REPLACE(d.name, ' ', '') like REPLACE('%:keyword%', ' ', '')\n"
+        + "    where REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
         + "        order by\n"
         + "            case\n"
         + "                when d.name = ':keyword' then 0\n"
@@ -20,5 +20,5 @@ public interface DestinationRepository extends JpaRepository<Destination, Long> 
         + "                when d.name like '%:keyword%' then 3\n"
         + "            else 4 end,\n"
         + "            d.views DESC;", nativeQuery = true)
-    List<Destination> searchByKeyword(@Param("keyword") String keyword);
+    List<Destination> searchByKeyword(@Param(value = "keyword") String keyword);
 }

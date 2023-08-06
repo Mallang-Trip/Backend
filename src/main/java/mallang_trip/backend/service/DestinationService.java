@@ -48,7 +48,7 @@ public class DestinationService {
         destinationRepository.delete(destination);
     }
 
-    // 여행지 검색
+    // 여행지 키워드 검색
     public List<DestinationBriefResponse> searchDestination(String keyword) {
         List<Destination> destinations = destinationRepository.searchByKeyword(keyword);
         List<DestinationBriefResponse> responses = new ArrayList<>();

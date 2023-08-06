@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+// 여행지, 리뷰 중복 제한 이슈
+// 여행지 CRUD 권한 이슈
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/destination")
