@@ -44,7 +44,7 @@ public class Party extends BaseEntity {
     private String region;
 
     @Column(nullable = false)
-    private int headcount;
+    private Integer headcount;
 
     @Column(name= "start_date", nullable = false)
     private LocalDate startDate;

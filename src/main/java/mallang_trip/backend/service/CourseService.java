@@ -10,12 +10,14 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.course.CourseDayResponse;
 import mallang_trip.backend.domain.dto.course.CourseDetailsResponse;
 import mallang_trip.backend.domain.dto.course.CourseIdResponse;
+import mallang_trip.backend.domain.dto.course.CourseNameResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.dto.course.CourseDayRequest;
 import mallang_trip.backend.domain.dto.course.DestinationResponse;
 import mallang_trip.backend.domain.entity.party.Course;
 import mallang_trip.backend.domain.entity.party.CourseDay;
 import mallang_trip.backend.domain.entity.destination.Destination;
+import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.CourseDayRepository;
 import mallang_trip.backend.repository.party.CourseRepository;
 import mallang_trip.backend.repository.destination.DestinationRepository;
@@ -90,5 +92,15 @@ public class CourseService {
             .totalPrice(course.getTotalPrice())
             .days(courseDayResponses)
             .build();
+    }
+
+    // 드라이버의 코스 조회
+    public List<CourseNameResponse> getCourseName(User user){
+        List<Course> courses = courseRepository.findAllByOwner(user);
+        List<CourseNameResponse> responses = new ArrayList<>();
+        for(Course course : courses){
+            responses.add(CourseNameResponse.of(course));
+        }
+        return responses;
     }
 }

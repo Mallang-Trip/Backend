@@ -1,6 +1,8 @@
 package mallang_trip.backend.domain.entity.destination;
 
+import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -43,4 +45,7 @@ public class DestinationReview extends BaseEntity {
 
     @Column
     private String content;
+
+    @ElementCollection
+    private List<String> images;
 }

@@ -37,7 +37,7 @@ public class CourseDay extends BaseEntity {
     private Course course;
 
     @Column
-    private int day;
+    private Integer day;
 
     @Column(name = "start_time")
     private LocalTime startTime;
@@ -46,10 +46,10 @@ public class CourseDay extends BaseEntity {
     private LocalTime endTime;
 
     @Column
-    private int hours;
+    private Integer hours;
 
     @Column
-    private int price;
+    private Integer price;
 
     @ElementCollection
     private List<Long> destinations;

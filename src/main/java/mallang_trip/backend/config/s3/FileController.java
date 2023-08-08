@@ -18,9 +18,8 @@ public class FileController {
 
     private final AwsS3Uploader awsS3Uploader;
 
-    @PostMapping("/upload/{type}")
+    @PostMapping("/upload/{dir}")
     @ApiOperation(value = "이미지 업로드")
-    @ApiImplicitParam(name = "type", value = "[profile/destination/article/party] 중 하나")
     public String upload(@RequestParam("file") MultipartFile multipartFile,
         @PathVariable String type) throws BaseException {
         String fileName = awsS3Uploader.upload(multipartFile, type);

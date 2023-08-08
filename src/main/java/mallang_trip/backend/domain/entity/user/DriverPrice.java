@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity.party;
+package mallang_trip.backend.domain.entity.user;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,36 +8,32 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@Table(name = "party_members")
 @AllArgsConstructor
 @NoArgsConstructor
-public class PartyMembers extends BaseEntity {
+public class DriverPrice extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "party_id", nullable = false)
-    private Party party;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private User member;
+    @JoinColumn(name = "driver_id", nullable = false)
+    private Driver driver;
 
     @Column
-    private Integer headcount;
+    private Integer hours;
+
+    @Column
+    private Integer price;
 }

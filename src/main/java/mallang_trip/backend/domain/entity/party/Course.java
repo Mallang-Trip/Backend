@@ -38,14 +38,14 @@ public class Course extends BaseEntity {
     private List<String> images;
 
     @Column(name = "total_days")
-    private int totalDays;
+    private Integer totalDays;
 
     @Column
     private String name;
 
     @Column
-    private int capacity;
+    private Integer capacity;
 
     @Column(name = "total_price")
-    private int totalPrice;
+    private Integer totalPrice;
 }

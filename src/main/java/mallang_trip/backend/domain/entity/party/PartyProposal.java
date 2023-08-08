@@ -46,14 +46,14 @@ public class PartyProposal extends BaseEntity {
     private User proposer;
 
     @Column
-    private int headcount;
+    private Integer headcount;
 
     @Column(name = "agreement_need", nullable = false)
-    private int agreementNeed;
+    private Integer agreementNeed;
 
     @Column(name = "agreement_count", nullable = false)
     @Builder.Default()
-    private int agreementCount = 0;
+    private Integer agreementCount = 0;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()

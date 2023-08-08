@@ -1,6 +1,8 @@
-package mallang_trip.backend.domain.entity.party;
+package mallang_trip.backend.domain.entity.user;
 
+import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,29 +17,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@Table(name = "party_members")
+@Table(name = "driver_review")
 @AllArgsConstructor
 @NoArgsConstructor
-public class PartyMembers extends BaseEntity {
+public class DriverReview extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "party_id", nullable = false)
-    private Party party;
+    @JoinColumn(name = "driver_id", nullable = false)
+    private Driver driver;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private User member;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column
-    private Integer headcount;
+    private Double rate;
+
+    @Column
+    private String content;
+
+    @ElementCollection
+    private List<String> images;
 }
