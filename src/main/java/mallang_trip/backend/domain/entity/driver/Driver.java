@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity.user;
+package mallang_trip.backend.domain.entity.driver;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +23,7 @@ import lombok.Setter;
 import mallang_trip.backend.constant.DriverStatus;
 import mallang_trip.backend.constant.Week;
 import mallang_trip.backend.domain.entity.BaseEntity;
+import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
 @Getter

@@ -1,14 +1,14 @@
-package mallang_trip.backend.domain.dto.destination;
+package mallang_trip.backend.domain.dto.driver;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.destination.DestinationReview;
+import mallang_trip.backend.domain.entity.driver.DriverReview;
 
 @Getter
 @Builder
-public class DestinationReviewResponse {
+public class DriverReviewResponse {
 
     private Long reviewId;
     private Long userId;
@@ -20,8 +20,8 @@ public class DestinationReviewResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static DestinationReviewResponse of(DestinationReview review){
-        return DestinationReviewResponse.builder()
+    public static DriverReviewResponse of(DriverReview review){
+        return DriverReviewResponse.builder()
             .reviewId(review.getId())
             .userId(review.getUser().getId())
             .nickname(review.getUser().getNickname())

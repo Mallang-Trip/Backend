@@ -94,7 +94,7 @@ public class CourseService {
             .build();
     }
 
-    // 드라이버의 코스 조회
+    // 드라이버의 코스 목록 조회
     public List<CourseNameResponse> getCourseName(User user){
         List<Course> courses = courseRepository.findAllByOwner(user);
         List<CourseNameResponse> responses = new ArrayList<>();

@@ -1,8 +1,6 @@
-package mallang_trip.backend.domain.entity.user;
+package mallang_trip.backend.domain.entity.driver;
 
-import java.util.List;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -10,7 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,10 +19,9 @@ import mallang_trip.backend.domain.entity.BaseEntity;
 @Getter
 @Setter
 @Builder
-@Table(name = "driver_review")
 @AllArgsConstructor
 @NoArgsConstructor
-public class DriverReview extends BaseEntity {
+public class DriverPrice extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,16 +31,9 @@ public class DriverReview extends BaseEntity {
     @JoinColumn(name = "driver_id", nullable = false)
     private Driver driver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column
+    private Integer hours;
 
     @Column
-    private Double rate;
-
-    @Column
-    private String content;
-
-    @ElementCollection
-    private List<String> images;
+    private Integer price;
 }

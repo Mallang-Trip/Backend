@@ -1,5 +1,6 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
@@ -100,11 +101,16 @@ public class DestinationService {
     public void createDestinationReview(Long destinationId, DestinationReviewRequest request) {
         Destination destination = destinationRepository.findById(destinationId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        User user = userService.getCurrentUser();
+        if(destinationReviewRepository.existsByDestinationAndUser(destination, user)){
+            throw new BaseException(Conflict);
+        }
         destinationReviewRepository.save(DestinationReview.builder()
             .destination(destination)
-            .user(userService.getCurrentUser())
+            .user(user)
             .rate(request.getRate())
             .content(request.getContent())
+            .images(request.getImages())
             .build());
     }
 
@@ -115,8 +121,7 @@ public class DestinationService {
         if (userService.getCurrentUser().getId() != review.getUser().getId()) {
             throw new BaseException(Unauthorized);
         }
-        review.setRate(request.getRate());
-        review.setContent(request.getContent());
+
     }
 
     // 여행지 리뷰 삭제

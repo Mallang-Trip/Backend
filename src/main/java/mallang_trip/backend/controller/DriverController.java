@@ -9,12 +9,15 @@ import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.driver.ChangeBankAccountRequest;
 import mallang_trip.backend.domain.dto.driver.ChangePriceRequest;
 import mallang_trip.backend.domain.dto.driver.ChangeVehicleRequest;
-import mallang_trip.backend.domain.dto.driver.DriverPriceRequest;
+import mallang_trip.backend.domain.dto.driver.DriverDetailsResponse;
 import mallang_trip.backend.domain.dto.driver.DriverRegistrationRequest;
+import mallang_trip.backend.domain.dto.driver.DriverRegistrationResponse;
+import mallang_trip.backend.domain.dto.driver.DriverReviewRequest;
 import mallang_trip.backend.domain.dto.driver.HolidayRequest;
 import mallang_trip.backend.domain.dto.driver.HolidayResponse;
 import mallang_trip.backend.domain.dto.driver.MyDriverProfileResponse;
 import mallang_trip.backend.service.DriverService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,24 +35,38 @@ public class DriverController {
 
     private final DriverService driverService;
 
-    @PostMapping
-    @ApiOperation(value = "드라이버 등록")
+    @PostMapping("/apply")
+    @ApiOperation(value = "드라이버 신청")
     public BaseResponse<String> registerDriver(@RequestBody DriverRegistrationRequest request)
         throws BaseException {
         driverService.registerDriver(request);
         return new BaseResponse<>("성공");
     }
 
+    @GetMapping("/status")
+    @ApiOperation(value = "내 드라이버 신청 현황 조회")
+    public BaseResponse<DriverRegistrationResponse> getMyDriverRegistration()
+        throws BaseException {
+        return new BaseResponse<>(driverService.getMyDriverRegistration());
+    }
+
     @PostMapping("/reapply")
-    @ApiOperation(value = "드라이버 재등록 or 등록신청 수정")
+    @ApiOperation(value = "드라이버 신청 정보 수정, 재신청")
     public BaseResponse<String> reapplyDriver(@RequestBody DriverRegistrationRequest request)
         throws BaseException {
         driverService.reapplyDriver(request);
         return new BaseResponse<>("성공");
     }
 
-    @PostMapping("/accept/{id}")
-    @ApiOperation(value = "드라이버 등록 수락/거절")
+    @GetMapping("/accept")
+    @ApiOperation(value = "(관리자)드라이버 등록 신청 목록 조회")
+    public BaseResponse<List<DriverRegistrationResponse>> getDriverRegistrations()
+        throws BaseException {
+        return new BaseResponse<>(driverService.getDriverRegistrationList());
+    }
+
+    @PutMapping("/accept/{id}")
+    @ApiOperation(value = "(관리자)드라이버 등록 수락/거절")
     public BaseResponse<String> acceptDriver(@PathVariable Long id, @RequestParam Boolean accept)
         throws BaseException {
         driverService.acceptDriverRegistration(id, accept);
@@ -86,9 +103,9 @@ public class DriverController {
         return new BaseResponse<>(driverService.getHoliday(id));
     }
 
-    @PutMapping("/my/region/{region}")
+    @PutMapping("/my/region")
     @ApiOperation(value = "드라이버 활동 지역 변경")
-    public BaseResponse<String> setRegion(@PathVariable String region)
+    public BaseResponse<String> setRegion(@RequestParam String region)
         throws BaseException {
         driverService.setRegion(region);
         return new BaseResponse<>("성공");
@@ -125,10 +142,36 @@ public class DriverController {
         return new BaseResponse<>(driverService.getMyDriverProfile());
     }
 
-/*    @GetMapping("/{id}")
-    @ApiOperation(value = "드라이버 정보 조회")
-    public BaseResponse<MyDriverProfileResponse> getDriverProfile(@PathVariable Long id)
+    @PostMapping("/review/{id}")
+    @ApiOperation(value = "드라이버 리뷰 등록")
+    public BaseResponse<String> createDriverReview(@PathVariable Long id, @RequestBody
+        DriverReviewRequest request)
         throws BaseException {
-        return new BaseResponse<>(driverService.getMyDriverProfile());
-    }*/
+        driverService.createDriverReview(id, request);
+        return new BaseResponse<>("성공");
+    }
+
+    @PutMapping("/review/{id}")
+    @ApiOperation(value = "드라이버 리뷰 수정")
+    public BaseResponse<String> changeDriverReview(@PathVariable Long id, @RequestBody
+        DriverReviewRequest request)
+        throws BaseException {
+        driverService.changeDriverReview(id, request);
+        return new BaseResponse<>("성공");
+    }
+
+    @DeleteMapping("/review/{id}")
+    @ApiOperation(value = "드라이버 리뷰 삭제")
+    public BaseResponse<String> deleteDriverReview(@PathVariable Long id)
+        throws BaseException {
+        driverService.deleteDriverReview(id);
+        return new BaseResponse<>("성공");
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation(value = "드라이버 상세 조회")
+    public BaseResponse<DriverDetailsResponse> getDriverDetails(@PathVariable Long id)
+        throws BaseException {
+        return new BaseResponse<>(driverService.getDriverDetails(id));
+    }
 }

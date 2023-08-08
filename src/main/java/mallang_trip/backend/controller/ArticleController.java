@@ -1,4 +1,4 @@
-package mallang_trip.backend.controller.community;
+package mallang_trip.backend.controller;
 
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;

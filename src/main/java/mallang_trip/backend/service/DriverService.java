@@ -1,9 +1,10 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,17 +18,23 @@ import mallang_trip.backend.domain.dto.course.CourseNameResponse;
 import mallang_trip.backend.domain.dto.driver.ChangeBankAccountRequest;
 import mallang_trip.backend.domain.dto.driver.ChangePriceRequest;
 import mallang_trip.backend.domain.dto.driver.ChangeVehicleRequest;
+import mallang_trip.backend.domain.dto.driver.DriverDetailsResponse;
 import mallang_trip.backend.domain.dto.driver.DriverPriceRequest;
 import mallang_trip.backend.domain.dto.driver.DriverPriceResponse;
 import mallang_trip.backend.domain.dto.driver.DriverRegistrationRequest;
+import mallang_trip.backend.domain.dto.driver.DriverRegistrationResponse;
+import mallang_trip.backend.domain.dto.driver.DriverReviewRequest;
+import mallang_trip.backend.domain.dto.driver.DriverReviewResponse;
 import mallang_trip.backend.domain.dto.driver.HolidayRequest;
 import mallang_trip.backend.domain.dto.driver.HolidayResponse;
 import mallang_trip.backend.domain.dto.driver.MyDriverProfileResponse;
-import mallang_trip.backend.domain.entity.user.Driver;
-import mallang_trip.backend.domain.entity.user.DriverPrice;
+import mallang_trip.backend.domain.entity.driver.Driver;
+import mallang_trip.backend.domain.entity.driver.DriverPrice;
+import mallang_trip.backend.domain.entity.driver.DriverReview;
 import mallang_trip.backend.domain.entity.user.User;
-import mallang_trip.backend.repository.user.DriverPriceRepository;
-import mallang_trip.backend.repository.user.DriverRepository;
+import mallang_trip.backend.repository.driver.DriverPriceRepository;
+import mallang_trip.backend.repository.driver.DriverRepository;
+import mallang_trip.backend.repository.driver.DriverReviewRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,6 +46,7 @@ public class DriverService {
     private final CourseService courseService;
     private final DriverRepository driverRepository;
     private final DriverPriceRepository driverPriceRepository;
+    private final DriverReviewRepository driverReviewRepository;
 
     // 드라이버 전환 신청
     public void registerDriver(DriverRegistrationRequest request) {
@@ -46,6 +54,12 @@ public class DriverService {
         for (DriverPriceRequest driverPriceRequest : request.getPrices()) {
             driverPriceRepository.save(driverPriceRequest.toDriverPrice(driver));
         }
+    }
+
+    // 내 드라이버 신청 상태 확인
+    public DriverRegistrationResponse getMyDriverRegistration(){
+        Driver driver = getCurrentDriver();
+        return DriverRegistrationResponse.of(driver, getDriverPrice(driver));
     }
 
     // 드라이버 신청 정보 수정 or 재신청
@@ -58,6 +72,14 @@ public class DriverService {
     }
 
     // 승인 대기중인 드라이버 조회 (관리자 권한 필요)
+    public List<DriverRegistrationResponse> getDriverRegistrationList(){
+        List<Driver> drivers = driverRepository.findAllByStatus(DriverStatus.WAITING);
+        List<DriverRegistrationResponse> responses = new ArrayList<>();
+        for(Driver driver : drivers){
+            responses.add(DriverRegistrationResponse.of(driver, getDriverPrice(driver)));
+        }
+        return responses;
+    }
 
     // 드라이버 수락 or 거절 (관리자 권한 필요)
     public void acceptDriverRegistration(Long driverId, Boolean accept) {
@@ -125,7 +147,7 @@ public class DriverService {
     }
 
     // 계좌 수정
-    public void changeBankAccount(ChangeBankAccountRequest request){
+    public void changeBankAccount(ChangeBankAccountRequest request) {
         Driver driver = getCurrentDriver();
         driver.setBank(request.getBank());
         driver.setAccountHolder(request.getAccountHolder());
@@ -133,7 +155,7 @@ public class DriverService {
     }
 
     // 차종 변경
-    public void changeVehicle(ChangeVehicleRequest request){
+    public void changeVehicle(ChangeVehicleRequest request) {
         Driver driver = getCurrentDriver();
         driver.setVehicleImg(request.getVehicleImg());
         driver.setVehicleModel(request.getVehicleModel());
@@ -155,13 +177,6 @@ public class DriverService {
         Driver driver = getCurrentDriver();
         User user = userService.getCurrentUser();
 
-        List<DriverPrice> prices = driverPriceRepository.findAllByDriver(driver);
-        List<DriverPriceResponse> priceResponses = new ArrayList<>();
-        for (DriverPrice driverPrice : prices) {
-            priceResponses.add(DriverPriceResponse.of(driverPrice));
-        }
-        List<CourseNameResponse> courses = courseService.getCourseName(user);
-
         return MyDriverProfileResponse.builder()
             .userId(user.getId())
             .name(user.getName())
@@ -173,17 +188,88 @@ public class DriverService {
             .accountNumber(driver.getAccountNumber())
             .region(driver.getRegion())
             .weeklyHoliday(driver.getWeeklyHoliday())
-            .prices(priceResponses)
-            .courses(courses)
+            .prices(getDriverPrice(driver))
+            .courses(courseService.getCourseName(user))
             .status(driver.getStatus())
             .build();
     }
 
+    // 드라이버 리뷰 등록
+    public void createDriverReview(Long driverId, DriverReviewRequest request) {
+        Driver driver = driverRepository.findById(driverId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        User user = userService.getCurrentUser();
+        if (driverReviewRepository.existsByDriverAndUser(driver, user)) {
+            throw new BaseException(Conflict);
+        }
+        driverReviewRepository.save(DriverReview.builder()
+            .driver(driver)
+            .user(user)
+            .rate(request.getRate())
+            .content(request.getContent())
+            .images(request.getImages())
+            .build());
+    }
+
+    // 드라이버 리뷰 수정
+    public void changeDriverReview(Long reviewId, DriverReviewRequest request) {
+        DriverReview review = driverReviewRepository.findById(reviewId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        if (userService.getCurrentUser().getId() != review.getUser().getId()) {
+            throw new BaseException(Unauthorized);
+        }
+        review.setRate(request.getRate());
+        review.setContent(request.getContent());
+        review.setImages(request.getImages());
+    }
+
+    // 드라이버 리뷰 삭제
+    public void deleteDriverReview(Long reviewId) {
+        DriverReview review = driverReviewRepository.findById(reviewId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        if (userService.getCurrentUser().getId() != review.getUser().getId()) {
+            throw new BaseException(Unauthorized);
+        }
+        driverReviewRepository.delete(review);
+    }
+
     // 드라이버 정보 조회
+    // reservation count 추가 필요
+    public DriverDetailsResponse getDriverDetails(Long driverId){
+        Driver driver = driverRepository.findById(driverId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        User user = driver.getUser();
+        List<DriverReviewResponse> reviewResponses = new ArrayList<>();
+        List<DriverReview> reviews = driverReviewRepository.findAllByDriver(driver);
+        for(DriverReview review : reviews){
+            reviewResponses.add(DriverReviewResponse.of(review));
+        }
+
+        return DriverDetailsResponse.builder()
+            .driverId(driver.getId())
+            .name(user.getName())
+            .profileImg(user.getProfileImage())
+            .reservationCount(0)
+            .avgRate(driverReviewRepository.getAvgRating(driver))
+            .introduction(driver.getIntroduction())
+            .region(driver.getRegion())
+            .reviews(reviewResponses)
+            .courses(courseService.getCourseName(user))
+            .build();
+    }
 
     private Driver getCurrentDriver() {
         Driver driver = driverRepository.findById(userService.getCurrentUser().getId())
             .orElseThrow(() -> new BaseException(Not_Found));
         return driver;
+    }
+
+    private List<DriverPriceResponse> getDriverPrice(Driver driver){
+        List<DriverPrice> prices = driverPriceRepository.findAllByDriver(driver);
+        List<DriverPriceResponse> priceResponses = new ArrayList<>();
+        for (DriverPrice driverPrice : prices) {
+            priceResponses.add(DriverPriceResponse.of(driverPrice));
+        }
+        return priceResponses;
     }
 }

@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.dto.destination;
+package mallang_trip.backend.domain.dto.driver;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DestinationReviewRequest {
+public class DriverReviewRequest {
 
     private Double rate;
     private String content;

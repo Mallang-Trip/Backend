@@ -1,8 +1,8 @@
-package mallang_trip.backend.repository.user;
+package mallang_trip.backend.repository.driver;
 
 import java.util.List;
-import mallang_trip.backend.domain.entity.user.Driver;
-import mallang_trip.backend.domain.entity.user.DriverPrice;
+import mallang_trip.backend.domain.entity.driver.Driver;
+import mallang_trip.backend.domain.entity.driver.DriverPrice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

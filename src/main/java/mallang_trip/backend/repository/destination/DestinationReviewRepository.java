@@ -3,6 +3,7 @@ package mallang_trip.backend.repository.destination;
 import java.util.List;
 import mallang_trip.backend.domain.entity.destination.Destination;
 import mallang_trip.backend.domain.entity.destination.DestinationReview;
+import mallang_trip.backend.domain.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,4 +15,6 @@ public interface DestinationReviewRepository extends JpaRepository<DestinationRe
     Double getAvgRating(Destination destination);
 
     List<DestinationReview> findAllByDestination(Destination destination);
+
+    Boolean existsByDestinationAndUser(Destination destination, User user);
 }

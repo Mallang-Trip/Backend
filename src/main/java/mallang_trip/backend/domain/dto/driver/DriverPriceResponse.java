@@ -2,7 +2,7 @@ package mallang_trip.backend.domain.dto.driver;
 
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.user.DriverPrice;
+import mallang_trip.backend.domain.entity.driver.DriverPrice;
 
 @Getter
 @Builder
