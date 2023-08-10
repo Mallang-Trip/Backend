@@ -9,6 +9,7 @@ import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.driver.ChangeBankAccountRequest;
 import mallang_trip.backend.domain.dto.driver.ChangePriceRequest;
 import mallang_trip.backend.domain.dto.driver.ChangeVehicleRequest;
+import mallang_trip.backend.domain.dto.driver.DriverBriefResponse;
 import mallang_trip.backend.domain.dto.driver.DriverDetailsResponse;
 import mallang_trip.backend.domain.dto.driver.DriverRegistrationRequest;
 import mallang_trip.backend.domain.dto.driver.DriverRegistrationResponse;
@@ -166,6 +167,13 @@ public class DriverController {
         throws BaseException {
         driverService.deleteDriverReview(id);
         return new BaseResponse<>("성공");
+    }
+
+    @GetMapping("/list")
+    @ApiOperation(value = "지역 별 드라이버 목록 조회")
+    public BaseResponse<List<DriverBriefResponse>> getDriversByRegion(@RequestParam String region)
+        throws BaseException {
+        return new BaseResponse<>(driverService.getDriversByRegion(region));
     }
 
     @GetMapping("/{id}")

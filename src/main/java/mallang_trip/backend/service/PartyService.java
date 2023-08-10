@@ -1,9 +1,7 @@
 package mallang_trip.backend.service;
 
-import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 
-import java.time.LocalDate;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,16 +10,14 @@ import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.Party.JoinPartyRequest;
-import mallang_trip.backend.domain.dto.Party.PartyIdResponse;
-import mallang_trip.backend.domain.dto.Party.PartyRequest;
 import mallang_trip.backend.domain.entity.user.User;
-import mallang_trip.backend.domain.entity.party.Course;
+import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyAgreement;
 import mallang_trip.backend.domain.entity.party.PartyMembers;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.repository.user.UserRepository;
-import mallang_trip.backend.repository.party.CourseRepository;
+import mallang_trip.backend.repository.course.CourseRepository;
 import mallang_trip.backend.repository.party.PartyAgreementRepository;
 import mallang_trip.backend.repository.party.PartyMembersRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;

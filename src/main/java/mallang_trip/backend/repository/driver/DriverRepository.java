@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     List<Driver> findAllByStatus(DriverStatus status);
+
+    List<Driver> findAllByRegion(String region);
 }

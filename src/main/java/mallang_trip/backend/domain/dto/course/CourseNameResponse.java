@@ -2,7 +2,7 @@ package mallang_trip.backend.domain.dto.course;
 
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.party.Course;
+import mallang_trip.backend.domain.entity.course.Course;
 
 @Getter
 @Builder

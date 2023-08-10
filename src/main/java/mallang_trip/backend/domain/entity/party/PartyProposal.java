@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
+import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.user.User;
 
 @Entity

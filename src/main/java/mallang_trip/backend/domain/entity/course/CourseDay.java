@@ -1,6 +1,9 @@
-package mallang_trip.backend.domain.entity.party;
+package mallang_trip.backend.domain.entity.course;
 
+import java.time.LocalTime;
+import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,29 +18,39 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.destination.Destination;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@Table(name = "course_unit")
+@Table(name = "course_day")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseUnit extends BaseEntity {
+public class CourseDay extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "day_id", nullable = false)
-    private CourseDay courseDay;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_id", nullable = false)
-    private Destination destination;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
     @Column
-    private int sequence;
+    private Integer day;
+
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    @Column
+    private Integer hours;
+
+    @Column
+    private Integer price;
+
+    @ElementCollection
+    private List<Long> destinations;
 }

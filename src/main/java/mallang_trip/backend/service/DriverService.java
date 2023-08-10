@@ -18,6 +18,7 @@ import mallang_trip.backend.domain.dto.course.CourseNameResponse;
 import mallang_trip.backend.domain.dto.driver.ChangeBankAccountRequest;
 import mallang_trip.backend.domain.dto.driver.ChangePriceRequest;
 import mallang_trip.backend.domain.dto.driver.ChangeVehicleRequest;
+import mallang_trip.backend.domain.dto.driver.DriverBriefResponse;
 import mallang_trip.backend.domain.dto.driver.DriverDetailsResponse;
 import mallang_trip.backend.domain.dto.driver.DriverPriceRequest;
 import mallang_trip.backend.domain.dto.driver.DriverPriceResponse;
@@ -51,13 +52,13 @@ public class DriverService {
     // 드라이버 전환 신청
     public void registerDriver(DriverRegistrationRequest request) {
         Driver driver = driverRepository.save(request.toDriver(userService.getCurrentUser()));
-        for (DriverPriceRequest driverPriceRequest : request.getPrices()) {
-            driverPriceRepository.save(driverPriceRequest.toDriverPrice(driver));
-        }
+        request.getPrices().forEach(driverPriceRequest ->
+            driverPriceRepository.save(driverPriceRequest.toDriverPrice(driver))
+        );
     }
 
     // 내 드라이버 신청 상태 확인
-    public DriverRegistrationResponse getMyDriverRegistration(){
+    public DriverRegistrationResponse getMyDriverRegistration() {
         Driver driver = getCurrentDriver();
         return DriverRegistrationResponse.of(driver, getDriverPrice(driver));
     }
@@ -66,18 +67,18 @@ public class DriverService {
     public void reapplyDriver(DriverRegistrationRequest request) {
         driverRepository.delete(getCurrentDriver());
         Driver driver = driverRepository.save(request.toDriver(userService.getCurrentUser()));
-        for (DriverPriceRequest driverPriceRequest : request.getPrices()) {
-            driverPriceRepository.save(driverPriceRequest.toDriverPrice(driver));
-        }
+        request.getPrices().forEach(driverPriceRequest ->
+            driverPriceRepository.save(driverPriceRequest.toDriverPrice(driver))
+        );
     }
 
     // 승인 대기중인 드라이버 조회 (관리자 권한 필요)
-    public List<DriverRegistrationResponse> getDriverRegistrationList(){
-        List<Driver> drivers = driverRepository.findAllByStatus(DriverStatus.WAITING);
-        List<DriverRegistrationResponse> responses = new ArrayList<>();
-        for(Driver driver : drivers){
-            responses.add(DriverRegistrationResponse.of(driver, getDriverPrice(driver)));
-        }
+    public List<DriverRegistrationResponse> getDriverRegistrationList() {
+        List<DriverRegistrationResponse> responses = driverRepository
+            .findAllByStatus(DriverStatus.WAITING)
+            .stream()
+            .map(driver -> DriverRegistrationResponse.of(driver, getDriverPrice(driver)))
+            .collect(Collectors.toList());
         return responses;
     }
 
@@ -96,20 +97,20 @@ public class DriverService {
     // 정기 휴일 설정
     public void setWeeklyHoliday(HolidayRequest request) {
         Driver driver = getCurrentDriver();
-        List<Week> holidays = new ArrayList<>();
-        for (String holiday : request.getHolidays()) {
-            holidays.add(Week.from(holiday));
-        }
+        List<Week> holidays = request.getHolidays()
+            .stream()
+            .map(Week::from)
+            .collect(Collectors.toList());
         driver.setWeeklyHoliday(holidays);
     }
 
     // 휴일 설정
     public void setHoliday(HolidayRequest request) {
         Driver driver = getCurrentDriver();
-        List<LocalDate> holidays = new ArrayList<>();
-        for (String holiday : request.getHolidays()) {
-            holidays.add(LocalDate.parse(holiday));
-        }
+        List<LocalDate> holidays = request.getHolidays()
+            .stream()
+            .map(LocalDate::parse)
+            .collect(Collectors.toList());
         driver.setHoliday(holidays);
     }
 
@@ -235,15 +236,15 @@ public class DriverService {
 
     // 드라이버 정보 조회
     // reservation count 추가 필요
-    public DriverDetailsResponse getDriverDetails(Long driverId){
+    public DriverDetailsResponse getDriverDetails(Long driverId) {
         Driver driver = driverRepository.findById(driverId)
             .orElseThrow(() -> new BaseException(Not_Found));
         User user = driver.getUser();
-        List<DriverReviewResponse> reviewResponses = new ArrayList<>();
-        List<DriverReview> reviews = driverReviewRepository.findAllByDriver(driver);
-        for(DriverReview review : reviews){
-            reviewResponses.add(DriverReviewResponse.of(review));
-        }
+        List<DriverReviewResponse> reviewResponses = driverReviewRepository
+            .findAllByDriver(driver)
+            .stream()
+            .map(DriverReviewResponse::of)
+            .collect(Collectors.toList());
 
         return DriverDetailsResponse.builder()
             .driverId(driver.getId())
@@ -258,13 +259,24 @@ public class DriverService {
             .build();
     }
 
+    // 지역으로 드라이버 검색
+    public List<DriverBriefResponse> getDriversByRegion(String region) {
+        List<DriverBriefResponse> responses = driverRepository
+            .findAllByRegion(region)
+            .stream()
+            .map(DriverBriefResponse::of)
+            .collect(Collectors.toList());
+
+        return responses;
+    }
+
     private Driver getCurrentDriver() {
         Driver driver = driverRepository.findById(userService.getCurrentUser().getId())
             .orElseThrow(() -> new BaseException(Not_Found));
         return driver;
     }
 
-    private List<DriverPriceResponse> getDriverPrice(Driver driver){
+    private List<DriverPriceResponse> getDriverPrice(Driver driver) {
         List<DriverPrice> prices = driverPriceRepository.findAllByDriver(driver);
         List<DriverPriceResponse> priceResponses = new ArrayList<>();
         for (DriverPrice driverPrice : prices) {

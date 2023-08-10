@@ -4,8 +4,8 @@ import java.time.LocalTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.party.Course;
-import mallang_trip.backend.domain.entity.party.CourseDay;
+import mallang_trip.backend.domain.entity.course.Course;
+import mallang_trip.backend.domain.entity.course.CourseDay;
 
 @Getter
 @Builder
