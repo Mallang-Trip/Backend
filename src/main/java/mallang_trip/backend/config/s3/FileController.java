@@ -21,8 +21,8 @@ public class FileController {
     @PostMapping("/upload/{dir}")
     @ApiOperation(value = "이미지 업로드")
     public String upload(@RequestParam("file") MultipartFile multipartFile,
-        @PathVariable String type) throws BaseException {
-        String fileName = awsS3Uploader.upload(multipartFile, type);
+        @PathVariable String dir) throws BaseException {
+        String fileName = awsS3Uploader.upload(multipartFile, dir);
         return fileName;
     }
 }
