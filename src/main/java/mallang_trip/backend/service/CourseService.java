@@ -4,6 +4,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
@@ -16,7 +17,6 @@ import mallang_trip.backend.domain.dto.course.CourseDayRequest;
 import mallang_trip.backend.domain.dto.course.DestinationResponse;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.course.CourseDay;
-import mallang_trip.backend.domain.entity.destination.Destination;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.course.CourseDayRepository;
 import mallang_trip.backend.repository.course.CourseRepository;
@@ -58,30 +58,31 @@ public class CourseService {
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
 
-        List<CourseDay> courseDays = courseDayRepository.findAllByCourse(course);
-        List<CourseDayResponse> courseDayResponses = new ArrayList<>();
+        List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
+            .stream()
+            .map(courseDay -> {
+                List<DestinationResponse> destinations = courseDay.getDestinations().stream()
+                    .map(destinationId -> destinationRepository.findById(destinationId)
+                        .orElseThrow(() -> new BaseException(Not_Found))
+                    )
+                    .map(destination -> DestinationResponse.builder()
+                        .destinationId(destination.getId())
+                        .name(destination.getName())
+                        .address(destination.getAddress())
+                        .build()
+                    )
+                    .collect(Collectors.toList());
 
-        for (CourseDay courseDay : courseDays) {
-            List<Long> destinationIds = courseDay.getDestinations();
-            List<DestinationResponse> destinations = new ArrayList<>();
-            for (Long destinationId : destinationIds) {
-                Destination destination = destinationRepository.findById(destinationId)
-                    .orElseThrow(() -> new BaseException(Not_Found));
-                destinations.add(DestinationResponse.builder()
-                    .destinationId(destination.getId())
-                    .name(destination.getName())
-                    .address(destination.getAddress())
-                    .build());
-            }
-            courseDayResponses.add(CourseDayResponse.builder()
-                .day(courseDay.getDay())
-                .startTime(courseDay.getStartTime().toString())
-                .endTime(courseDay.getEndTime().toString())
-                .hours(courseDay.getHours())
-                .price(courseDay.getPrice())
-                .destinations(destinations)
-                .build());
-        }
+                return CourseDayResponse.builder()
+                    .day(courseDay.getDay())
+                    .startTime(courseDay.getStartTime().toString())
+                    .endTime(courseDay.getEndTime().toString())
+                    .hours(courseDay.getHours())
+                    .price(courseDay.getPrice())
+                    .destinations(destinations)
+                    .build();
+            })
+            .collect(Collectors.toList());
 
         return CourseDetailsResponse.builder()
             .courseId(course.getId())
@@ -94,11 +95,51 @@ public class CourseService {
             .build();
     }
 
+    // 코스 복사
+    public CourseIdResponse copyCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        Course newCourse = courseRepository.save(Course.builder()
+            .owner(userService.getCurrentUser())
+            .images(course.getImages())
+            .totalDays(course.getTotalDays())
+            .name(course.getName())
+            .capacity(course.getCapacity())
+            .totalPrice(course.getTotalPrice())
+            .build());
+        copyCourseDay(course, newCourse);
+
+        return CourseIdResponse.builder()
+            .courseId(newCourse.getId())
+            .build();
+    }
+    public void copyCourseDay(Course course, Course newCourse) {
+        courseDayRepository.findAllByCourse(course)
+            .forEach(courseDay -> {
+                courseDayRepository.save(CourseDay.builder()
+                    .course(newCourse)
+                    .day(courseDay.getDay())
+                    .startTime(courseDay.getStartTime())
+                    .endTime(courseDay.getEndTime())
+                    .hours(courseDay.getHours())
+                    .price(courseDay.getPrice())
+                    .destinations(courseDay.getDestinations())
+                    .build());
+            });
+    }
+
+    // 코스 삭제
+    public void deleteCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        courseRepository.delete(course);
+    }
+
     // 드라이버의 코스 목록 조회
-    public List<CourseNameResponse> getCourseName(User user){
+    public List<CourseNameResponse> getCourseName(User user) {
         List<Course> courses = courseRepository.findAllByOwner(user);
         List<CourseNameResponse> responses = new ArrayList<>();
-        for(Course course : courses){
+        for (Course course : courses) {
             responses.add(CourseNameResponse.of(course));
         }
         return responses;

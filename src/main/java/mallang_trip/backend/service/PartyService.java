@@ -10,6 +10,7 @@ import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.Party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.Party.PartyIdResponse;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -39,7 +40,7 @@ public class PartyService {
     private final PartyAgreementRepository partyAgreementRepository;
 
     // 파티 생성
-    /*public PartyIdResponse createParty(PartyRequest request) {
+/*    public PartyIdResponse createParty(PartyRequest request) {
         User driver = userRepository.findById(request.getDriverId())
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
         Course course = courseRepository.findById(request.getCourseId())
