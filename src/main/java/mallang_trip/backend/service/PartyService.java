@@ -130,4 +130,8 @@ public class PartyService {
             // 거절 알림 전송
         }
     }
+
+    // 파티 나가기
+
+    // 파티 검색
 }

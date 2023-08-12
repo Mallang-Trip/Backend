@@ -43,14 +43,17 @@ public class CourseService {
             .capacity(request.getCapacity())
             .totalPrice(request.getTotalPrice())
             .build());
-
-        for (CourseDayRequest day : request.getDays()) {
-            courseDayRepository.save(day.toCourseDay(course));
-        }
+        request.getDays().forEach(day -> courseDayRepository.save(day.toCourseDay(course)));
 
         return CourseIdResponse.builder()
             .courseId(course.getId())
             .build();
+    }
+
+    // 코스 수정 (기존 코스 삭제 -> 새 코스 생성)
+    public CourseIdResponse changeCourse(Long courseId, CourseRequest request) {
+        deleteCourse(courseId);
+        return createCourse(request);
     }
 
     // 코스 상세 조회
@@ -113,6 +116,7 @@ public class CourseService {
             .courseId(newCourse.getId())
             .build();
     }
+
     public void copyCourseDay(Course course, Course newCourse) {
         courseDayRepository.findAllByCourse(course)
             .forEach(courseDay -> {
@@ -137,11 +141,11 @@ public class CourseService {
 
     // 드라이버의 코스 목록 조회
     public List<CourseNameResponse> getCourseName(User user) {
-        List<Course> courses = courseRepository.findAllByOwner(user);
-        List<CourseNameResponse> responses = new ArrayList<>();
-        for (Course course : courses) {
-            responses.add(CourseNameResponse.of(course));
-        }
+        List<CourseNameResponse> responses =
+            courseRepository.findAllByOwnerAndDeleted(user, false)
+                .stream()
+                .map(CourseNameResponse::of)
+                .collect(Collectors.toList());
         return responses;
     }
 }

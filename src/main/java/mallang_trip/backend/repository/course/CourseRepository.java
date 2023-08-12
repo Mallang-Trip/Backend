@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
-    List<Course> findAllByOwner(User user);
+    List<Course> findAllByOwnerAndDeleted(User user, Boolean deleted);
 }
