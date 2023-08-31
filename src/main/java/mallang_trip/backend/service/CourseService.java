@@ -34,7 +34,7 @@ public class CourseService {
     private final DestinationRepository destinationRepository;
 
     // 코스 생성
-    public CourseIdResponse createCourse(CourseRequest request) {
+    public Course createCourse(CourseRequest request) {
         Course course = courseRepository.save(Course.builder()
             .owner(userService.getCurrentUser())
             .images(request.getImages())
@@ -45,13 +45,11 @@ public class CourseService {
             .build());
         request.getDays().forEach(day -> courseDayRepository.save(day.toCourseDay(course)));
 
-        return CourseIdResponse.builder()
-            .courseId(course.getId())
-            .build();
+        return course;
     }
 
     // 코스 수정 (기존 코스 삭제 -> 새 코스 생성)
-    public CourseIdResponse changeCourse(Long courseId, CourseRequest request) {
+    public Course changeCourse(Long courseId, CourseRequest request) {
         deleteCourse(courseId);
         return createCourse(request);
     }
@@ -60,7 +58,9 @@ public class CourseService {
     public CourseDetailsResponse getCourseDetails(Long courseId) {
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
-
+        return getCourseDetails(course);
+    }
+    public CourseDetailsResponse getCourseDetails(Course course){
         List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
             .stream()
             .map(courseDay -> {
@@ -99,9 +99,12 @@ public class CourseService {
     }
 
     // 코스 복사
-    public CourseIdResponse copyCourse(Long courseId) {
+    public Course copyCourse(Long courseId){
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        return copyCourse(course);
+    }
+    public Course copyCourse(Course course) {
         Course newCourse = courseRepository.save(Course.builder()
             .owner(userService.getCurrentUser())
             .images(course.getImages())
@@ -112,9 +115,7 @@ public class CourseService {
             .build());
         copyCourseDay(course, newCourse);
 
-        return CourseIdResponse.builder()
-            .courseId(newCourse.getId())
-            .build();
+        return newCourse;
     }
 
     public void copyCourseDay(Course course, Course newCourse) {
@@ -133,9 +134,12 @@ public class CourseService {
     }
 
     // 코스 삭제
-    public void deleteCourse(Long courseId) {
+    public void deleteCourse(Long courseId){
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        deleteCourse(course);
+    }
+    public void deleteCourse(Course course) {
         courseRepository.delete(course);
     }
 

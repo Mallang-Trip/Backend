@@ -30,7 +30,7 @@ public class CourseController {
     @ApiOperation(value = "(드라이버)코스 생성")
     public BaseResponse<CourseIdResponse> createCourse(@RequestBody CourseRequest request)
         throws BaseException {
-        return new BaseResponse<>(courseService.createCourse(request));
+        return new BaseResponse<>(CourseIdResponse.of(courseService.createCourse(request)));
     }
 
     @PutMapping("/{id}")
@@ -38,7 +38,7 @@ public class CourseController {
     public BaseResponse<CourseIdResponse> changeCourse(@PathVariable Long id,
         @RequestBody CourseRequest request)
         throws BaseException {
-        return new BaseResponse<>(courseService.changeCourse(id, request));
+        return new BaseResponse<>(CourseIdResponse.of(courseService.changeCourse(id, request)));
     }
 
     @DeleteMapping("/{id}")

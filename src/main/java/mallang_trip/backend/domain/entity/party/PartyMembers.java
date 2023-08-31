@@ -36,7 +36,7 @@ public class PartyMembers extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    private User member;
+    private User user;
 
     @Column
     private Integer headcount;

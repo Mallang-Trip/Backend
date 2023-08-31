@@ -73,4 +73,16 @@ public class User extends BaseEntity {
     @Builder.Default()
     private Boolean suspended= false;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (id == null) return false;
+        if (!(o instanceof User))
+            return false;
+
+        final User user = (User)o;
+
+        return id.equals(user.getId());
+    }
 }

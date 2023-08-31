@@ -16,7 +16,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mallang_trip.backend.constant.AgreementStatus;
 import mallang_trip.backend.constant.ProposalStatus;
+import mallang_trip.backend.constant.ProposalType;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.user.User;
@@ -49,12 +51,16 @@ public class PartyProposal extends BaseEntity {
     @Column
     private Integer headcount;
 
-    @Column(name = "agreement_need", nullable = false)
-    private Integer agreementNeed;
+    @Column
+    private String content;
 
-    @Column(name = "agreement_count", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "driver_agreement")
     @Builder.Default()
-    private Integer agreementCount = 0;
+    private AgreementStatus driverAgreement = AgreementStatus.WAITING;
+
+    @Enumerated(EnumType.STRING)
+    private ProposalType type;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()

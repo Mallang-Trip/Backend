@@ -19,6 +19,7 @@ import lombok.Setter;
 import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.course.Course;
+import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
@@ -35,7 +36,7 @@ public class Party extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = false)
-    private User driver;
+    private Driver driver;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
@@ -45,6 +46,9 @@ public class Party extends BaseEntity {
     private String region;
 
     @Column(nullable = false)
+    private Integer capacity;
+
+    @Column
     private Integer headcount;
 
     @Column(name= "start_date", nullable = false)
@@ -52,6 +56,9 @@ public class Party extends BaseEntity {
 
     @Column(name= "end_date", nullable = false)
     private LocalDate endDate;
+
+    @Column
+    private String content;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()

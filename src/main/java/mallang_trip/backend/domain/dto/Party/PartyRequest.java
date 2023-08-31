@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mallang_trip.backend.domain.dto.course.CourseRequest;
 
 @Getter
 @Builder
@@ -15,6 +16,10 @@ public class PartyRequest {
     private String startDate;
     private String endDate;
     private Long driverId;
+    private String content;
     private Long courseId;
-    private int myPrice;
+
+    // 코스 제안
+    private Boolean changeCourse;
+    private CourseRequest newCourse;
 }
