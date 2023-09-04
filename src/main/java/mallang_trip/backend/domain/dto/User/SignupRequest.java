@@ -56,7 +56,10 @@ public class SignupRequest {
     @ApiModelProperty(value = "생략가능")
     private String introduction;
 
-    public User toUser(String image, PasswordEncoder passwordEncoder) {
+    @ApiModelProperty(value = "생략가능")
+    private String profileImg;
+
+    public User toUser(PasswordEncoder passwordEncoder) {
         return User.builder()
             .loginId(id)
             .password(passwordEncoder.encode(password))
@@ -68,7 +71,7 @@ public class SignupRequest {
             .phoneNumber(phoneNumber)
             .nickname(nickname)
             .introduction(introduction)
-            .profileImage(image)
+            .profileImage(profileImg)
             .role(Role.ROLE_USER)
             .build();
     }

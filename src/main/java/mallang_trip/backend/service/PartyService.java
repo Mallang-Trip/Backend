@@ -67,11 +67,12 @@ public class PartyService {
     public PartyIdResponse createParty(PartyRequest request) {
         Driver driver = driverRepository.findById(request.getDriverId())
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+        // 코스 변경 유무 Check
         Course course;
-        if (request.getChangeCourse()) { // 새 코스 제안
+        if (request.getChangeCourse()) {
             course = courseService.createCourse(request.getNewCourse());
         } else {
-            course = courseService.copyCourse( // 기존 코스 사용
+            course = courseService.copyCourse(
                 courseRepository.findById(request.getCourseId())
                     .orElseThrow(() -> new BaseException(Not_Found)));
         }
@@ -113,17 +114,23 @@ public class PartyService {
         }
     }
 
-    // 파티 참가 (NO 코스 제안)
-    public void joinParty(JoinPartyRequest request) {
-        User user = userService.getCurrentUser();
+    public void joinParty(JoinPartyRequest request){
+        // Exception Check (인원수 초과 check 추가 필요)
         Party party = partyRepository.findById(request.getPartyId())
             .orElseThrow(() -> new BaseException(Not_Found));
         if (!party.getStatus().equals(RECRUITING)) {
             throw new BaseException(PARTY_NOT_RECRUITING);
         }
-        //
-        // 최대 인원수 check
-        //
+
+        if(request.getChangeCourse()){
+            joinPartyWithCourseChange(request, party);
+        } else {
+            joinPartyWithoutCourseChange(request, party);
+        }
+    }
+
+    private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
+        User user = userService.getCurrentUser();
         PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
             .course(party.getCourse())
             .party(party)
@@ -144,17 +151,8 @@ public class PartyService {
         party.setStatus(JOIN_APPROVAL_WAITING);
     }
 
-    // 파티 참가 (with 코스 제안)
-    public void joinPartyWithCourseChange(JoinPartyRequest request) {
+    private void joinPartyWithCourseChange(JoinPartyRequest request, Party party) {
         User user = userService.getCurrentUser();
-        Party party = partyRepository.findById(request.getPartyId())
-            .orElseThrow(() -> new BaseException(Not_Found));
-        if (!party.getStatus().equals(RECRUITING)) {
-            throw new BaseException(PARTY_NOT_RECRUITING);
-        }
-        //
-        // 최대 인원수 check
-        //
         Course course = courseService.createCourse(request.getNewCourse());
 
         PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
@@ -248,7 +246,7 @@ public class PartyService {
         List<Party> parties = partyMembersRepository.findByUser(userService.getCurrentUser())
             .stream()
             .map(partyMembers -> partyMembers.getParty())
-            .toList();
+            .collect(Collectors.toList());
         return parties.stream().map(PartyBriefResponse::of).collect(Collectors.toList());
     }
 

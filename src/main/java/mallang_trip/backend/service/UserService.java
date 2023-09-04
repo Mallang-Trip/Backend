@@ -32,17 +32,10 @@ public class UserService {
     private final AuthenticationManagerBuilder managerBuilder;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final AwsS3Uploader awsS3Uploader;
 
     // 회원가입
-    public void signup(MultipartFile file, SignupRequest request){
-        if(file.isEmpty() || file == null){
-            userRepository.save(request.toUser(null, passwordEncoder));
-        }
-        else{
-            String url = awsS3Uploader.upload(file, "profileImg");
-            userRepository.save(request.toUser(url, passwordEncoder));
-        }
+    public void signup(SignupRequest request){
+        userRepository.save(request.toUser(passwordEncoder));
     }
 
     // 로그인

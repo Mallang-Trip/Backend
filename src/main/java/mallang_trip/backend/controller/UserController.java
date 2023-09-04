@@ -32,19 +32,12 @@ public class UserController {
 
     @PostMapping("/signup")
     @ApiOperation(value = "회원가입")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "img", value = "프로필 이미지 (생략가능)"),
-        @ApiImplicitParam(name = "data", value = "Schemas의 signupRequest 참고 (application/json)")
-    })
-    public BaseResponse<String> signup(
-        @RequestPart(value = "img", required = false) MultipartFile file,
-        @RequestPart("data") @Valid SignupRequest request
-    ) throws BaseException {
-        userService.signup(file, request);
+    public BaseResponse<String> signup(@RequestBody @Valid SignupRequest request) throws BaseException {
+        userService.signup(request);
         return new BaseResponse<>("성공");
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     @ApiOperation(value = "로그인", notes = "로그인 성공 시 access token, refresh token 발급")
     public BaseResponse<TokensDto> login(@RequestBody @Valid LoginRequest request)
         throws BaseException {
