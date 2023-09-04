@@ -10,6 +10,7 @@ import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.RECRUIT_COMPLETED;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
 import static mallang_trip.backend.constant.ProposalStatus.ACCEPTED;
+import static mallang_trip.backend.constant.ProposalStatus.CANCELED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.EXCEED_PARTY_CAPACITY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
@@ -236,6 +237,11 @@ public class PartyService {
 	// 내 제안 조회
 
 	// 다시 제안하기
+	public void changeProposal(Long proposalId){
+		PartyProposal proposal = partyProposalRepository.findById(proposalId)
+			.orElseThrow(() -> new BaseException(Not_Found));
+		proposal.setStatus(CANCELED);
+	}
 
 	// 제안 취소
 
