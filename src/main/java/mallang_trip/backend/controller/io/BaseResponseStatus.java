@@ -19,7 +19,8 @@ public enum BaseResponseStatus {
 
     CANNOT_FOUND_USER(20000, "유저를 찾을 수 없습니다."),
     PARTY_NOT_RECRUITING(20001, "모집이 종료되었거나, 다른 신청자가 존재합니다."),
-    PROPOSAL_END(20002, "종료된 제안입니다."),
+    EXCEED_PARTY_CAPACITY(20002, "모집 인원 초과입니다."),
+    PROPOSAL_END(20003, "종료된 제안입니다."),
     ;
 
     private final int statusCode;

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
+import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
 
@@ -12,6 +13,7 @@ import mallang_trip.backend.domain.entity.party.Party;
 public class PartyBriefResponse {
 
     private Long partyId;
+    private PartyStatus status;
     private String image;
     private String name;
     private LocalDate startDate;
@@ -26,6 +28,7 @@ public class PartyBriefResponse {
         Course course = party.getCourse();
         return PartyBriefResponse.builder()
             .partyId(party.getId())
+            .status(party.getStatus())
             .image(course.getImages().get(0))
             .name(course.getName())
             .startDate(party.getStartDate())

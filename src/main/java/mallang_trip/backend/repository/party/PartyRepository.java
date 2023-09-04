@@ -2,6 +2,8 @@ package mallang_trip.backend.repository.party;
 
 import java.time.LocalDate;
 import java.util.List;
+import mallang_trip.backend.constant.PartyStatus;
+import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.Party;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +20,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findParties(@Param(value = "region") String region,
         @Param(value = "headcount") Integer headcount,
         @Param(value = "startDate") LocalDate startDate);
+
+    List<Party> findByDriverAndStatus(Driver driver, PartyStatus status);
+
+    List<Party> findByDriver(Driver driver);
 }
