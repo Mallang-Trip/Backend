@@ -63,4 +63,7 @@ public class Party extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default()
     private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
+
+    @Enumerated(EnumType.STRING)
+    private PartyStatus prevStatus;
 }
