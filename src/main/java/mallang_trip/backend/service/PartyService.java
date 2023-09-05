@@ -293,8 +293,9 @@ public class PartyService {
 		party.setStatus(JOIN_APPROVAL_WAITING);
 	}
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
-		PartyAgreement agreement = partyAgreementRepository.findByUserAndProposal(
-			userService.getCurrentUser(), proposal);
+		User user = userService.getCurrentUser();
+		PartyMembers members = partyMembersRepository.findByPartyAndUser(proposal.getParty(), user);
+		PartyAgreement agreement = partyAgreementRepository.findByMembersAndProposal(members, proposal);
 		if (proposal.getType().equals(ProposalType.COURSE_CHANGE)) {
 			acceptCourseChange(agreement, accept);
 		} else {
