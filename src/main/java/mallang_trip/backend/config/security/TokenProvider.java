@@ -68,7 +68,8 @@ public class TokenProvider implements InitializingBean {
                 .collect(Collectors.joining(","));
 
         // 토큰 만료 시간 설정
-        long now = (new Date()).getTime();
+        //long now = (new Date()).getTime();
+        long now = System.currentTimeMillis();
         Date accessTokenValidity = new Date(now + this.accessTokenValidity);
         Date refreshTokenValidity = new Date(now + this.refreshTokenValidity);
 
