@@ -53,7 +53,6 @@ public class AwsS3Uploader {
                 return Optional.of(convertFile);
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
             throw new BaseException(FILE_CONVERT_ERROR);
         }
 
