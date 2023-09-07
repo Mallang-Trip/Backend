@@ -48,13 +48,11 @@ public class AwsS3Uploader {
         try {
             if (convertFile.createNewFile()) {
                 try (FileOutputStream fos = new FileOutputStream(convertFile)) {
-                    log.info("fos.write");
                     fos.write(file.getBytes());
                 }
                 return Optional.of(convertFile);
             }
         } catch (IOException e) {
-            log.info(e.getMessage());
             throw new BaseException(FILE_CONVERT_ERROR);
         }
 
