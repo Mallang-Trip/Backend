@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 public interface PartyRepository extends JpaRepository<Party, Long> {
 
     @Query(value = "SELECT * FROM party "
-        + "WHERE region = :region AND startDate = :startDate AND capacity - headcount >= :headcount "
+        + "WHERE region = :region AND start_date = :startDate AND capacity - headcount >= :headcount "
         + "AND status = 'RECRUITING'"
         + "ORDER BY updated_at DESC ", nativeQuery = true)
     List<Party> findParties(@Param(value = "region") String region,

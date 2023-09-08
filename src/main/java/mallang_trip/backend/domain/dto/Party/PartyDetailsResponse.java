@@ -25,6 +25,7 @@ public class PartyDetailsResponse {
     private LocalDate endDate;
     private CourseDetailsResponse course;
     private String content;
+    private Boolean proposalExist;
 
     // 내가 속한 파티일 경우
     private List<PartyMemberResponse> members;
