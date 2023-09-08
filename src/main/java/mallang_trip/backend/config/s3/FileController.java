@@ -20,8 +20,8 @@ public class FileController {
 
     @PostMapping("/upload/signup")
     @ApiOperation(value = "회원가입 이미지 업로드")
-    public String uploadSignup(@RequestParam("file") MultipartFile multipartFile,
-        @PathVariable String dir) throws BaseException {
+    public String uploadSignup(@RequestParam("file") MultipartFile multipartFile)
+        throws BaseException {
         String fileName = awsS3Uploader.upload(multipartFile, "profile");
         return fileName;
     }
