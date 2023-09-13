@@ -11,6 +11,8 @@ public class DestinationBriefResponse {
     private Long destinationId;
     private String name;
     private String address;
+    private Double lon;
+    private Double lat;
     private String image;
     private Double rate;
     private Integer views;

@@ -34,7 +34,7 @@ public class DestinationService {
     private final DestinationDibsRepository destinationDibsRepository;
     private final UserService userService;
 
-    // 여행지 추가 (관리자 권한 설정 필요)
+    // 여행지 추가 (관리자 권한 설정 필요, 중복 체크 필요)
     public DestinationIdResponse createDestination(DestinationRequest request) {
         Destination destination = destinationRepository.save(request.toDestination());
         return DestinationIdResponse.builder()
@@ -67,6 +67,8 @@ public class DestinationService {
             .orElseThrow(() -> new BaseException(Not_Found));
         destination.setName(request.getName());
         destination.setAddress(request.getAddress());
+        destination.setLon(request.getLon());
+        destination.setLat(request.getLat());
         destination.setContent(request.getContent());
         destination.setImages(request.getImages());
     }
@@ -88,6 +90,8 @@ public class DestinationService {
             .destinationId(destination.getId())
             .name(destination.getName())
             .address(destination.getAddress())
+            .lon(destination.getLon())
+            .lat(destination.getLat())
             .content(destination.getContent())
             .images(destination.getImages())
             .views(destination.getViews())

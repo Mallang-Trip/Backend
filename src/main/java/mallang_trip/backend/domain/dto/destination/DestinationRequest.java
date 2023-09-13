@@ -11,6 +11,8 @@ public class DestinationRequest {
 
     private String name;
     private String address;
+    private Double lon;
+    private Double lat;
     private String content;
     private List<String> images;
 
@@ -18,6 +20,8 @@ public class DestinationRequest {
         return Destination.builder()
             .name(name)
             .address(address)
+            .lon(lon)
+            .lat(lat)
             .content(content)
             .images(images)
             .build();

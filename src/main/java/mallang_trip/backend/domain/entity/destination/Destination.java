@@ -33,6 +33,12 @@ public class Destination extends BaseEntity {
     private String address;
 
     @Column
+    private Double lon;
+
+    @Column
+    private Double lat;
+
+    @Column
     private String content;
 
     @ElementCollection

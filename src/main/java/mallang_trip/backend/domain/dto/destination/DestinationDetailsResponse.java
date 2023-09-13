@@ -11,6 +11,8 @@ public class DestinationDetailsResponse {
     private Long destinationId;
     private String name;
     private String address;
+    private Double lon;
+    private Double lat;
     private String content;
     private List<String> images;
     private Integer views;
