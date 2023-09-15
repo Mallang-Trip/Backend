@@ -10,15 +10,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
 
-    @Query(value = "select * from destination d\n"
-        + "    where REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
-        + "        order by\n"
-        + "            case\n"
-        + "                when d.name = ':keyword' then 0\n"
-        + "                when d.name like ':keyword%' then 1\n"
-        + "                when d.name like '%:keyword' then 2\n"
-        + "                when d.name like '%:keyword%' then 3\n"
-        + "            else 4 end,\n"
-        + "            d.views DESC;", nativeQuery = true)
-    List<Destination> searchByKeyword(@Param(value = "keyword") String keyword);
+	@Query(value = "select * from destination d\n"
+		+ "    where REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
+		+ "        order by\n"
+		+ "            case\n"
+		+ "                when d.name = ':keyword' then 0\n"
+		+ "                when d.name like ':keyword%' then 1\n"
+		+ "                when d.name like '%:keyword' then 2\n"
+		+ "                when d.name like '%:keyword%' then 3\n"
+		+ "            else 4 end,\n"
+		+ "            d.views DESC;", nativeQuery = true)
+	List<Destination> searchByKeyword(@Param(value = "keyword") String keyword);
+
+	@Query(value = "SELECT *\n"
+		+ "FROM destination\n"
+		+ "WHERE (6371*acos(cos(radians(:lat))*cos(radians(lat))*cos(radians(lon)-radians(:lon))+sin(radians(:lat))*sin(radians(lat)))) <= :distance;", nativeQuery = true)
+	List<Destination> findByDistance(@Param(value = "lat") Double lat,
+		@Param(value = "lon") Double lon, @Param(value = "distance") Integer distance);
 }
