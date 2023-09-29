@@ -13,6 +13,7 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.destination.DestinationBriefResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationDetailsResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationIdResponse;
+import mallang_trip.backend.domain.dto.destination.DestinationMarkerResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationReviewRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationReviewResponse;
@@ -63,8 +64,15 @@ public class DestinationService {
 		return responses;
 	}
 
+	// 전체 지도 마커 조회
+	public List<DestinationMarkerResponse> getDestinationMarkers(){
+		return destinationRepository.findAll().stream()
+			.map(DestinationMarkerResponse::of)
+			.collect(Collectors.toList());
+	}
+
 	// 여행지 조회 (중심 좌표로부터 거리 기준)
-	public List<DestinationBriefResponse> searchDestinationsByDistance(Double lon, Double lat, Integer level) {
+	/*public List<DestinationBriefResponse> searchDestinationsByDistance(Double lon, Double lat, Integer level) {
 		return destinationRepository.findByDistance(lon, lat, level)
 			.stream()
 			//.filter(destination -> request.isInSquare(destination))
@@ -72,7 +80,7 @@ public class DestinationService {
 				checkDestinationDibs(destination),
 				destinationReviewRepository.getAvgRating(destination)))
 			.collect(Collectors.toList());
-	}
+	}*/
 
 	// 여행지 수정 (관리자 권한 설정 필요)
 	public void changeDestination(Long destinationId, DestinationRequest request) {

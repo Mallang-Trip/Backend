@@ -9,6 +9,7 @@ import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationBriefResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationDetailsResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationIdResponse;
+import mallang_trip.backend.domain.dto.destination.DestinationMarkerResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationReviewRequest;
 import mallang_trip.backend.service.DestinationService;
@@ -56,11 +57,10 @@ public class DestinationController {
 	}
 
 	@GetMapping("/map")
-	@ApiOperation(value = "여행지 거리기준 검색")
-	public BaseResponse<List<DestinationBriefResponse>> searchDestinationsByDistance(
-		@RequestParam Double lon, @RequestParam Double lat, @RequestParam Integer level)
+	@ApiOperation(value = "여행지 전체 마커 조회")
+	public BaseResponse<List<DestinationMarkerResponse>> getDestinationMarkers()
 		throws BaseException {
-		return new BaseResponse<>(destinationService.searchDestinationsByDistance(lon, lat, level));
+		return new BaseResponse<>(destinationService.getDestinationMarkers());
 	}
 
 	@PutMapping("/{id}")
