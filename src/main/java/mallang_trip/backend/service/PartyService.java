@@ -198,9 +198,17 @@ public class PartyService {
 
 	// 모집중인 파티 조회 By 지역, 인원수, 날짜
 	public List<PartyBriefResponse> findParties(String region, Integer headcount,
-		String startDate) {
-		return partyRepository.findParties(region, headcount, LocalDate.parse(startDate))
-			.stream()
+		String startDate, String endDate, Integer maxPrice) {
+		List<Party> parties;
+		if(region.equals("all")){
+			parties = partyRepository.findByStatus(RECRUITING);
+		} else {
+			parties = partyRepository.findByRegionAndStatus(region, RECRUITING);
+		}
+		return parties.stream()
+			.filter(party -> party.checkHeadcount(headcount))
+			.filter(party -> party.checkDate(startDate, endDate))
+			.filter(party -> party.checkMaxPrice(maxPrice))
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
 	}

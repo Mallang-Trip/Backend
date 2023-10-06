@@ -24,4 +24,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findByDriverAndStatus(Driver driver, PartyStatus status);
 
     List<Party> findByDriver(Driver driver);
+
+    List<Party> findByStatus(PartyStatus status);
+
+    List<Party> findByRegionAndStatus(String region, PartyStatus status);
 }

@@ -72,8 +72,10 @@ public class PartyController {
 	@GetMapping("/list")
 	@ApiOperation(value = "모집중인 파티 조회")
 	public BaseResponse<List<PartyBriefResponse>> findParties(@RequestParam String region,
-		@RequestParam Integer headcount, @RequestParam String startDate) throws BaseException {
-		return new BaseResponse<>(partyService.findParties(region, headcount, startDate));
+		@RequestParam Integer headcount, @RequestParam String startDate,
+		@RequestParam String endDate, @RequestParam Integer maxPrice) throws BaseException {
+		return new BaseResponse<>(
+			partyService.findParties(region, headcount, startDate, endDate, maxPrice));
 	}
 
 	@GetMapping("/my")
