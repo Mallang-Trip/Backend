@@ -283,6 +283,7 @@ public class PartyService {
 			.proposer(user)
 			.headcount(request.getHeadcount())
 			.content(request.getContent())
+			.driverAgreement(ACCEPT)
 			.type(ProposalType.JOIN)
 			.build());
 
@@ -324,8 +325,10 @@ public class PartyService {
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
 		User user = userService.getCurrentUser();
 		PartyMembers members = partyMembersRepository.findByPartyAndUser(proposal.getParty(), user);
+		System.out.println(members.getId());
 		PartyAgreement agreement = partyAgreementRepository.findByMembersAndProposal(members,
 			proposal);
+		System.out.println(agreement.getId());
 		if (proposal.getType().equals(ProposalType.COURSE_CHANGE)) {
 			acceptCourseChange(agreement, accept);
 		} else {
