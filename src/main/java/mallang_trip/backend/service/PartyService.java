@@ -148,8 +148,7 @@ public class PartyService {
 		// Exception Check
 		PartyStatus partyStatus = party.getStatus();
 		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(MONOPOLIZED)
-			|| partyStatus.equals(
-			RECRUIT_COMPLETED))) {
+			|| partyStatus.equals(RECRUIT_COMPLETED))) {
 			throw new BaseException(CANNOT_CHANGE_COURSE);
 		}
 		if (!isMyParty(party)) {
@@ -450,6 +449,7 @@ public class PartyService {
 
 		proposal.setStatus(ACCEPTED);
 		party.setCourse(proposal.getCourse());
+		party.setCapacity(proposal.getCourse().getCapacity());
 		party.setStatus(RECRUITING);
 	}
 

@@ -1,6 +1,7 @@
 package mallang_trip.backend.controller.io;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import java.time.DateTimeException;
 import javax.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -56,5 +57,12 @@ public class ExceptionController {
     @ResponseBody
     public ExceptionResponse invalidRequest(ConstraintViolationException e) {
         return ExceptionResponse.builder().message("잘못된 요청입니다.").build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DateTimeException.class)
+    @ResponseBody
+    public ExceptionResponse invalidRequest(DateTimeException e) {
+        return ExceptionResponse.builder().message("잘못된 날짜 형식입니다.").build();
     }
 }
