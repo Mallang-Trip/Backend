@@ -1,5 +1,6 @@
 package mallang_trip.backend.repository.party;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -24,4 +25,9 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
     PartyProposal findByPartyAndStatus(Party party, ProposalStatus status);
 
     Boolean existsByPartyAndStatus(Party party, ProposalStatus status);
+
+    @Query(value = "SELECT * FROM party_proposal "
+        + "WHERE status='WAITING' "
+        + "AND created_at > :time", nativeQuery = true)
+    List<PartyProposal> findExpiredProposal(@Param(value = "time") LocalDateTime time);
 }

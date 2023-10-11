@@ -19,6 +19,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.PROPOSAL_END
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -51,6 +52,7 @@ import mallang_trip.backend.repository.party.PartyAgreementRepository;
 import mallang_trip.backend.repository.party.PartyMembersRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -195,11 +197,21 @@ public class PartyService {
 		}
 	}
 
+	// 시간 초과된 제안 거절처리
+	@Scheduled(fixedDelay = 60000)
+	public void expireProposal() {
+		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1))
+			.stream()
+			.forEach(proposal -> {
+				refuseProposal(proposal);
+			});
+	}
+
 	// 모집중인 파티 조회 By 지역, 인원수, 날짜
 	public List<PartyBriefResponse> findParties(String region, Integer headcount,
 		String startDate, String endDate, Integer maxPrice) {
 		List<Party> parties;
-		if(region.equals("all")){
+		if (region.equals("all")) {
 			parties = partyRepository.findByStatus(RECRUITING);
 		} else {
 			parties = partyRepository.findByRegionAndStatus(region, RECRUITING);
@@ -458,9 +470,17 @@ public class PartyService {
 
 	// 제안 거절 시
 	private void refuseProposal(PartyProposal proposal) {
+		// party proposal status 변경
 		proposal.setStatus(ProposalStatus.REFUSED);
-		proposal.getParty().setStatus(RECRUITING);
+
+		// party status 복구
+		Party party = proposal.getParty();
+		PartyStatus prevStatus = party.getPrevStatus();
+		party.setStatus(prevStatus);
+
+		// party agreement 삭제
 		partyAgreementRepository.deleteByProposal(proposal);
+
 		//거절 알림 전송
 	}
 
@@ -487,7 +507,9 @@ public class PartyService {
 				.map(PartyMemberResponse::of)
 				.collect(Collectors.toList());
 			response.setMembers(members);
-			if(isProposalExist(party)) response.setProposal(getProposalDetails(party));
+			if (isProposalExist(party)) {
+				response.setProposal(getProposalDetails(party));
+			}
 		}
 		return response;
 	}
@@ -527,9 +549,12 @@ public class PartyService {
 		return partyProposalRepository.existsByPartyAndStatus(party, ProposalStatus.WAITING);
 	}
 
-	private Boolean isUnanimity(PartyProposal proposal){
+	private Boolean isUnanimity(PartyProposal proposal) {
 		Integer flag = partyProposalRepository.isUnanimity(proposal.getId());
-		if(flag == 0) return false;
-		else return true;
+		if (flag == 0) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 }
