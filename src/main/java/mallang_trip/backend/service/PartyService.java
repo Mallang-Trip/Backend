@@ -485,6 +485,10 @@ public class PartyService {
 	}
 
 	private PartyDetailsResponse getPartyDetails(Party party, Boolean isMyParty) {
+		List<PartyMemberResponse> members = partyMembersRepository.findByParty(party)
+			.stream()
+			.map(PartyMemberResponse::of)
+			.collect(Collectors.toList());
 		PartyDetailsResponse response = PartyDetailsResponse.builder()
 			.partyId(party.getId())
 			.myParty(isMyParty)
@@ -499,14 +503,11 @@ public class PartyService {
 			.course(courseService.getCourseDetails(party.getCourse()))
 			.content(party.getContent())
 			.proposalExist(isProposalExist(party))
+			.members(members)
 			.build();
-		// 내가 속한 파티일 경우: 멤버, 제안 정보 추가
+
+		// 내가 속한 파티일 경우: 제안 정보 추가
 		if (isMyParty) {
-			List<PartyMemberResponse> members = partyMembersRepository.findByParty(party)
-				.stream()
-				.map(PartyMemberResponse::of)
-				.collect(Collectors.toList());
-			response.setMembers(members);
 			if (isProposalExist(party)) {
 				response.setProposal(getProposalDetails(party));
 			}
