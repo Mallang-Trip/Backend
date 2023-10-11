@@ -487,7 +487,7 @@ public class PartyService {
 	private PartyDetailsResponse getPartyDetails(Party party, Boolean isMyParty) {
 		PartyDetailsResponse response = PartyDetailsResponse.builder()
 			.partyId(party.getId())
-			.myParty(true)
+			.myParty(isMyParty)
 			.partyStatus(party.getStatus())
 			.driverId(party.getDriver().getId())
 			.driverName(party.getDriver().getUser().getName())
