@@ -26,6 +26,8 @@ public class DestinationBriefResponse {
             .views(destination.getViews())
             .name(destination.getName())
             .address(destination.getAddress())
+            .lat(destination.getLat())
+            .lon(destination.getLon())
             .dibs(dibs)
             .build();
     }
