@@ -14,7 +14,6 @@ public enum Week {
     SATURDAY,
     SUNDAY,
     ;
-
     @JsonCreator
     public static Week from(String str){
         return Week.valueOf(str.toUpperCase());

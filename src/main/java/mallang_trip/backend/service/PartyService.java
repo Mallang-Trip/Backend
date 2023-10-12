@@ -540,6 +540,9 @@ public class PartyService {
 	}
 
 	private Boolean isMyParty(Party party) {
+		if(userService.getCurrentUser() == null){
+			return false;
+		}
 		if (userService.getCurrentUser().equals(party.getDriver().getUser())) {
 			return true;
 		}
