@@ -1,10 +1,10 @@
 package mallang_trip.backend.domain.dto.driver;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.constant.DriverStatus;
-import mallang_trip.backend.constant.Week;
 import mallang_trip.backend.domain.dto.course.CourseNameResponse;
 
 @Getter
@@ -20,7 +20,7 @@ public class MyDriverProfileResponse {
     private String accountHolder;
     private String accountNumber;
     private String region;
-    private List<Week> weeklyHoliday;
+    private List<DayOfWeek> weeklyHoliday;
     private List<DriverPriceResponse> prices;
     private List<CourseNameResponse> courses;
     private DriverStatus status;

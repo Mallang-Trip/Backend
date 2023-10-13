@@ -13,9 +13,7 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.DriverStatus;
 import mallang_trip.backend.constant.Role;
-import mallang_trip.backend.constant.Week;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.course.CourseNameResponse;
 import mallang_trip.backend.domain.dto.driver.ChangeBankAccountRequest;
 import mallang_trip.backend.domain.dto.driver.ChangePriceRequest;
 import mallang_trip.backend.domain.dto.driver.ChangeVehicleRequest;
@@ -100,9 +98,8 @@ public class DriverService {
 	// 정기 휴일 설정
 	public void setWeeklyHoliday(HolidayRequest request) {
 		Driver driver = getCurrentDriver();
-		List<Week> holidays = request.getHolidays()
-			.stream()
-			.map(Week::from)
+		List<DayOfWeek> holidays = request.getHolidays().stream()
+			.map(DayOfWeek::valueOf)
 			.collect(Collectors.toList());
 		driver.setWeeklyHoliday(holidays);
 	}
@@ -121,12 +118,7 @@ public class DriverService {
 	public HolidayResponse getWeeklyHoliday(Long id) {
 		Driver driver = driverRepository.findById(id)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		List<Week> weeks = driver.getWeeklyHoliday();
-		List<String> holidays = new ArrayList<>();
-		weeks.forEach(week -> holidays.add(week.toString()));
-		return HolidayResponse.builder()
-			.holidays(holidays)
-			.build();
+		return HolidayResponse.ofWeek(driver.getWeeklyHoliday());
 	}
 
 	// 휴일 조회
@@ -274,7 +266,7 @@ public class DriverService {
 	}
 
 	// 가능한 드라이버 조회
-	public List<DriverBriefResponse> getDriverImpossibleDate(String region, Integer headcount, String startDate) {
+	public List<DriverBriefResponse> getPossibleDriver(String region, Integer headcount, String startDate) {
 		return driverRepository.findAllByRegion(region).stream()
 			.filter(driver -> driver.getVehicleCapacity() >= headcount)
 			.filter(driver -> isDatePossible(driver, startDate))
@@ -283,7 +275,15 @@ public class DriverService {
 	}
 	private Boolean isDatePossible(Driver driver, String startDate){
 		LocalDate date = LocalDate.parse(startDate);
-
+		if(partyRepository.findValidPartyByDriver(driver.getId()).contains(date)){
+			return false;
+		}
+		if(driver.getHoliday().contains(date)){
+			return false;
+		}
+		if(driver.getWeeklyHoliday().contains(date.getDayOfWeek())){
+			return false;
+		}
 		return true;
 	}
 

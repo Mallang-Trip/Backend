@@ -176,6 +176,14 @@ public class DriverController {
         return new BaseResponse<>(driverService.getDriversByRegion(region));
     }
 
+    @GetMapping("/search")
+    @ApiOperation(value = "지역, 인원, 날짜로 가능한 드라이버 조회")
+    public BaseResponse<List<DriverBriefResponse>> getDriversByRegion(@RequestParam String region,
+        @RequestParam Integer headcount, @RequestParam String startDate)
+        throws BaseException {
+        return new BaseResponse<>(driverService.getPossibleDriver(region, headcount, startDate));
+    }
+
     @GetMapping("/{id}")
     @ApiOperation(value = "드라이버 상세 조회")
     public BaseResponse<DriverDetailsResponse> getDriverDetails(@PathVariable Long id)
