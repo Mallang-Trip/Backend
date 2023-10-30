@@ -146,7 +146,9 @@ public class DestinationService {
 		if (userService.getCurrentUser().getId() != review.getUser().getId()) {
 			throw new BaseException(Unauthorized);
 		}
-
+		review.setRate(request.getRate());
+		review.setContent(request.getContent());
+		review.setImages(request.getImages());
 	}
 
 	// 여행지 리뷰 삭제

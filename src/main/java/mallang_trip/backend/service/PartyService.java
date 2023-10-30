@@ -40,6 +40,7 @@ import mallang_trip.backend.domain.dto.Party.PartyRequest;
 import mallang_trip.backend.domain.dto.Party.ProposalResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.entity.driver.Driver;
+import mallang_trip.backend.domain.entity.party.PartyHistory;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -49,6 +50,7 @@ import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.course.CourseRepository;
 import mallang_trip.backend.repository.party.PartyAgreementRepository;
+import mallang_trip.backend.repository.party.PartyHistoryRepository;
 import mallang_trip.backend.repository.party.PartyMembersRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
@@ -68,6 +70,8 @@ public class PartyService {
 	private final PartyMembersRepository partyMembersRepository;
 	private final PartyProposalRepository partyProposalRepository;
 	private final PartyAgreementRepository partyAgreementRepository;
+
+	private final PartyHistoryRepository partyHistoryRepository;
 
 	// 파티 생성 신청
 	public PartyIdResponse createParty(PartyRequest request) {
@@ -286,8 +290,9 @@ public class PartyService {
 	}
 
 	// 파티 나가기
-	public void leaveParty(Party party){
-		PartyMembers members = partyMembersRepository.findByPartyAndUser(party, userService.getCurrentUser());
+	public void leaveParty(Party party) {
+		PartyMembers members = partyMembersRepository.findByPartyAndUser(party,
+			userService.getCurrentUser());
 		//
 		// exception check
 		//
@@ -304,6 +309,14 @@ public class PartyService {
 		partyMembersRepository.delete(members);
 
 		// 환불
+	}
+
+	//파티 본 내역 조회
+	public List<PartyBriefResponse> getHistory(){
+		return partyHistoryRepository.findByUser(userService.getCurrentUser()).stream()
+			.map(history -> history.getParty())
+			.map(PartyBriefResponse::of)
+			.collect(Collectors.toList());
 	}
 
 	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
@@ -559,7 +572,7 @@ public class PartyService {
 	}
 
 	private Boolean isMyParty(Party party) {
-		if(userService.getCurrentUser() == null){
+		if (userService.getCurrentUser() == null) {
 			return false;
 		}
 		if (userService.getCurrentUser().equals(party.getDriver().getUser())) {
@@ -579,5 +592,15 @@ public class PartyService {
 		} else {
 			return true;
 		}
+	}
+
+	private void addHistory(Party party) {
+		/*if(partyHistoryRepository.existsByUserAndParty(userService.getCurrentUser(), party)){
+
+		}*/
+		partyHistoryRepository.save(PartyHistory.builder()
+			.user(userService.getCurrentUser())
+			.party(party)
+			.build());
 	}
 }
