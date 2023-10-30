@@ -23,7 +23,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         String exception = (String) request.getAttribute("exception");
 
         if (exception == null) {
-            setResponseJson(response, "JWT가 비어있습니다.", 10001);
+            setResponseJson(response, "인증되지 않은 사용자입니다.", 401);
         } else if (exception.equals("10003")) {
             setResponseJson(response, "JWT가 만료되었습니다.", 10003);
         } else {

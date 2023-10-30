@@ -286,6 +286,25 @@ public class PartyService {
 	}
 
 	// 파티 나가기
+	public void leaveParty(Party party){
+		PartyMembers members = partyMembersRepository.findByPartyAndUser(party, userService.getCurrentUser());
+		//
+		// exception check
+		//
+
+		// 진행중인 제안이 있을 경우
+
+		// 내 코스변경 제안이 진행중인 경우
+
+		// 파티 인원 수 감소
+		Integer headcount = party.getHeadcount() - members.getHeadcount();
+		party.setHeadcount(headcount);
+
+		// 파티 멤버 삭제
+		partyMembersRepository.delete(members);
+
+		// 환불
+	}
 
 	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
 		User user = userService.getCurrentUser();
