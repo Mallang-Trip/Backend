@@ -86,6 +86,12 @@ public class PartyController {
 		return new BaseResponse<>(partyService.getMyParties());
 	}
 
+	@GetMapping("/history")
+	@ApiOperation(value = "내가 본 파티 조회")
+	public BaseResponse<List<PartyBriefResponse>> getPartyHistories() throws BaseException {
+		return new BaseResponse<>(partyService.getHistory());
+	}
+
 	@GetMapping("/view/{partyId}")
 	@ApiOperation(value = "파티 상세 조회")
 	public BaseResponse<PartyDetailsResponse> getPartyDetails(@PathVariable Long partyId)

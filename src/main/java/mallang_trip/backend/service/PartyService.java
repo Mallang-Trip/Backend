@@ -312,8 +312,8 @@ public class PartyService {
 	}
 
 	//파티 본 내역 조회
-	public List<PartyBriefResponse> getHistory(){
-		return partyHistoryRepository.findByUser(userService.getCurrentUser()).stream()
+	public List<PartyBriefResponse> getHistory() {
+		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser()).stream()
 			.map(history -> history.getParty())
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
@@ -544,6 +544,10 @@ public class PartyService {
 				response.setProposal(getProposalDetails(party));
 			}
 		}
+
+		// 최근 본 파티 추가
+		addHistory(party);
+
 		return response;
 	}
 
@@ -595,12 +599,16 @@ public class PartyService {
 	}
 
 	private void addHistory(Party party) {
-		/*if(partyHistoryRepository.existsByUserAndParty(userService.getCurrentUser(), party)){
-
-		}*/
-		partyHistoryRepository.save(PartyHistory.builder()
-			.user(userService.getCurrentUser())
-			.party(party)
-			.build());
+		PartyHistory history = partyHistoryRepository.findByUserAndParty(
+			userService.getCurrentUser(), party);
+		// 이미 본 파티일 경우 -> updated_at 업데이트
+		if (!(history == null)) {
+			history.setUpdatedAt(LocalDateTime.now());
+		} else {
+			partyHistoryRepository.save(PartyHistory.builder()
+				.user(userService.getCurrentUser())
+				.party(party)
+				.build());
+		}
 	}
 }
