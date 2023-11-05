@@ -2,6 +2,7 @@ package mallang_trip.backend.service;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.config.s3.AwsS3Uploader;
@@ -10,6 +11,7 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.dto.TokensDto;
 import mallang_trip.backend.domain.dto.User.AuthResponse;
+import mallang_trip.backend.domain.dto.User.ChangeUserInfoRequest;
 import mallang_trip.backend.domain.dto.User.LoginRequest;
 import mallang_trip.backend.domain.dto.User.SignupRequest;
 import mallang_trip.backend.domain.entity.user.User;
@@ -93,7 +95,31 @@ public class UserService {
             user = userRepository.findById(Long.parseLong(authentication.getName()))
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
         }
-
         return user;
     }
+
+    // 비밀번호 찾기
+
+
+    // 비밀번호 재설정
+    public void changePassword(ChangeUserInfoRequest request){
+        User user = getCurrentUser();
+        if(!passwordEncoder.matches(request.getBefore(), user.getPassword())){
+            throw new BaseException(Unauthorized);
+        }
+        user.setPassword(passwordEncoder.encode(request.getAfter()));
+    }
+
+    // 닉네임 변경
+//    public void changeNickname(ChangeUserInfoRequest request){
+//        User user = getCurrentUser();
+//        checkDuplication("nickname", request.getAfter());
+//        user.set
+//    }
+
+    // 자기 소개 변경
+
+    // 프로필 이미지 변경
+
+    // 이메일 변경
 }

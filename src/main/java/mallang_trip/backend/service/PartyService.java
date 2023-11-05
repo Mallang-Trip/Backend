@@ -527,6 +527,7 @@ public class PartyService {
 			.stream()
 			.map(PartyMemberResponse::of)
 			.collect(Collectors.toList());
+		System.out.println("test1");
 		PartyDetailsResponse response = PartyDetailsResponse.builder()
 			.partyId(party.getId())
 			.myParty(isMyParty)
@@ -543,14 +544,14 @@ public class PartyService {
 			.proposalExist(isProposalExist(party))
 			.members(members)
 			.build();
-
+		System.out.println("test2");
 		// 내가 속한 파티일 경우: 제안 정보 추가
 		if (isMyParty) {
 			if (isProposalExist(party)) {
 				response.setProposal(getProposalDetails(party));
 			}
 		}
-
+		System.out.println("test3");
 		// 최근 본 파티 추가
 		addHistory(party);
 
@@ -605,6 +606,9 @@ public class PartyService {
 	}
 
 	private void addHistory(Party party) {
+		if(userService.getCurrentUser() == null){
+			return;
+		}
 		PartyHistory history = partyHistoryRepository.findByUserAndParty(
 			userService.getCurrentUser(), party);
 		// 이미 본 파티일 경우 -> updated_at 업데이트
