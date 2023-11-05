@@ -30,40 +30,62 @@ import mallang_trip.backend.domain.entity.user.User;
 @NoArgsConstructor
 public class Party extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "driver_id", nullable = false)
-    private Driver driver;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "driver_id", nullable = false)
+	private Driver driver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "course_id", nullable = false)
+	private Course course;
 
-    @Column(nullable = false)
-    private String region;
+	@Column(nullable = false)
+	private String region;
 
-    @Column(nullable = false)
-    private Integer capacity;
+	@Column(nullable = false)
+	private Integer capacity;
 
-    @Column
-    private Integer headcount;
+	@Column
+	private Integer headcount;
 
-    @Column(name= "start_date", nullable = false)
-    private LocalDate startDate;
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate;
 
-    @Column(name= "end_date", nullable = false)
-    private LocalDate endDate;
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate;
 
-    @Column
-    private String content;
+	@Column
+	private String content;
 
-    @Enumerated(EnumType.STRING)
-    @Builder.Default()
-    private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
+	@Enumerated(EnumType.STRING)
+	@Builder.Default()
+	private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
 
-    @Enumerated(EnumType.STRING)
-    private PartyStatus prevStatus;
+	@Enumerated(EnumType.STRING)
+	private PartyStatus prevStatus;
+
+	public Boolean checkHeadcount(Integer headcount) {
+		return this.capacity >= this.headcount + headcount ? true : false;
+	}
+
+	public Boolean checkDate(String startDate, String endDate) {
+		if(startDate.equals("all") || endDate.equals("all")){
+			return true;
+		}
+		LocalDate start = LocalDate.parse(startDate);
+		LocalDate end = LocalDate.parse(endDate);
+		if ((this.startDate.isAfter(start) || this.startDate.isEqual(start))
+			&& (this.endDate.isBefore(end) || this.endDate.isEqual(end))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public Boolean checkMaxPrice(Integer maxPrice) {
+		return this.course.getTotalPrice() / capacity <= maxPrice ? true : false;
+	}
 }

@@ -105,9 +105,11 @@ public class CourseService {
         return copyCourse(course);
     }
     public Course copyCourse(Course course) {
+        List<String> images = course.getImages().stream()
+            .collect(Collectors.toList());
         Course newCourse = courseRepository.save(Course.builder()
             .owner(userService.getCurrentUser())
-            .images(course.getImages())
+            .images(images)
             .totalDays(course.getTotalDays())
             .name(course.getName())
             .capacity(course.getCapacity())
@@ -118,9 +120,11 @@ public class CourseService {
         return newCourse;
     }
 
-    public void copyCourseDay(Course course, Course newCourse) {
+    private void copyCourseDay(Course course, Course newCourse) {
         courseDayRepository.findAllByCourse(course)
             .forEach(courseDay -> {
+                List<Long> destinations = courseDay.getDestinations().stream()
+                    .collect(Collectors.toList());
                 courseDayRepository.save(CourseDay.builder()
                     .course(newCourse)
                     .day(courseDay.getDay())
@@ -128,7 +132,7 @@ public class CourseService {
                     .endTime(courseDay.getEndTime())
                     .hours(courseDay.getHours())
                     .price(courseDay.getPrice())
-                    .destinations(courseDay.getDestinations())
+                    .destinations(destinations)
                     .build());
             });
     }

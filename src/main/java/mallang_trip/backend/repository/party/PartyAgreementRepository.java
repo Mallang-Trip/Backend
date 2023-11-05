@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PartyAgreementRepository extends JpaRepository<PartyAgreement, Long> {
 
-    Boolean deleteByProposal(PartyProposal proposal);
+    void deleteByProposal(PartyProposal proposal);
 
     List<PartyAgreement> findByProposal(PartyProposal proposal);
 

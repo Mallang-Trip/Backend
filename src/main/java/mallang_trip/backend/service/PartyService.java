@@ -19,6 +19,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.PROPOSAL_END
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -39,6 +40,7 @@ import mallang_trip.backend.domain.dto.Party.PartyRequest;
 import mallang_trip.backend.domain.dto.Party.ProposalResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.entity.driver.Driver;
+import mallang_trip.backend.domain.entity.party.PartyHistory;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -48,9 +50,11 @@ import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.course.CourseRepository;
 import mallang_trip.backend.repository.party.PartyAgreementRepository;
+import mallang_trip.backend.repository.party.PartyHistoryRepository;
 import mallang_trip.backend.repository.party.PartyMembersRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -66,6 +70,8 @@ public class PartyService {
 	private final PartyMembersRepository partyMembersRepository;
 	private final PartyProposalRepository partyProposalRepository;
 	private final PartyAgreementRepository partyAgreementRepository;
+
+	private final PartyHistoryRepository partyHistoryRepository;
 
 	// 파티 생성 신청
 	public PartyIdResponse createParty(PartyRequest request) {
@@ -153,8 +159,7 @@ public class PartyService {
 		// Exception Check
 		PartyStatus partyStatus = party.getStatus();
 		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(MONOPOLIZED)
-			|| partyStatus.equals(
-			RECRUIT_COMPLETED))) {
+			|| partyStatus.equals(RECRUIT_COMPLETED))) {
 			throw new BaseException(CANNOT_CHANGE_COURSE);
 		}
 		if (!isMyParty(party)) {
@@ -201,11 +206,29 @@ public class PartyService {
 		}
 	}
 
+	// 시간 초과된 제안 거절처리
+	@Scheduled(fixedDelay = 60000)
+	public void expireProposal() {
+		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1))
+			.stream()
+			.forEach(proposal -> {
+				refuseProposal(proposal);
+			});
+	}
+
 	// 모집중인 파티 조회 By 지역, 인원수, 날짜
 	public List<PartyBriefResponse> findParties(String region, Integer headcount,
-		String startDate) {
-		return partyRepository.findParties(region, headcount, LocalDate.parse(startDate))
-			.stream()
+		String startDate, String endDate, Integer maxPrice) {
+		List<Party> parties;
+		if (region.equals("all")) {
+			parties = partyRepository.findByStatus(RECRUITING);
+		} else {
+			parties = partyRepository.findByRegionAndStatus(region, RECRUITING);
+		}
+		return parties.stream()
+			.filter(party -> party.checkHeadcount(headcount))
+			.filter(party -> party.checkDate(startDate, endDate))
+			.filter(party -> party.checkMaxPrice(maxPrice))
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
 	}
@@ -272,6 +295,34 @@ public class PartyService {
 	}
 
 	// 파티 나가기
+	public void leaveParty(Party party) {
+		PartyMembers members = partyMembersRepository.findByPartyAndUser(party,
+			userService.getCurrentUser());
+		//
+		// exception check
+		//
+
+		// 진행중인 제안이 있을 경우
+
+		// 내 코스변경 제안이 진행중인 경우
+
+		// 파티 인원 수 감소
+		Integer headcount = party.getHeadcount() - members.getHeadcount();
+		party.setHeadcount(headcount);
+
+		// 파티 멤버 삭제
+		partyMembersRepository.delete(members);
+
+		// 환불
+	}
+
+	//파티 본 내역 조회
+	public List<PartyBriefResponse> getHistory() {
+		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser()).stream()
+			.map(history -> history.getParty())
+			.map(PartyBriefResponse::of)
+			.collect(Collectors.toList());
+	}
 
 	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
 		User user = userService.getCurrentUser();
@@ -281,6 +332,7 @@ public class PartyService {
 			.proposer(user)
 			.headcount(request.getHeadcount())
 			.content(request.getContent())
+			.driverAgreement(ACCEPT)
 			.type(ProposalType.JOIN)
 			.driverAgreement(ACCEPT)
 			.build());
@@ -323,8 +375,10 @@ public class PartyService {
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
 		User user = userService.getCurrentUser();
 		PartyMembers members = partyMembersRepository.findByPartyAndUser(proposal.getParty(), user);
+		System.out.println(members.getId());
 		PartyAgreement agreement = partyAgreementRepository.findByMembersAndProposal(members,
 			proposal);
+		System.out.println(agreement.getId());
 		if (proposal.getType().equals(ProposalType.COURSE_CHANGE)) {
 			acceptCourseChange(agreement, accept);
 		} else {
@@ -448,21 +502,34 @@ public class PartyService {
 
 		proposal.setStatus(ACCEPTED);
 		party.setCourse(proposal.getCourse());
+		party.setCapacity(proposal.getCourse().getCapacity());
 		party.setStatus(RECRUITING);
 	}
 
 	// 제안 거절 시
 	private void refuseProposal(PartyProposal proposal) {
+		// party proposal status 변경
 		proposal.setStatus(ProposalStatus.REFUSED);
-		proposal.getParty().setStatus(RECRUITING);
+
+		// party status 복구
+		Party party = proposal.getParty();
+		PartyStatus prevStatus = party.getPrevStatus();
+		party.setStatus(prevStatus);
+
+		// party agreement 삭제
 		partyAgreementRepository.deleteByProposal(proposal);
+
 		//거절 알림 전송
 	}
 
 	private PartyDetailsResponse getPartyDetails(Party party, Boolean isMyParty) {
+		List<PartyMemberResponse> members = partyMembersRepository.findByParty(party)
+			.stream()
+			.map(PartyMemberResponse::of)
+			.collect(Collectors.toList());
 		PartyDetailsResponse response = PartyDetailsResponse.builder()
 			.partyId(party.getId())
-			.myParty(true)
+			.myParty(isMyParty)
 			.partyStatus(party.getStatus())
 			.driverId(party.getDriver().getId())
 			.driverName(party.getDriver().getUser().getName())
@@ -474,16 +541,19 @@ public class PartyService {
 			.course(courseService.getCourseDetails(party.getCourse()))
 			.content(party.getContent())
 			.proposalExist(isProposalExist(party))
+			.members(members)
 			.build();
-		// 내가 속한 파티일 경우: 멤버, 제안 정보 추가
+
+		// 내가 속한 파티일 경우: 제안 정보 추가
 		if (isMyParty) {
-			List<PartyMemberResponse> members = partyMembersRepository.findByParty(party)
-				.stream()
-				.map(PartyMemberResponse::of)
-				.collect(Collectors.toList());
-			response.setMembers(members);
-			if(isProposalExist(party)) response.setProposal(getProposalDetails(party));
+			if (isProposalExist(party)) {
+				response.setProposal(getProposalDetails(party));
+			}
 		}
+
+		// 최근 본 파티 추가
+		addHistory(party);
+
 		return response;
 	}
 
@@ -512,6 +582,9 @@ public class PartyService {
 	}
 
 	private Boolean isMyParty(Party party) {
+		if (userService.getCurrentUser() == null) {
+			return false;
+		}
 		if (userService.getCurrentUser().equals(party.getDriver().getUser())) {
 			return true;
 		}
@@ -522,9 +595,26 @@ public class PartyService {
 		return partyProposalRepository.existsByPartyAndStatus(party, ProposalStatus.WAITING);
 	}
 
-	private Boolean isUnanimity(PartyProposal proposal){
+	private Boolean isUnanimity(PartyProposal proposal) {
 		Integer flag = partyProposalRepository.isUnanimity(proposal.getId());
-		if(flag == 0) return false;
-		else return true;
+		if (flag == 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private void addHistory(Party party) {
+		PartyHistory history = partyHistoryRepository.findByUserAndParty(
+			userService.getCurrentUser(), party);
+		// 이미 본 파티일 경우 -> updated_at 업데이트
+		if (!(history == null)) {
+			history.setUpdatedAt(LocalDateTime.now());
+		} else {
+			partyHistoryRepository.save(PartyHistory.builder()
+				.user(userService.getCurrentUser())
+				.party(party)
+				.build());
+		}
 	}
 }

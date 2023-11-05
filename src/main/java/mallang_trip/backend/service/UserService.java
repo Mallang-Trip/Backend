@@ -88,8 +88,11 @@ public class UserService {
         if (authentication == null || authentication.getName() == null) {
             throw new RuntimeException("Security Context에 인증 정보가 없습니다.");
         }
-        User user = userRepository.findById(Long.parseLong(authentication.getName()))
-            .orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
+        User user = null;
+        if(!authentication.getName().equals("anonymousUser")){
+            user = userRepository.findById(Long.parseLong(authentication.getName()))
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
+        }
 
         return user;
     }

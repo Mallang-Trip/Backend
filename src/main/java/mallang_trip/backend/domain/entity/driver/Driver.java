@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.driver;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.Column;
@@ -12,7 +13,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.constant.DriverStatus;
-import mallang_trip.backend.constant.Week;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
 
@@ -80,7 +79,7 @@ public class Driver extends BaseEntity {
 
     @ElementCollection
     @Enumerated(EnumType.STRING)
-    private List<Week> weeklyHoliday;
+    private List<DayOfWeek> weeklyHoliday;
 
     @ElementCollection
     private List<LocalDate> holiday;

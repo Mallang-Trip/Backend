@@ -1,5 +1,6 @@
 package mallang_trip.backend.controller;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
+@Api(tags = "Party API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/party")
@@ -72,14 +74,22 @@ public class PartyController {
 	@GetMapping("/list")
 	@ApiOperation(value = "모집중인 파티 조회")
 	public BaseResponse<List<PartyBriefResponse>> findParties(@RequestParam String region,
-		@RequestParam Integer headcount, @RequestParam String startDate) throws BaseException {
-		return new BaseResponse<>(partyService.findParties(region, headcount, startDate));
+		@RequestParam Integer headcount, @RequestParam String startDate,
+		@RequestParam String endDate, @RequestParam Integer maxPrice) throws BaseException {
+		return new BaseResponse<>(
+			partyService.findParties(region, headcount, startDate, endDate, maxPrice));
 	}
 
 	@GetMapping("/my")
 	@ApiOperation(value = "내 파티 조회")
 	public BaseResponse<List<PartyBriefResponse>> getMyParties() throws BaseException {
 		return new BaseResponse<>(partyService.getMyParties());
+	}
+
+	@GetMapping("/history")
+	@ApiOperation(value = "내가 본 파티 조회")
+	public BaseResponse<List<PartyBriefResponse>> getPartyHistories() throws BaseException {
+		return new BaseResponse<>(partyService.getHistory());
 	}
 
 	@GetMapping("/view/{partyId}")
