@@ -71,6 +71,8 @@ public class PartyService {
 	public PartyIdResponse createParty(PartyRequest request) {
 		Driver driver = driverRepository.findById(request.getDriverId())
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+		// Exception Check
+
 		// 코스 변경 유무 Check
 		Course course;
 		if (request.getChangeCourse()) {
@@ -81,6 +83,7 @@ public class PartyService {
 					.orElseThrow(() -> new BaseException(Not_Found)));
 		}
 
+		// 파티 생성
 		Party party = partyRepository.save(Party.builder()
 			.driver(driver)
 			.course(course)
@@ -91,6 +94,7 @@ public class PartyService {
 			.endDate(LocalDate.parse(request.getEndDate()))
 			.build());
 
+		// 파티 멤버 추가
 		partyMembersRepository.save(PartyMembers.builder()
 			.party(party)
 			.user(userService.getCurrentUser())
@@ -106,15 +110,16 @@ public class PartyService {
 	public void acceptCreateParty(Long partyId, Boolean accept) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+
+		// Exception Check
 		if (!party.getDriver().getUser().equals(userService.getCurrentUser())) {
 			throw new BaseException(Unauthorized);
 		}
-		if (accept) {
+
+		if (accept) { // 파티 수락
 			party.setStatus(RECRUITING);
-			// 알림 전송
-		} else {
+		} else { // 파티 거절
 			party.setStatus(DRIVER_REFUSED);
-			// 알림 전송
 		}
 	}
 
@@ -277,6 +282,7 @@ public class PartyService {
 			.headcount(request.getHeadcount())
 			.content(request.getContent())
 			.type(ProposalType.JOIN)
+			.driverAgreement(ACCEPT)
 			.build());
 
 		partyMembersRepository.findByParty(party)
