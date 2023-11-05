@@ -4,14 +4,15 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.config.s3.AwsS3Uploader;
 import mallang_trip.backend.config.security.TokenProvider;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.dto.TokensDto;
 import mallang_trip.backend.domain.dto.User.AuthResponse;
-import mallang_trip.backend.domain.dto.User.ChangeUserInfoRequest;
+import mallang_trip.backend.domain.dto.User.ChangePasswordRequest;
+import mallang_trip.backend.domain.dto.User.ChangeProfileRequest;
 import mallang_trip.backend.domain.dto.User.LoginRequest;
 import mallang_trip.backend.domain.dto.User.SignupRequest;
 import mallang_trip.backend.domain.entity.user.User;
@@ -23,7 +24,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -98,11 +98,16 @@ public class UserService {
         return user;
     }
 
+
+    // 아이디 찾기
+    public void findId(String phoneNumber){
+    }
+
     // 비밀번호 찾기
 
 
-    // 비밀번호 재설정
-    public void changePassword(ChangeUserInfoRequest request){
+    // 비밀번호 변경
+    public void changePassword(ChangePasswordRequest request){
         User user = getCurrentUser();
         if(!passwordEncoder.matches(request.getBefore(), user.getPassword())){
             throw new BaseException(Unauthorized);
@@ -110,16 +115,31 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getAfter()));
     }
 
-    // 닉네임 변경
-//    public void changeNickname(ChangeUserInfoRequest request){
-//        User user = getCurrentUser();
-//        checkDuplication("nickname", request.getAfter());
-//        user.set
-//    }
+    // 프로필 변경
+    public void changeProfile(ChangeProfileRequest request){
+        User user = getCurrentUser();
+        String newNickname = request.getNickname();
+        String newEmail = request.getEmail();
 
-    // 자기 소개 변경
+        if(!newNickname.equals(user.getNickname())){
+            checkDuplication("nickname", newNickname);
+            user.setNickname(newNickname);
+        }
+        if(!newEmail.equals(user.getEmail())){
+            checkDuplication("email", newEmail);
+            user.setEmail(newEmail);
+        }
+        user.setProfileImage(request.getProfileImg());
+        user.setIntroduction(request.getIntroduction());
+    }
 
-    // 프로필 이미지 변경
+    private String createCode() {
+        StringBuffer code = new StringBuffer();
+        Random rnd = new Random();
+        for (int i = 0; i < 6; i++) {
+            code.append((rnd.nextInt(10)));
+        }
+        return code.toString();
+    }
 
-    // 이메일 변경
 }

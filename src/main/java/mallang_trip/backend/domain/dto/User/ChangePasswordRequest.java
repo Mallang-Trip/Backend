@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class ChangeUserInfoRequest {
+public class ChangePasswordRequest {
 
     private String before;
     private String after;

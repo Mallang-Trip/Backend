@@ -12,11 +12,14 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.TokensDto;
 import mallang_trip.backend.domain.dto.User.AuthResponse;
+import mallang_trip.backend.domain.dto.User.ChangePasswordRequest;
+import mallang_trip.backend.domain.dto.User.ChangeProfileRequest;
 import mallang_trip.backend.domain.dto.User.LoginRequest;
 import mallang_trip.backend.domain.dto.User.SignupRequest;
 import mallang_trip.backend.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -72,4 +75,17 @@ public class UserController {
         return new BaseResponse<>("사용 가능");
     }
 
+    @PutMapping("/password")
+    @ApiOperation(value = "비밀번호 변경")
+    public BaseResponse<String> changePassword(@RequestBody ChangePasswordRequest request) throws BaseException {
+        userService.changePassword(request);
+        return new BaseResponse<>("성공");
+    }
+
+    @PutMapping("/profile")
+    @ApiOperation(value = "프로필 변경")
+    public BaseResponse<String> changeProfile(@RequestBody ChangeProfileRequest request) throws BaseException {
+        userService.changeProfile(request);
+        return new BaseResponse<>("성공");
+    }
 }
