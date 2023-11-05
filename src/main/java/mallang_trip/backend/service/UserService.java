@@ -1,6 +1,7 @@
 package mallang_trip.backend.service;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
@@ -34,6 +35,7 @@ public class UserService {
     private final AuthenticationManagerBuilder managerBuilder;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final SmsService smsService;
 
     // 회원가입
     public void signup(SignupRequest request){
@@ -99,12 +101,38 @@ public class UserService {
     }
 
 
-    // 아이디 찾기
+/*    // 아이디 찾기
     public void findId(String phoneNumber){
+        if(!userRepository.existsByPhoneNumber(phoneNumber)){
+            throw new BaseException(CANNOT_FOUND_USER);
+        }
+        smsService.sendCertification(phoneNumber);
+    }
+    public String findId(String phoneNumber, String code){
+        if(!smsService.verifyCode(phoneNumber, code)){
+            throw new BaseException();
+        }
+        return userRepository.findByPhoneNumber(phoneNumber).getLoginId();
     }
 
     // 비밀번호 찾기
+    public void findPassword(String loginId, String phoneNumber){
+        if(!userRepository.existsByLoginIdAndPhoneNumber(phoneNumber)){
+            throw new BaseException(CANNOT_FOUND_USER);
+        }
+        smsService.sendCertification(phoneNumber);
+    }
+    public String findId(String loginId, String phoneNumber, String code){
+        if(!smsService.verifyCode(phoneNumber, code)){
+            throw new BaseException();
+        }
+        return userRepository.findByPhoneNumber(phoneNumber).getLoginId();
+    }
 
+    // 비밀번호 초기화
+    public void resetPassword(Long id, ){
+
+    }*/
 
     // 비밀번호 변경
     public void changePassword(ChangePasswordRequest request){
@@ -131,15 +159,6 @@ public class UserService {
         }
         user.setProfileImage(request.getProfileImg());
         user.setIntroduction(request.getIntroduction());
-    }
-
-    private String createCode() {
-        StringBuffer code = new StringBuffer();
-        Random rnd = new Random();
-        for (int i = 0; i < 6; i++) {
-            code.append((rnd.nextInt(10)));
-        }
-        return code.toString();
     }
 
 }
