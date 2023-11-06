@@ -45,7 +45,7 @@ public class SecurityConfig {
             .antMatchers("/upload/signup", "/check", "/signup", "/login", "/refresh-token", "/check-duplication").permitAll() // 토큰이 필요없는 uri
             .antMatchers("/party/list", "/party/view/**").permitAll()
             .antMatchers("/driver/{\\d+}").permitAll()
-            .antMatchers("/destination/{\\d+}").permitAll()
+            .antMatchers(HttpMethod.GET, "/destination/**").permitAll()
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
 
