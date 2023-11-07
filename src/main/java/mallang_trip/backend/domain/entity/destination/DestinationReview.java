@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -26,6 +28,8 @@ import mallang_trip.backend.domain.entity.user.User;
 @Table(name = "destination_review")
 @AllArgsConstructor
 @NoArgsConstructor
+@Where(clause = "deleted = false")
+@SQLDelete(sql = "UPDATE user SET deleted = true WHERE id = ?")
 public class DestinationReview extends BaseEntity {
 
     @Id

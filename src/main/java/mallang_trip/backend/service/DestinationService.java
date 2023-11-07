@@ -1,5 +1,7 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.constant.DestinationType.BY_ADMIN;
+import static mallang_trip.backend.constant.DestinationType.BY_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.constant.DestinationType;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.destination.DestinationBriefResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationDetailsResponse;
@@ -17,7 +20,6 @@ import mallang_trip.backend.domain.dto.destination.DestinationMarkerResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationReviewRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationReviewResponse;
-import mallang_trip.backend.domain.dto.destination.MapRequest;
 import mallang_trip.backend.domain.entity.destination.Destination;
 import mallang_trip.backend.domain.entity.destination.DestinationDibs;
 import mallang_trip.backend.domain.entity.destination.DestinationReview;
@@ -37,9 +39,10 @@ public class DestinationService {
 	private final DestinationDibsRepository destinationDibsRepository;
 	private final UserService userService;
 
-	// 여행지 추가 (관리자 권한 설정 필요, 중복 체크 필요)
-	public DestinationIdResponse createDestination(DestinationRequest request) {
+	// 여행지 추가
+	public DestinationIdResponse createDestination(DestinationRequest request, DestinationType type){
 		Destination destination = destinationRepository.save(request.toDestination());
+		destination.setType(type);
 		return DestinationIdResponse.builder()
 			.destinationId(destination.getId())
 			.build();
@@ -66,21 +69,10 @@ public class DestinationService {
 
 	// 전체 지도 마커 조회
 	public List<DestinationMarkerResponse> getDestinationMarkers(){
-		return destinationRepository.findAll().stream()
+		return destinationRepository.findByType(BY_ADMIN).stream()
 			.map(DestinationMarkerResponse::of)
 			.collect(Collectors.toList());
 	}
-
-	// 여행지 조회 (중심 좌표로부터 거리 기준)
-	/*public List<DestinationBriefResponse> searchDestinationsByDistance(Double lon, Double lat, Integer level) {
-		return destinationRepository.findByDistance(lon, lat, level)
-			.stream()
-			//.filter(destination -> request.isInSquare(destination))
-			.map(destination -> DestinationBriefResponse.of(destination,
-				checkDestinationDibs(destination),
-				destinationReviewRepository.getAvgRating(destination)))
-			.collect(Collectors.toList());
-	}*/
 
 	// 여행지 수정 (관리자 권한 설정 필요)
 	public void changeDestination(Long destinationId, DestinationRequest request) {

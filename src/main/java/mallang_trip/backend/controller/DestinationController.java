@@ -1,5 +1,8 @@
 package mallang_trip.backend.controller;
 
+import static mallang_trip.backend.constant.DestinationType.BY_ADMIN;
+import static mallang_trip.backend.constant.DestinationType.BY_USER;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
@@ -33,16 +36,24 @@ public class DestinationController {
 	private final DestinationService destinationService;
 
 	@PostMapping
-	@ApiOperation(value = "여행지 추가")
-	public BaseResponse<DestinationIdResponse> createDestination(
+	@ApiOperation(value = "여행지 추가(관리자)")
+	public BaseResponse<DestinationIdResponse> createDestinationByAdmin(
 		@RequestBody DestinationRequest request)
 		throws BaseException {
-		return new BaseResponse<>(destinationService.createDestination(request));
+		return new BaseResponse<>(destinationService.createDestination(request, BY_ADMIN));
 	}
 
-	@DeleteMapping("/{id}")
-	@ApiOperation(value = "여행지 삭제")
-	public BaseResponse<String> deleteDestination(@PathVariable Long id)
+	@PostMapping("/by-user")
+	@ApiOperation(value = "여행지 추가(시용자)")
+	public BaseResponse<DestinationIdResponse> createDestinationByUser(
+		@RequestBody DestinationRequest request)
+		throws BaseException {
+		return new BaseResponse<>(destinationService.createDestination(request, BY_USER));
+	}
+
+	@DeleteMapping("/{destination_id}")
+	@ApiOperation(value = "여행지 삭제(관리자)")
+	public BaseResponse<String> deleteDestination(@PathVariable(value = "destination_id") Long id)
 		throws BaseException {
 		destinationService.deleteDestination(id);
 		return new BaseResponse<>("성공");
@@ -63,59 +74,59 @@ public class DestinationController {
 		return new BaseResponse<>(destinationService.getDestinationMarkers());
 	}
 
-	@PutMapping("/{id}")
-	@ApiOperation(value = "여행지 수정")
-	public BaseResponse<String> changeDestination(@PathVariable Long id,
+	@PutMapping("/{destination_id}")
+	@ApiOperation(value = "여행지 수정(관리자)")
+	public BaseResponse<String> changeDestination(@PathVariable(value = "destination_id") Long id,
 		@RequestBody DestinationRequest request)
 		throws BaseException {
 		destinationService.changeDestination(id, request);
 		return new BaseResponse<>("성공");
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/{destination_id}")
 	@ApiOperation(value = "여행지 상세 조회")
-	public BaseResponse<DestinationDetailsResponse> getDestinationDetails(@PathVariable Long id)
+	public BaseResponse<DestinationDetailsResponse> getDestinationDetails(@PathVariable(value = "destination_id") Long id)
 		throws BaseException {
 		return new BaseResponse<>(destinationService.getDestinationDetails(id));
 	}
 
-	@PostMapping("/review/{id}")
+	@PostMapping("/review/{destination_id}")
 	@ApiOperation(value = "여행지 리뷰 등록")
-	public BaseResponse<String> createDestinationReview(@PathVariable Long id,
+	public BaseResponse<String> createDestinationReview(@PathVariable(value = "destination_id") Long id,
 		@RequestBody DestinationReviewRequest request)
 		throws BaseException {
 		destinationService.createDestinationReview(id, request);
 		return new BaseResponse<>("성공");
 	}
 
-	@PutMapping("/review/{id}")
+	@PutMapping("/review/{review_id}")
 	@ApiOperation(value = "여행지 리뷰 수정")
-	public BaseResponse<String> changeDestinationReview(@PathVariable Long id,
+	public BaseResponse<String> changeDestinationReview(@PathVariable(value = "review_id") Long id,
 		@RequestBody DestinationReviewRequest request)
 		throws BaseException {
 		destinationService.changeDestinationReview(id, request);
 		return new BaseResponse<>("성공");
 	}
 
-	@DeleteMapping("/review/{id}")
+	@DeleteMapping("/review/{review_id}")
 	@ApiOperation(value = "여행지 리뷰 삭제")
-	public BaseResponse<String> deleteDestinationReview(@PathVariable Long id)
+	public BaseResponse<String> deleteDestinationReview(@PathVariable(value = "review_id") Long id)
 		throws BaseException {
 		destinationService.deleteDestinationReview(id);
 		return new BaseResponse<>("성공");
 	}
 
-	@PostMapping("/dibs/{id}")
+	@PostMapping("/dibs/{destination_id}")
 	@ApiOperation(value = "여행지 찜하기")
-	public BaseResponse<String> createDestinationDibs(@PathVariable Long id)
+	public BaseResponse<String> createDestinationDibs(@PathVariable(value = "destination_id") Long id)
 		throws BaseException {
 		destinationService.createDestinationDibs(id);
 		return new BaseResponse<>("성공");
 	}
 
-	@DeleteMapping("/dibs/{id}")
+	@DeleteMapping("/dibs/{destination_id}")
 	@ApiOperation(value = "여행지 찜하기 취소")
-	public BaseResponse<String> deleteDestinationDibs(@PathVariable Long id)
+	public BaseResponse<String> deleteDestinationDibs(@PathVariable(value = "destination_id") Long id)
 		throws BaseException {
 		destinationService.deleteDestinationDibs(id);
 		return new BaseResponse<>("성공");

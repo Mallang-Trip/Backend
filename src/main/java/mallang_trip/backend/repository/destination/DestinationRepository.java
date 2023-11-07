@@ -1,6 +1,7 @@
 package mallang_trip.backend.repository.destination;
 
 import java.util.List;
+import mallang_trip.backend.constant.DestinationType;
 import mallang_trip.backend.domain.entity.destination.Destination;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
 
 	@Query(value = "select * from destination d\n"
-		+ "    where REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
+		+ "    where type = 'BY_ADMIN' AND REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
 		+ "        order by\n"
 		+ "            case\n"
 		+ "                when d.name = ':keyword' then 0\n"
@@ -22,9 +23,5 @@ public interface DestinationRepository extends JpaRepository<Destination, Long> 
 		+ "            d.views DESC;", nativeQuery = true)
 	List<Destination> searchByKeyword(@Param(value = "keyword") String keyword);
 
-	@Query(value = "SELECT *\n"
-		+ "FROM destination\n"
-		+ "WHERE (6371*acos(cos(radians(:lat))*cos(radians(lat))*cos(radians(lon)-radians(:lon))+sin(radians(:lat))*sin(radians(lat)))) <= :distance;", nativeQuery = true)
-	List<Destination> findByDistance(@Param(value = "lat") Double lat,
-		@Param(value = "lon") Double lon, @Param(value = "distance") Integer distance);
+	List<Destination> findByType(DestinationType type);
 }
