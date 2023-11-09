@@ -1,6 +1,8 @@
 package mallang_trip.backend.domain.dto.destination;
 
 import java.util.List;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.entity.destination.Destination;
@@ -9,9 +11,13 @@ import mallang_trip.backend.domain.entity.destination.Destination;
 @Builder
 public class DestinationRequest {
 
+    @NotEmpty
     private String name;
+    @NotEmpty
     private String address;
+    @NotNull
     private Double lon;
+    @NotNull
     private Double lat;
     private String content;
     private List<String> images;

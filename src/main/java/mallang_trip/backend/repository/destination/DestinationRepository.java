@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
 
 	@Query(value = "select * from destination d\n"
-		+ "    where type = 'BY_ADMIN' AND REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
+		+ "    where type = 'BY_ADMIN' AND deleted = 'false' AND REPLACE(d.name, ' ', '') like REPLACE(CONCAT('%',:keyword,'%'), ' ', '')\n"
 		+ "        order by\n"
 		+ "            case\n"
 		+ "                when d.name = ':keyword' then 0\n"
@@ -23,5 +23,7 @@ public interface DestinationRepository extends JpaRepository<Destination, Long> 
 		+ "            d.views DESC;", nativeQuery = true)
 	List<Destination> searchByKeyword(@Param(value = "keyword") String keyword);
 
-	List<Destination> findByType(DestinationType type);
+	List<Destination> findByTypeAndDeleted(DestinationType type, Boolean deleted);
+
+	Destination findByIdAndDeleted(Long id, Boolean deleted);
 }

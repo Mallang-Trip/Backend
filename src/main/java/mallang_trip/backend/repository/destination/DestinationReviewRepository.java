@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DestinationReviewRepository extends JpaRepository<DestinationReview, Long> {
 
-    @Query("SELECT AVG(r.rate) FROM DestinationReview r WHERE r.destination = ?1")
+    @Query("SELECT AVG(r.rate) FROM DestinationReview r WHERE r.destination = ?1 AND r.deleted = false")
     Double getAvgRating(Destination destination);
 
-    List<DestinationReview> findAllByDestination(Destination destination);
+    List<DestinationReview> findAllByDestinationOrderByUpdatedAtDesc(Destination destination);
 
     Boolean existsByDestinationAndUser(Destination destination, User user);
 }

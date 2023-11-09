@@ -29,7 +29,7 @@ import org.hibernate.annotations.Where;
 @AllArgsConstructor
 @NoArgsConstructor
 @Where(clause = "deleted = false")
-@SQLDelete(sql = "UPDATE user SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE destination_review SET deleted = true WHERE id = ?")
 public class DestinationReview extends BaseEntity {
 
     @Id

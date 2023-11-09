@@ -12,7 +12,7 @@ public interface DestinationDibsRepository extends JpaRepository<DestinationDibs
 
     Boolean existsByDestinationAndUser(Destination destination, User user);
 
-    List<DestinationDibs> findAllByUser(User user);
+    List<DestinationDibs> findAllByUserOrderByUpdatedAtDesc(User user);
 
     void deleteByDestinationAndUser(Destination destination, User user);
 }

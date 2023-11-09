@@ -24,7 +24,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
             JSONObject responseJson = new JSONObject();
             responseJson.put("message", "잘못된 접근입니다.");
-            responseJson.put("statusCode", "10003");
+            responseJson.put("statusCode", "403");
             response.getWriter().print(responseJson);
         } catch (JSONException e) {
             log.error("JSON 생성 에러 {}", e);

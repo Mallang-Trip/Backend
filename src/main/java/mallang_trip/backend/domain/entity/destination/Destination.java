@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.destination;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -9,6 +10,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OrderColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,8 +27,7 @@ import org.hibernate.annotations.Where;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Where(clause = "deleted = false")
-@SQLDelete(sql = "UPDATE user SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE destination SET deleted = true WHERE id = ?")
 public class Destination extends BaseEntity {
 
     @Id
@@ -49,7 +50,8 @@ public class Destination extends BaseEntity {
     private String content;
 
     @ElementCollection
-    private List<String> images;
+    @OrderColumn
+    private List<String> images = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private DestinationType type;

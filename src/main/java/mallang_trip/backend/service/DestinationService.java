@@ -6,7 +6,6 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -40,44 +39,49 @@ public class DestinationService {
 	private final UserService userService;
 
 	// 여행지 추가
-	public DestinationIdResponse createDestination(DestinationRequest request, DestinationType type){
-		Destination destination = destinationRepository.save(request.toDestination());
+	public DestinationIdResponse createDestination(DestinationRequest request,
+		DestinationType type) {
+		Destination destination = request.toDestination();
 		destination.setType(type);
+		destinationRepository.save(destination);
+
 		return DestinationIdResponse.builder()
 			.destinationId(destination.getId())
 			.build();
 	}
 
-	// 여행지 삭제 (관리자 권한 설정 필요)
+	// 여행지 삭제
 	public void deleteDestination(Long destinationId) {
-		Destination destination = destinationRepository.findById(destinationId)
-			.orElseThrow(() -> new BaseException(Not_Found));
-		destinationRepository.delete(destination);
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
+		if (destination == null) {
+			throw new BaseException(Not_Found);
+		}
+		destination.setDeleted(true);
 	}
 
 	// 여행지 키워드 검색
 	public List<DestinationBriefResponse> searchDestination(String keyword) {
 		List<Destination> destinations = destinationRepository.searchByKeyword(keyword);
-		List<DestinationBriefResponse> responses = new ArrayList<>();
-		for (Destination destination : destinations) {
-			responses.add(
-				DestinationBriefResponse.of(destination, checkDestinationDibs(destination),
-					destinationReviewRepository.getAvgRating(destination)));
-		}
-		return responses;
+		return destinations.stream()
+			.map(destination -> DestinationBriefResponse.of(destination,
+				checkDestinationDibs(destination),
+				destinationReviewRepository.getAvgRating(destination)))
+			.collect(Collectors.toList());
 	}
 
 	// 전체 지도 마커 조회
-	public List<DestinationMarkerResponse> getDestinationMarkers(){
-		return destinationRepository.findByType(BY_ADMIN).stream()
+	public List<DestinationMarkerResponse> getDestinationMarkers() {
+		return destinationRepository.findByTypeAndDeleted(BY_ADMIN, false).stream()
 			.map(DestinationMarkerResponse::of)
 			.collect(Collectors.toList());
 	}
 
-	// 여행지 수정 (관리자 권한 설정 필요)
+	// 여행지 수정
 	public void changeDestination(Long destinationId, DestinationRequest request) {
-		Destination destination = destinationRepository.findById(destinationId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
+		if (destination == null) {
+			throw new BaseException(Not_Found);
+		}
 		destination.setName(request.getName());
 		destination.setAddress(request.getAddress());
 		destination.setLon(request.getLon());
@@ -88,16 +92,18 @@ public class DestinationService {
 
 	// 여행지 상세 조회
 	public DestinationDetailsResponse getDestinationDetails(Long destinationId) {
-		Destination destination = destinationRepository.findById(destinationId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
+		if (destination == null || destination.getType().equals(BY_USER)) {
+			throw new BaseException(Not_Found);
+		}
+
+		// 조회수 ++
 		destination.setViews(destination.getViews() + 1);
 
-		List<DestinationReviewResponse> reviewResponses = new ArrayList<>();
-		List<DestinationReview> reviews = destinationReviewRepository.findAllByDestination(
-			destination);
-		for (DestinationReview review : reviews) {
-			reviewResponses.add(DestinationReviewResponse.of(review));
-		}
+		List<DestinationReviewResponse> reviewResponses = destinationReviewRepository.findAllByDestinationOrderByUpdatedAtDesc(
+				destination).stream()
+			.map(DestinationReviewResponse::of)
+			.collect(Collectors.toList());
 
 		return DestinationDetailsResponse.builder()
 			.destinationId(destination.getId())
@@ -116,9 +122,12 @@ public class DestinationService {
 
 	// 여행지 리뷰 추가
 	public void createDestinationReview(Long destinationId, DestinationReviewRequest request) {
-		Destination destination = destinationRepository.findById(destinationId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
+		if (destination == null) {
+			throw new BaseException(Not_Found);
+		}
 		User user = userService.getCurrentUser();
+		// 1인 1리뷰 CHECK
 		if (destinationReviewRepository.existsByDestinationAndUser(destination, user)) {
 			throw new BaseException(Conflict);
 		}
@@ -135,7 +144,8 @@ public class DestinationService {
 	public void changeDestinationReview(Long reviewId, DestinationReviewRequest request) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if (userService.getCurrentUser().getId() != review.getUser().getId()) {
+		// 작성자가 아닐 경우
+		if (!userService.getCurrentUser().equals(review.getUser())) {
 			throw new BaseException(Unauthorized);
 		}
 		review.setRate(request.getRate());
@@ -147,16 +157,21 @@ public class DestinationService {
 	public void deleteDestinationReview(Long reviewId) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if (userService.getCurrentUser().getId() != review.getUser().getId()) {
+		// 작성자가 아닐 경우
+		if (!userService.getCurrentUser().equals(review.getUser())) {
 			throw new BaseException(Unauthorized);
 		}
 		destinationReviewRepository.delete(review);
 	}
 
-	// 여행지 찜
+	// 여행지 찜하기
 	public void createDestinationDibs(Long destinationId) {
 		Destination destination = destinationRepository.findById(destinationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+		// 이미 찜한 경우
+		if (checkDestinationDibs(destination)) {
+			return;
+		}
 		destinationDibsRepository.save(DestinationDibs.builder()
 			.destination(destination)
 			.user(userService.getCurrentUser())
@@ -167,32 +182,29 @@ public class DestinationService {
 	public void deleteDestinationDibs(Long destinationId) {
 		Destination destination = destinationRepository.findById(destinationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+		// 찜한 여행지 아닐 때
+		if (!checkDestinationDibs(destination)) {
+			return;
+		}
 		destinationDibsRepository.deleteByDestinationAndUser(destination,
 			userService.getCurrentUser());
 	}
 
 	// 내가 찜한 여행지 조회
 	public List<DestinationBriefResponse> getMyDestinationDibs() {
-		List<Destination> destinations = new ArrayList<>();
-		List<DestinationDibs> dibs = destinationDibsRepository.findAllByUser(
-			userService.getCurrentUser());
-		for (DestinationDibs dib : dibs) {
-			destinations.add(dib.getDestination());
-		}
-		List<DestinationBriefResponse> responses = new ArrayList<>();
-		for (Destination destination : destinations) {
-			responses.add(
-				DestinationBriefResponse.of(destination, true,
-					destinationReviewRepository.getAvgRating(destination)));
-		}
-		return responses;
+		return destinationDibsRepository.findAllByUserOrderByUpdatedAtDesc(userService.getCurrentUser()).stream()
+			.filter(dib -> !dib.getDestination().getDeleted()) // 삭제된 여행지 제외
+			.map(dib -> DestinationBriefResponse.of(dib.getDestination(), true,
+				destinationReviewRepository.getAvgRating(dib.getDestination())))
+			.collect(Collectors.toList());
 	}
 
 	// 여행지 찜 여부 확인
 	private boolean checkDestinationDibs(Destination destination) {
 		User user = userService.getCurrentUser();
+		if (user == null) {
+			return false;
+		}
 		return destinationDibsRepository.existsByDestinationAndUser(destination, user);
 	}
-
-
 }
