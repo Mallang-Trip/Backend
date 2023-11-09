@@ -3,6 +3,7 @@ package mallang_trip.backend.domain.dto.course;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import mallang_trip.backend.domain.dto.destination.DestinationResponse;
 
 @Getter
 @Builder

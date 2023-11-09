@@ -2,7 +2,6 @@ package mallang_trip.backend.service;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -10,11 +9,9 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.course.CourseDayResponse;
 import mallang_trip.backend.domain.dto.course.CourseDetailsResponse;
-import mallang_trip.backend.domain.dto.course.CourseIdResponse;
 import mallang_trip.backend.domain.dto.course.CourseNameResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
-import mallang_trip.backend.domain.dto.course.CourseDayRequest;
-import mallang_trip.backend.domain.dto.course.DestinationResponse;
+import mallang_trip.backend.domain.dto.destination.DestinationResponse;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.course.CourseDay;
 import mallang_trip.backend.domain.entity.user.User;
@@ -68,12 +65,7 @@ public class CourseService {
                     .map(destinationId -> destinationRepository.findById(destinationId)
                         .orElseThrow(() -> new BaseException(Not_Found))
                     )
-                    .map(destination -> DestinationResponse.builder()
-                        .destinationId(destination.getId())
-                        .name(destination.getName())
-                        .address(destination.getAddress())
-                        .build()
-                    )
+                    .map(DestinationResponse::of)
                     .collect(Collectors.toList());
 
                 return CourseDayResponse.builder()
