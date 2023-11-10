@@ -51,7 +51,7 @@ public class Destination extends BaseEntity {
 
     @ElementCollection
     @OrderColumn
-    private List<String> images = new ArrayList<>();
+    private List<String> images;
 
     @Enumerated(EnumType.STRING)
     private DestinationType type;
