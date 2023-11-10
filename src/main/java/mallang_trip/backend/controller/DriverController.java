@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.driver.ChangeBankAccountRequest;
+import mallang_trip.backend.domain.dto.driver.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.dto.driver.ChangePriceRequest;
 import mallang_trip.backend.domain.dto.driver.ChangeVehicleRequest;
 import mallang_trip.backend.domain.dto.driver.DriverBriefResponse;
@@ -74,65 +75,11 @@ public class DriverController {
         return new BaseResponse<>("성공");
     }
 
-    @PutMapping("/my/holiday/weekly")
-    @ApiOperation(value = "드라이버 정기 휴일 설정")
-    public BaseResponse<String> setWeeklyHoliday(@RequestBody HolidayRequest request)
+    @PutMapping("/my")
+    @ApiOperation(value = "드라이버 내 프로필 정보 변경")
+    public BaseResponse<String> changeMyDriverProfile(@RequestBody ChangeDriverProfileRequest request)
         throws BaseException {
-        driverService.setWeeklyHoliday(request);
-        return new BaseResponse<>("성공");
-    }
-
-    @PutMapping("/my/holiday")
-    @ApiOperation(value = "드라이버 휴일 설정")
-    public BaseResponse<String> setHoliday(@RequestBody HolidayRequest request)
-        throws BaseException {
-        driverService.setHoliday(request);
-        return new BaseResponse<>("성공");
-    }
-
-    @GetMapping("/holiday/weekly/{id}")
-    @ApiOperation(value = "드라이버 정기 휴일 조회")
-    public BaseResponse<HolidayResponse> getWeeklyHoliday(@PathVariable Long id)
-        throws BaseException {
-        return new BaseResponse<>(driverService.getWeeklyHoliday(id));
-    }
-
-    @GetMapping("/holiday/{id}")
-    @ApiOperation(value = "드라이버 휴일 조회")
-    public BaseResponse<HolidayResponse> getHoliday(@PathVariable Long id)
-        throws BaseException {
-        return new BaseResponse<>(driverService.getHoliday(id));
-    }
-
-    @PutMapping("/my/region")
-    @ApiOperation(value = "드라이버 활동 지역 변경")
-    public BaseResponse<String> setRegion(@RequestParam String region)
-        throws BaseException {
-        driverService.setRegion(region);
-        return new BaseResponse<>("성공");
-    }
-
-    @PutMapping("/my/bank")
-    @ApiOperation(value = "계좌 수정")
-    public BaseResponse<String> changeBankAccount(@RequestBody ChangeBankAccountRequest request)
-        throws BaseException {
-        driverService.changeBankAccount(request);
-        return new BaseResponse<>("성공");
-    }
-
-    @PutMapping("/my/vehicle")
-    @ApiOperation(value = "차량 정보 수정")
-    public BaseResponse<String> changeVehicle(@RequestBody ChangeVehicleRequest request)
-        throws BaseException {
-        driverService.changeVehicle(request);
-        return new BaseResponse<>("성공");
-    }
-
-    @PutMapping("/my/price")
-    @ApiOperation(value = "가격 설정")
-    public BaseResponse<String> setPrice(@RequestBody ChangePriceRequest request)
-        throws BaseException {
-        driverService.setPrice(request);
+        driverService.changeProfile(request);
         return new BaseResponse<>("성공");
     }
 
