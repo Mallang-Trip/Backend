@@ -10,6 +10,7 @@ import mallang_trip.backend.domain.entity.driver.Driver;
 @Builder
 public class DriverRegistrationResponse {
 
+    private Long driverId;
     private String vehicleModel;
     private Integer vehicleCapacity;
     private String vehicleNumber;
@@ -27,6 +28,7 @@ public class DriverRegistrationResponse {
 
     public static DriverRegistrationResponse of(Driver driver, List<DriverPriceResponse> prices){
         return DriverRegistrationResponse.builder()
+            .driverId(driver.getId())
             .vehicleModel(driver.getVehicleModel())
             .vehicleCapacity(driver.getVehicleCapacity())
             .vehicleNumber(driver.getVehicleNumber())
