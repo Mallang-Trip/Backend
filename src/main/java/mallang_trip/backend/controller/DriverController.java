@@ -79,10 +79,11 @@ public class DriverController {
         return new BaseResponse<>(driverService.getDriverRegistrationList());
     }
 
-    @PutMapping("/accept/{id}")
+    @PutMapping("/accept/{driver_id}")
     @ApiOperation(value = "(관리자)드라이버 등록 수락/거절")
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<String> acceptDriver(@PathVariable Long id, @RequestParam Boolean accept)
+    public BaseResponse<String> acceptDriver(@PathVariable(value = "driver_id") Long id,
+        @RequestParam Boolean accept)
         throws BaseException {
         driverService.acceptDriverRegistration(id, accept);
         return new BaseResponse<>("성공");
@@ -106,30 +107,32 @@ public class DriverController {
         return new BaseResponse<>(driverService.getMyDriverProfile());
     }
 
-    @PostMapping("/review/{id}")
+    @PostMapping("/review/{review_id}")
     @ApiOperation(value = "드라이버 리뷰 등록")
     @PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
-    public BaseResponse<String> createDriverReview(@PathVariable Long id, @RequestBody @Valid
-        DriverReviewRequest request)
+    public BaseResponse<String> createDriverReview(@PathVariable(value = "review_id") Long id,
+        @RequestBody @Valid
+            DriverReviewRequest request)
         throws BaseException {
         driverService.createDriverReview(id, request);
         return new BaseResponse<>("성공");
     }
 
-    @PutMapping("/review/{id}")
+    @PutMapping("/review/{review_id}")
     @ApiOperation(value = "드라이버 리뷰 수정")
     @PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
-    public BaseResponse<String> changeDriverReview(@PathVariable Long id, @RequestBody @Valid
-        DriverReviewRequest request)
+    public BaseResponse<String> changeDriverReview(@PathVariable(value = "review_id") Long id,
+        @RequestBody @Valid
+            DriverReviewRequest request)
         throws BaseException {
         driverService.changeDriverReview(id, request);
         return new BaseResponse<>("성공");
     }
 
-    @DeleteMapping("/review/{id}")
+    @DeleteMapping("/review/{review_id}")
     @ApiOperation(value = "드라이버 리뷰 삭제")
     @PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
-    public BaseResponse<String> deleteDriverReview(@PathVariable Long id)
+    public BaseResponse<String> deleteDriverReview(@PathVariable(value = "review_id") Long id)
         throws BaseException {
         driverService.deleteDriverReview(id);
         return new BaseResponse<>("성공");
@@ -144,10 +147,11 @@ public class DriverController {
         return new BaseResponse<>(driverService.getPossibleDriver(region, headcount, startDate));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{driver_id}")
     @ApiOperation(value = "드라이버 상세 조회")
     @PreAuthorize("permitAll()") // anyone
-    public BaseResponse<DriverDetailsResponse> getDriverDetails(@PathVariable Long id)
+    public BaseResponse<DriverDetailsResponse> getDriverDetails(
+        @PathVariable(value = "driver_id") Long id)
         throws BaseException {
         return new BaseResponse<>(driverService.getDriverDetails(id));
     }
