@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,6 +29,7 @@ public class FileController {
 
     @PostMapping("/upload/{dir}")
     @ApiOperation(value = "이미지 업로드")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public String upload(@RequestParam("file") MultipartFile multipartFile,
         @PathVariable String dir) throws BaseException {
         String fileName = awsS3Uploader.upload(multipartFile, dir);

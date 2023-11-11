@@ -42,12 +42,12 @@ public class SecurityConfig {
             .and()
             .authorizeRequests()
             .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs").permitAll() // swagger
-            .antMatchers("/upload/signup", "/check", "/signup", "/login", "/refresh-token", "/check-duplication").permitAll() // 토큰이 필요없는 uri
-            .antMatchers("/party/list", "/party/view/**").permitAll()
-            .antMatchers("/driver/{\\d+}").permitAll()
+            .antMatchers("/check", "/signup", "/login", "/refresh-token", "/check-duplication").permitAll() // User API
+            .antMatchers("/upload/signup").permitAll() // fileUpload API
             .antMatchers(HttpMethod.GET, "/destination/**").permitAll() // destination API
             .antMatchers(HttpMethod.GET, "/driver/**").permitAll() // driver API
             .antMatchers(HttpMethod.GET, "/course/**").permitAll() // course API
+            .antMatchers("/party/list", "/party/view/**").permitAll() // party API
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
 
