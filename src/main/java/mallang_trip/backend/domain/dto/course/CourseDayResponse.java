@@ -9,11 +9,11 @@ import mallang_trip.backend.domain.dto.destination.DestinationResponse;
 @Builder
 public class CourseDayResponse {
 
-    private int day;
+    private Integer day;
     private String startTime;
     private String endTime;
-    private int hours;
-    private int price;
+    private Integer hours;
+    private Integer price;
     private List<DestinationResponse> destinations;
 
 }

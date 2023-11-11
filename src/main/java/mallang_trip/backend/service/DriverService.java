@@ -190,7 +190,7 @@ public class DriverService {
             .phoneNumber(user.getPhoneNumber())
             .introduction(driver.getIntroduction())
             .prices(getDriverPrice(driver))
-            .courses(courseService.getCourseName(user))
+            .courses(courseService.getCourseNames(user))
             .status(driver.getStatus())
             .build();
     }
@@ -218,7 +218,7 @@ public class DriverService {
             .introduction(driver.getIntroduction())
             .region(driver.getRegion())
             .reviews(reviewResponses)
-            .courses(courseService.getCourseName(user))
+            .courses(courseService.getCourseNames(user))
             .build();
     }
 

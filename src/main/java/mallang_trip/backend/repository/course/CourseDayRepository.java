@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface CourseDayRepository extends JpaRepository<CourseDay, Long> {
 
     List<CourseDay> findAllByCourse(Course course);
+
+    void deleteAllByCourse(Course course);
 }

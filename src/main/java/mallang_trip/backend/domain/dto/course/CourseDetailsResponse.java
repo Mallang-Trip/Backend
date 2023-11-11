@@ -10,10 +10,10 @@ public class CourseDetailsResponse {
 
     private Long courseId;
     private List<String> images;
-    private int totalDays;
+    private Integer totalDays;
     private String name;
-    private int capacity;
-    private int totalPrice;
+    private Integer capacity;
+    private Integer totalPrice;
     private List<CourseDayResponse> days;
 
 }

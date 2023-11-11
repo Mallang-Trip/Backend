@@ -1,6 +1,7 @@
 package mallang_trip.backend.service;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,10 +46,32 @@ public class CourseService {
         return course;
     }
 
+    // 드라이버 내 코스 수정
+    public void changeCourseByDriver(Long courseId, CourseRequest request){
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        // 내 코스가 아닌 경우
+        if(!course.getOwner().equals(userService.getCurrentUser())){
+            throw new BaseException(Unauthorized);
+        }
+        changeCourse(course, request);
+    }
+
     // 코스 수정 (기존 코스 삭제 -> 새 코스 생성)
-    public Course changeCourse(Long courseId, CourseRequest request) {
-        deleteCourse(courseId);
-        return createCourse(request);
+    public Course changeCourse(Course course, CourseRequest request) {
+        // 코스 정보 변경
+        course.setOwner(userService.getCurrentUser());
+        course.setImages(request.getImages());
+        course.setTotalDays(request.getTotalDays());
+        course.setTotalPrice(request.getTotalPrice());
+        course.setName(request.getName());
+        course.setCapacity(request.getCapacity());
+
+        // courseDay 삭제 후 재생성
+        courseDayRepository.deleteAllByCourse(course);
+        request.getDays().forEach(day -> courseDayRepository.save(day.toCourseDay(course)));
+
+        return course;
     }
 
     // 코스 상세 조회
@@ -57,6 +80,7 @@ public class CourseService {
             .orElseThrow(() -> new BaseException(Not_Found));
         return getCourseDetails(course);
     }
+
     public CourseDetailsResponse getCourseDetails(Course course){
         List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
             .stream()
@@ -91,11 +115,6 @@ public class CourseService {
     }
 
     // 코스 복사
-    public Course copyCourse(Long courseId){
-        Course course = courseRepository.findById(courseId)
-            .orElseThrow(() -> new BaseException(Not_Found));
-        return copyCourse(course);
-    }
     public Course copyCourse(Course course) {
         List<String> images = course.getImages().stream()
             .collect(Collectors.toList());
@@ -107,12 +126,12 @@ public class CourseService {
             .capacity(course.getCapacity())
             .totalPrice(course.getTotalPrice())
             .build());
-        copyCourseDay(course, newCourse);
+        copyCourseDays(course, newCourse);
 
         return newCourse;
     }
 
-    private void copyCourseDay(Course course, Course newCourse) {
+    private void copyCourseDays(Course course, Course newCourse) {
         courseDayRepository.findAllByCourse(course)
             .forEach(courseDay -> {
                 List<Long> destinations = courseDay.getDestinations().stream()
@@ -133,14 +152,19 @@ public class CourseService {
     public void deleteCourse(Long courseId){
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        // 코스 생성자가 아닌 경우
+        if(!course.getOwner().equals(userService.getCurrentUser())){
+            throw new BaseException(Unauthorized);
+        }
         deleteCourse(course);
     }
+
     public void deleteCourse(Course course) {
         courseRepository.delete(course);
     }
 
     // 드라이버의 코스 목록 조회
-    public List<CourseNameResponse> getCourseName(User user) {
+    public List<CourseNameResponse> getCourseNames(User user) {
         List<CourseNameResponse> responses =
             courseRepository.findAllByOwnerAndDeleted(user, false)
                 .stream()

@@ -2,6 +2,7 @@ package mallang_trip.backend.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
@@ -30,7 +31,7 @@ public class CourseController {
 	@PostMapping
 	@ApiOperation(value = "(드라이버)코스 생성")
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<CourseIdResponse> createCourse(@RequestBody CourseRequest request)
+	public BaseResponse<CourseIdResponse> createCourse(@RequestBody @Valid CourseRequest request)
 		throws BaseException {
 		return new BaseResponse<>(CourseIdResponse.of(courseService.createCourse(request)));
 	}
@@ -38,10 +39,11 @@ public class CourseController {
 	@PutMapping("/{course_id}")
 	@ApiOperation(value = "(드라이버)코스 수정")
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<CourseIdResponse> changeCourse(@PathVariable(value = "course_id") Long id,
-		@RequestBody CourseRequest request)
+	public BaseResponse<String> changeCourse(@PathVariable(value = "course_id") Long id,
+		@RequestBody @Valid CourseRequest request)
 		throws BaseException {
-		return new BaseResponse<>(CourseIdResponse.of(courseService.changeCourse(id, request)));
+		courseService.changeCourseByDriver(id, request);
+		return new BaseResponse<>("성공");
 	}
 
 	@DeleteMapping("/{course_id}")

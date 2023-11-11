@@ -1,6 +1,9 @@
 package mallang_trip.backend.domain.dto.course;
 
 import java.util.List;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,10 +12,21 @@ import lombok.Getter;
 public class CourseRequest {
 
     private List<String> images;
-    private int totalDays;
+
+    @NotNull
+    @Min(value = 1)
+    private Integer totalDays;
+
+    @NotBlank
     private String name;
-    private int capacity;
-    private int totalPrice;
+
+    @NotNull
+    @Min(value = 1)
+    private Integer capacity;
+
+    @NotNull
+    @Min(value = 0)
+    private Integer totalPrice;
     private List<CourseDayRequest> days;
 
 }
