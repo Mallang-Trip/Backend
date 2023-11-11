@@ -22,9 +22,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
         @Param(value = "startDate") LocalDate startDate);
 
     @Query(value = "SELECT * FROM party\n"
-        + "WHERE driver_id = :driverId AND NOT(status = 'CANCELED' OR status = 'DRIVER_REFUSED')\n"
-        + "ORDER BY start_date ASC", nativeQuery = true)
-    List<Party> findValidPartyByDriver(@Param(value = "driverId") Long driverId);
+        + "WHERE driver_id = :driverId\n"
+        + "AND NOT(status = 'CANCELED' OR status = 'DRIVER_REFUSED')\n"
+        + "AND start_date = :date", nativeQuery = true)
+    List<Party> findValidPartyByDriverAndStartDate(@Param(value = "driverId") Long driverId,
+        @Param(value = "date") String startDate);
 
     List<Party> findByDriver(Driver driver);
 

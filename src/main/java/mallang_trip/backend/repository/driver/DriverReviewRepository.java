@@ -16,5 +16,5 @@ public interface DriverReviewRepository extends JpaRepository<DriverReview, Long
 
     Boolean existsByDriverAndUser(Driver driver, User user);
 
-    List<DriverReview> findAllByDriver(Driver driver);
+    List<DriverReview> findAllByDriverOrderByUpdatedAtDesc(Driver driver);
 }

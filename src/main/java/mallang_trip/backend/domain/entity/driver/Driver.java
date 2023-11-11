@@ -23,6 +23,7 @@ import lombok.Setter;
 import mallang_trip.backend.constant.DriverStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
+import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Getter
@@ -30,6 +31,7 @@ import mallang_trip.backend.domain.entity.user.User;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE destination SET deleted = true WHERE id = ?")
 public class Driver extends BaseEntity {
 
     @Id

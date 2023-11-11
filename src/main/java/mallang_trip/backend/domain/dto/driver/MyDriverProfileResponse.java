@@ -17,7 +17,7 @@ public class MyDriverProfileResponse {
     private String profileImg;
     private String region;
     private List<DayOfWeek> weeklyHoliday;
-    //private List<LocalDate> holidays;
+    private List<LocalDate> holidays;
     private String vehicleImg;
     private String vehicleModel;
     private String vehicleNumber;
@@ -26,6 +26,7 @@ public class MyDriverProfileResponse {
     private String accountHolder;
     private String accountNumber;
     private String phoneNumber;
+    private String introduction;
     private List<DriverPriceResponse> prices;
     private List<CourseNameResponse> courses;
     private DriverStatus status;

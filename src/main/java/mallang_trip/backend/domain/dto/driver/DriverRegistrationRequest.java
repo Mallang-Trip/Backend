@@ -1,6 +1,10 @@
 package mallang_trip.backend.domain.dto.driver;
 
 import java.util.List;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.entity.driver.Driver;
@@ -10,18 +14,41 @@ import mallang_trip.backend.domain.entity.user.User;
 @Getter
 public class DriverRegistrationRequest {
 
+    // 차량 정보
+    @NotBlank
     private String vehicleModel;
+    @NotNull
+    @Min(value = 1)
     private Integer vehicleCapacity;
+    @NotBlank
     private String vehicleNumber;
-    private String region;
-    private String bank;
-    private String accountHolder;
-    private String accountNumber;
-    private List<DriverPriceRequest> prices;
+    @NotBlank
     private String vehicleImg;
+
+    // 활동 가능 지역
+    @NotBlank
+    private String region;
+
+    // 입금 계좌 & 운행 가격
+    @NotBlank
+    private String bank;
+    @NotBlank
+    private String accountHolder;
+    @NotBlank
+    @Size(min = 10, max = 14)
+    private String accountNumber;
+    @NotNull
+    List<DriverPriceRequest> prices;
+
+    // 서류
+    @NotBlank
     private String driverLicenceImg;
+    @NotBlank
     private String taxiLicenceImg;
+    @NotBlank
     private String insuranceLicenceImg;
+
+    //자기소개
     private String introduction;
 
     public Driver toDriver(User user){

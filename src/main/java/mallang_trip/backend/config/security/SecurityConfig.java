@@ -46,6 +46,7 @@ public class SecurityConfig {
             .antMatchers("/party/list", "/party/view/**").permitAll()
             .antMatchers("/driver/{\\d+}").permitAll()
             .antMatchers(HttpMethod.GET, "/destination/**").permitAll() // destination API
+            .antMatchers(HttpMethod.GET, "/driver/**").permitAll() // driver API
             .antMatchers(HttpMethod.GET, "/course/**").permitAll() // course API
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
