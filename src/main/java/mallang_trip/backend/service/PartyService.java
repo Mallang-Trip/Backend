@@ -70,7 +70,6 @@ public class PartyService {
 	private final PartyMembersRepository partyMembersRepository;
 	private final PartyProposalRepository partyProposalRepository;
 	private final PartyAgreementRepository partyAgreementRepository;
-
 	private final PartyHistoryRepository partyHistoryRepository;
 
 	// 파티 생성 신청

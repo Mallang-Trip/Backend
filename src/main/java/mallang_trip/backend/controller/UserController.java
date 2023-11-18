@@ -1,11 +1,16 @@
 package mallang_trip.backend.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
@@ -14,7 +19,9 @@ import mallang_trip.backend.domain.dto.TokensDto;
 import mallang_trip.backend.domain.dto.User.AuthResponse;
 import mallang_trip.backend.domain.dto.User.ChangePasswordRequest;
 import mallang_trip.backend.domain.dto.User.ChangeProfileRequest;
+import mallang_trip.backend.domain.dto.User.LoginIdResponse;
 import mallang_trip.backend.domain.dto.User.LoginRequest;
+import mallang_trip.backend.domain.dto.User.ResetPasswordRequest;
 import mallang_trip.backend.domain.dto.User.SignupRequest;
 import mallang_trip.backend.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,6 +80,33 @@ public class UserController {
         @RequestParam String value) throws BaseException {
         userService.checkDuplication(type, value);
         return new BaseResponse<>("사용 가능");
+    }
+
+    @GetMapping("/certification")
+    @ApiOperation(value = "(아이디 찾기/비밀번호 찾기) SMS 인증번호 요청")
+    public BaseResponse<String> sendSmsCertification(@RequestParam String phoneNumber)
+        throws BaseException, UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+        userService.sendSmsCertification(phoneNumber);
+        return new BaseResponse<>("성공");
+    }
+
+    @GetMapping("/certification/id")
+    @ApiOperation(value = "(아이디 찾기)SMS 인증번호 확인")
+    public BaseResponse<LoginIdResponse> findId(@RequestParam String phoneNumber, @RequestParam String code) throws BaseException {
+        return new BaseResponse<>(userService.findId(phoneNumber, code));
+    }
+
+    @GetMapping("/certification/password")
+    @ApiOperation(value = "(비밀번호 찾기)SMS 인증번호 확인")
+    public BaseResponse<String> findPassword(@RequestParam String phoneNumber, @RequestParam String code) throws BaseException {
+        return new BaseResponse<>(userService.findPassword(phoneNumber, code));
+    }
+
+    @PutMapping("/certification/password")
+    @ApiOperation(value = "(비밀번호 찾기)비밀번호 초기화")
+    public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest request) throws BaseException {
+        userService.resetPassword(request);
+        return new BaseResponse<>("성공");
     }
 
     @PutMapping("/password")
