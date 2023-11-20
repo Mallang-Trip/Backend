@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.dto.Party;
+package mallang_trip.backend.domain.dto.party;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

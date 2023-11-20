@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.constant.DriverStatus;
-import mallang_trip.backend.domain.dto.course.CourseNameResponse;
+import mallang_trip.backend.domain.dto.course.CourseBriefResponse;
 
 @Getter
 @Builder
@@ -28,6 +28,6 @@ public class MyDriverProfileResponse {
     private String phoneNumber;
     private String introduction;
     private List<DriverPriceResponse> prices;
-    private List<CourseNameResponse> courses;
+    private List<CourseBriefResponse> courses;
     private DriverStatus status;
 }

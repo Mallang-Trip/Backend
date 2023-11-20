@@ -6,11 +6,11 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
-import mallang_trip.backend.domain.dto.Party.JoinPartyRequest;
-import mallang_trip.backend.domain.dto.Party.PartyBriefResponse;
-import mallang_trip.backend.domain.dto.Party.PartyDetailsResponse;
-import mallang_trip.backend.domain.dto.Party.PartyIdResponse;
-import mallang_trip.backend.domain.dto.Party.PartyRequest;
+import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
+import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
+import mallang_trip.backend.domain.dto.party.PartyIdResponse;
+import mallang_trip.backend.domain.dto.party.PartyRequest;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.service.PartyService;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Api(tags = "Party API")
 @RestController
