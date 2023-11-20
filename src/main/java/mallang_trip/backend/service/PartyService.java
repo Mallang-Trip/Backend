@@ -12,6 +12,7 @@ import static mallang_trip.backend.constant.ProposalStatus.ACCEPTED;
 import static mallang_trip.backend.constant.ProposalStatus.CANCELED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.EXCEED_PARTY_CAPACITY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
@@ -64,6 +65,7 @@ public class PartyService {
 
 	private final UserService userService;
 	private final CourseService courseService;
+	private final DriverService driverService;
 	private final CourseRepository courseRepository;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
@@ -76,18 +78,17 @@ public class PartyService {
 	public PartyIdResponse createParty(PartyRequest request) {
 		Driver driver = driverRepository.findById(request.getDriverId())
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		// Exception Check
-
-		// 코스 변경 유무 Check
-		Course course;
-		if (request.getChangeCourse()) {
-			course = courseService.createCourse(request.getNewCourse());
-		} else {
-			course = courseService.copyCourse(
-				courseRepository.findById(request.getCourseId())
-					.orElseThrow(() -> new BaseException(Not_Found)));
+		User user = userService.getCurrentUser();
+		// 드라이버나 사용자가 가능한 시간인지 CHECK
+		if (!driverService.isDatePossible(driver, request.getStartDate())
+			|| !partyRepository.existsValidPartyByUserAndStartDate(user.getId(), request.getStartDate())) {
+			throw new BaseException(Conflict);
 		}
-
+		// 코스 생성
+		Course course =
+			request.getChangeCourse() ? courseService.createCourse(request.getNewCourse())
+				: courseService.copyCourse(courseRepository.findById(request.getCourseId())
+					.orElseThrow(() -> new BaseException(Not_Found)));
 		// 파티 생성
 		Party party = partyRepository.save(Party.builder()
 			.driver(driver)
@@ -98,11 +99,10 @@ public class PartyService {
 			.startDate(LocalDate.parse(request.getStartDate()))
 			.endDate(LocalDate.parse(request.getEndDate()))
 			.build());
-
 		// 파티 멤버 추가
 		partyMembersRepository.save(PartyMembers.builder()
 			.party(party)
-			.user(userService.getCurrentUser())
+			.user(user)
 			.headcount(request.getHeadcount())
 			.build());
 
@@ -218,12 +218,8 @@ public class PartyService {
 	// 모집중인 파티 조회 By 지역, 인원수, 날짜
 	public List<PartyBriefResponse> findParties(String region, Integer headcount,
 		String startDate, String endDate, Integer maxPrice) {
-		List<Party> parties;
-		if (region.equals("all")) {
-			parties = partyRepository.findByStatus(RECRUITING);
-		} else {
-			parties = partyRepository.findByRegionAndStatus(region, RECRUITING);
-		}
+		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)
+			: partyRepository.findByRegionAndStatus(region, RECRUITING);
 		return parties.stream()
 			.filter(party -> party.checkHeadcount(headcount))
 			.filter(party -> party.checkDate(startDate, endDate))
@@ -317,7 +313,8 @@ public class PartyService {
 
 	//파티 본 내역 조회
 	public List<PartyBriefResponse> getHistory() {
-		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser()).stream()
+		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser())
+			.stream()
 			.map(history -> history.getParty())
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
@@ -602,7 +599,7 @@ public class PartyService {
 	}
 
 	private void addHistory(Party party) {
-		if(userService.getCurrentUser() == null){
+		if (userService.getCurrentUser() == null) {
 			return;
 		}
 		PartyHistory history = partyHistoryRepository.findByUserAndParty(

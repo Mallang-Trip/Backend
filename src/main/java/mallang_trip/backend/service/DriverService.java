@@ -274,7 +274,7 @@ public class DriverService {
 			.collect(Collectors.toList());
 	}
 
-	private Boolean isDatePossible(Driver driver, String startDate) {
+	public Boolean isDatePossible(Driver driver, String startDate) {
 		LocalDate date = LocalDate.parse(startDate);
 		if (partyRepository.existsValidPartyByDriverAndStartDate(driver.getId(), startDate) // 진행중인 파티가 있는지 CHECK
 			|| driver.getHoliday().contains(date) || // 휴일인지 CHECK

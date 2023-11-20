@@ -13,6 +13,7 @@ import mallang_trip.backend.domain.dto.party.PartyIdResponse;
 import mallang_trip.backend.domain.dto.party.PartyRequest;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.service.PartyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class PartyController {
 
 	@PostMapping("/start")
 	@ApiOperation(value = "파티 생성")
+	@PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
 	public BaseResponse<PartyIdResponse> createParty(@RequestBody PartyRequest request)
 		throws BaseException {
 		return new BaseResponse<>(partyService.createParty(request));
