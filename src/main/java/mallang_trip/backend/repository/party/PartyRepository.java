@@ -21,11 +21,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
         @Param(value = "headcount") Integer headcount,
         @Param(value = "startDate") LocalDate startDate);
 
-    @Query(value = "SELECT * FROM party\n"
+    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM party\n"
         + "WHERE driver_id = :driverId\n"
         + "AND NOT(status = 'CANCELED' OR status = 'DRIVER_REFUSED')\n"
         + "AND start_date = :date", nativeQuery = true)
-    List<Party> findValidPartyByDriverAndStartDate(@Param(value = "driverId") Long driverId,
+    Boolean existsValidPartyByDriverAndStartDate(@Param(value = "driverId") Long driverId,
         @Param(value = "date") String startDate);
 
     List<Party> findByDriver(Driver driver);

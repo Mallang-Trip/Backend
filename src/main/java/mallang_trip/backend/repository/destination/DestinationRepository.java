@@ -1,6 +1,7 @@
 package mallang_trip.backend.repository.destination;
 
 import java.util.List;
+import java.util.Optional;
 import mallang_trip.backend.constant.DestinationType;
 import mallang_trip.backend.domain.entity.destination.Destination;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,5 +26,5 @@ public interface DestinationRepository extends JpaRepository<Destination, Long> 
 
 	List<Destination> findByTypeAndDeleted(DestinationType type, Boolean deleted);
 
-	Destination findByIdAndDeleted(Long id, Boolean deleted);
+	Optional<Destination> findByIdAndDeleted(Long id, Boolean deleted);
 }
