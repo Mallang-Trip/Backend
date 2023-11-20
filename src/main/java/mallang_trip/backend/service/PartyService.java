@@ -8,8 +8,10 @@ import static mallang_trip.backend.constant.PartyStatus.JOIN_APPROVAL_WAITING;
 import static mallang_trip.backend.constant.PartyStatus.MONOPOLIZED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.RECRUIT_COMPLETED;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
 import static mallang_trip.backend.constant.ProposalStatus.ACCEPTED;
 import static mallang_trip.backend.constant.ProposalStatus.CANCELED;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
@@ -115,17 +117,16 @@ public class PartyService {
 	public void acceptCreateParty(Long partyId, Boolean accept) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-
-		// Exception Check
+		// 권한 CHECK
 		if (!party.getDriver().getUser().equals(userService.getCurrentUser())) {
 			throw new BaseException(Unauthorized);
 		}
-
-		if (accept) { // 파티 수락
-			party.setStatus(RECRUITING);
-		} else { // 파티 거절
-			party.setStatus(DRIVER_REFUSED);
+		// STATUS CHECK
+		if(!party.getStatus().equals(WAITING_DRIVER_APPROVAL)){
+			throw new BaseException(Bad_Request);
 		}
+		// STATUS 변경
+		party.setStatus(accept ? RECRUITING : DRIVER_REFUSED);
 	}
 
 	// 파티 가입 신청
