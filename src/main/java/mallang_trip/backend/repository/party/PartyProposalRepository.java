@@ -16,9 +16,9 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
 
     @Query(value = "SELECT CASE WHEN p.driver_agreement = 'ACCEPT'\n"
         + "    AND NOT EXISTS (SELECT * FROM party_agreement a WHERE a.proposal_id = p.id AND (a.status = 'REFUSE' OR a.status = 'WAITING'))\n"
-        + "    THEN true ELSE false END\n"
+        + "    THEN 'true' ELSE 'false' END\n"
         + "    FROM party_proposal p WHERE p.id = :proposalId", nativeQuery = true)
-    Integer isUnanimity(@Param(value = "proposalId") Long proposalId);
+    Boolean isUnanimity(@Param(value = "proposalId") Long proposalId);
 
     List<PartyProposal> findByProposer(User user);
 

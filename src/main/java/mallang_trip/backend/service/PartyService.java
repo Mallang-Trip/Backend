@@ -10,6 +10,7 @@ import static mallang_trip.backend.constant.PartyStatus.RECRUITING_COMPLETED;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
 import static mallang_trip.backend.constant.ProposalStatus.ACCEPTED;
 import static mallang_trip.backend.constant.ProposalStatus.CANCELED;
+import static mallang_trip.backend.constant.ProposalStatus.REFUSED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
@@ -262,7 +263,7 @@ public class PartyService {
 		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1))
 			.stream()
 			.forEach(proposal -> {
-				refuseProposal(proposal);
+				refuseCourseChangeProposal(proposal);
 			});
 	}
 
@@ -422,7 +423,7 @@ public class PartyService {
 				addMember(proposal);
 			}
 		} else {
-			refuseProposal(proposal);
+			refuseCourseChangeProposal(proposal);
 		}
 	}
 
@@ -438,7 +439,7 @@ public class PartyService {
 				changeCourse(proposal);
 			}
 		} else {
-			refuseProposal(proposal);
+			refuseCourseChangeProposal(proposal);
 		}
 	}
 
@@ -453,7 +454,7 @@ public class PartyService {
 				addMember(proposal);
 			}
 		} else {
-			refuseProposal(proposal);
+			refuseCourseChangeProposal(proposal);
 		}
 	}
 
@@ -468,7 +469,7 @@ public class PartyService {
 				changeCourse(proposal);
 			}
 		} else {
-			refuseProposal(proposal);
+			refuseCourseChangeProposal(proposal);
 		}
 	}
 
@@ -505,20 +506,26 @@ public class PartyService {
 		party.setStatus(RECRUITING);
 	}
 
-	// 제안 거절 시
-	private void refuseProposal(PartyProposal proposal) {
+	// 코스변경 제안 거절
+	private void refuseCourseChangeProposal(PartyProposal proposal) {
 		// party proposal status 변경
 		proposal.setStatus(ProposalStatus.REFUSED);
-
 		// party status 복구
 		Party party = proposal.getParty();
 		PartyStatus prevStatus = party.getPrevStatus();
 		party.setStatus(prevStatus);
-
 		// party agreement 삭제
 		partyAgreementRepository.deleteByProposal(proposal);
+	}
 
-		//거절 알림 전송
+	// 가입신청 제안 거절
+	private void refuseJoinProposal(PartyProposal proposal) {
+		// party proposal status 변경
+		proposal.setStatus(REFUSED);
+		// party status 복구
+		proposal.getParty().setStatus(RECRUITING);
+		// party agreement 삭제
+		partyAgreementRepository.deleteByProposal(proposal);
 	}
 
 	private PartyDetailsResponse getPartyDetails(Party party, Boolean isMyParty) {
@@ -593,12 +600,7 @@ public class PartyService {
 	}
 
 	private Boolean isUnanimity(PartyProposal proposal) {
-		Integer flag = partyProposalRepository.isUnanimity(proposal.getId());
-		if (flag == 0) {
-			return false;
-		} else {
-			return true;
-		}
+		return partyProposalRepository.isUnanimity(proposal.getId());
 	}
 
 	private void addHistory(Party party) {
