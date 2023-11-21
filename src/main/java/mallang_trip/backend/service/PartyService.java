@@ -2,10 +2,9 @@ package mallang_trip.backend.service;
 
 import static mallang_trip.backend.constant.AgreementStatus.ACCEPT;
 import static mallang_trip.backend.constant.AgreementStatus.WAITING;
-import static mallang_trip.backend.constant.PartyStatus.COURSE_CHANGE_APPROVAL_WAITING;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
 import static mallang_trip.backend.constant.PartyStatus.DRIVER_REFUSED;
-import static mallang_trip.backend.constant.PartyStatus.JOIN_APPROVAL_WAITING;
-import static mallang_trip.backend.constant.PartyStatus.MONOPOLIZED;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.RECRUIT_COMPLETED;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
@@ -131,22 +130,74 @@ public class PartyService {
 
 	// 파티 가입 신청
 	public void joinParty(JoinPartyRequest request) {
-		// Exception Check
 		Party party = partyRepository.findById(request.getPartyId())
 			.orElseThrow(() -> new BaseException(Not_Found));
+		// STATUS CHECK
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(PARTY_NOT_RECRUITING);
 		}
+		// 인원수 CHECK
 		if (request.getHeadcount() + party.getHeadcount() > party.getCapacity()) {
 			throw new BaseException(EXCEED_PARTY_CAPACITY);
 		}
-
-		party.setPrevStatus(RECRUITING);
+		// 내 파티인지 CHECK
+		if(isMyParty(party)){
+			throw new BaseException(Bad_Request);
+		}
+		// 가입 신청 진행
 		if (request.getChangeCourse()) {
 			joinPartyWithCourseChange(request, party);
 		} else {
 			joinPartyWithoutCourseChange(request, party);
 		}
+	}
+	// 가입신청 WITHOUT 코스변경
+	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
+		User user = userService.getCurrentUser();
+		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
+			.course(party.getCourse())
+			.party(party)
+			.proposer(user)
+			.headcount(request.getHeadcount())
+			.content(request.getContent())
+			.driverAgreement(ACCEPT)
+			.type(ProposalType.JOIN)
+			.driverAgreement(ACCEPT)
+			.build());
+
+		partyMembersRepository.findByParty(party)
+			.forEach(member -> {
+				partyAgreementRepository.save(PartyAgreement.builder()
+					.proposal(proposal)
+					.members(member)
+					.build());
+			});
+
+		party.setStatus(WAITING_JOIN_APPROVAL);
+	}
+	// 가입신청 WITH 코스변경
+	private void joinPartyWithCourseChange(JoinPartyRequest request, Party party) {
+		User user = userService.getCurrentUser();
+		Course course = courseService.createCourse(request.getNewCourse());
+
+		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
+			.course(course)
+			.party(party)
+			.proposer(user)
+			.headcount(request.getHeadcount())
+			.content(request.getContent())
+			.type(ProposalType.JOIN_WITH_COURSE_CHANGE)
+			.build());
+
+		partyMembersRepository.findByParty(party)
+			.forEach(member -> {
+				partyAgreementRepository.save(PartyAgreement.builder()
+					.proposal(proposal)
+					.members(member)
+					.build());
+			});
+
+		party.setStatus(WAITING_JOIN_APPROVAL);
 	}
 
 	// 코스 변경 제안
@@ -158,8 +209,7 @@ public class PartyService {
 
 		// Exception Check
 		PartyStatus partyStatus = party.getStatus();
-		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(MONOPOLIZED)
-			|| partyStatus.equals(RECRUIT_COMPLETED))) {
+		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(RECRUIT_COMPLETED))) {
 			throw new BaseException(CANNOT_CHANGE_COURSE);
 		}
 		if (!isMyParty(party)) {
@@ -188,7 +238,7 @@ public class PartyService {
 					.build());
 			});
 
-		party.setStatus(PartyStatus.COURSE_CHANGE_APPROVAL_WAITING);
+		party.setStatus(PartyStatus.WAITING_COURSE_CHANGE_APPROVAL);
 	}
 
 	// 제안 수락 or 거절
@@ -321,54 +371,6 @@ public class PartyService {
 			.collect(Collectors.toList());
 	}
 
-	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
-		User user = userService.getCurrentUser();
-		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
-			.course(party.getCourse())
-			.party(party)
-			.proposer(user)
-			.headcount(request.getHeadcount())
-			.content(request.getContent())
-			.driverAgreement(ACCEPT)
-			.type(ProposalType.JOIN)
-			.driverAgreement(ACCEPT)
-			.build());
-
-		partyMembersRepository.findByParty(party)
-			.forEach(member -> {
-				partyAgreementRepository.save(PartyAgreement.builder()
-					.proposal(proposal)
-					.members(member)
-					.build());
-			});
-
-		party.setStatus(JOIN_APPROVAL_WAITING);
-	}
-
-	private void joinPartyWithCourseChange(JoinPartyRequest request, Party party) {
-		User user = userService.getCurrentUser();
-		Course course = courseService.createCourse(request.getNewCourse());
-
-		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
-			.course(course)
-			.party(party)
-			.proposer(user)
-			.headcount(request.getHeadcount())
-			.content(request.getContent())
-			.type(ProposalType.JOIN_WITH_COURSE_CHANGE)
-			.build());
-
-		partyMembersRepository.findByParty(party)
-			.forEach(member -> {
-				partyAgreementRepository.save(PartyAgreement.builder()
-					.proposal(proposal)
-					.members(member)
-					.build());
-			});
-
-		party.setStatus(JOIN_APPROVAL_WAITING);
-	}
-
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
 		User user = userService.getCurrentUser();
 		PartyMembers members = partyMembersRepository.findByPartyAndUser(proposal.getParty(), user);
@@ -411,7 +413,7 @@ public class PartyService {
 	private void acceptPartyJoin(PartyAgreement agreement, boolean accept) {
 		PartyProposal proposal = agreement.getProposal();
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(JOIN_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_JOIN_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -427,7 +429,7 @@ public class PartyService {
 	private void acceptCourseChange(PartyAgreement agreement, boolean accept) {
 		PartyProposal proposal = agreement.getProposal();
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(COURSE_CHANGE_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -442,7 +444,7 @@ public class PartyService {
 
 	private void acceptPartyJoinByDriver(PartyProposal proposal, boolean accept) {
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(JOIN_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_JOIN_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -457,7 +459,7 @@ public class PartyService {
 
 	private void acceptCourseChangeByDriver(PartyProposal proposal, boolean accept) {
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(COURSE_CHANGE_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {

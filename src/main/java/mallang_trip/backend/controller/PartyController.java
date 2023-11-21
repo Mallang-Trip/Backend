@@ -42,6 +42,7 @@ public class PartyController {
 
 	@PostMapping("/accept/start/{id}")
 	@ApiOperation(value = "(드라이버) 파티 생성 수락/거절")
+	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<String> acceptCreateParty(@PathVariable Long id,
 		@RequestParam Boolean accept) throws BaseException {
 		partyService.acceptCreateParty(id, accept);
