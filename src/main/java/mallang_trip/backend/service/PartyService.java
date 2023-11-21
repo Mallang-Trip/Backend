@@ -5,13 +5,15 @@ import static mallang_trip.backend.constant.AgreementStatus.WAITING;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
 import static mallang_trip.backend.constant.PartyStatus.DRIVER_REFUSED;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_JOIN_APPROVAL;
-import static mallang_trip.backend.constant.PartyStatus.MONOPOLIZED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING_COMPLETED;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
 import static mallang_trip.backend.constant.ProposalStatus.ACCEPTED;
 import static mallang_trip.backend.constant.ProposalStatus.CANCELED;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.EXCEED_PARTY_CAPACITY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
@@ -30,14 +32,14 @@ import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.constant.ProposalType;
 import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.Party.JoinPartyRequest;
-import mallang_trip.backend.domain.dto.Party.PartyAgreementResponse;
-import mallang_trip.backend.domain.dto.Party.PartyBriefResponse;
-import mallang_trip.backend.domain.dto.Party.PartyDetailsResponse;
-import mallang_trip.backend.domain.dto.Party.PartyIdResponse;
-import mallang_trip.backend.domain.dto.Party.PartyMemberResponse;
-import mallang_trip.backend.domain.dto.Party.PartyRequest;
-import mallang_trip.backend.domain.dto.Party.ProposalResponse;
+import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.party.PartyAgreementResponse;
+import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
+import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
+import mallang_trip.backend.domain.dto.party.PartyIdResponse;
+import mallang_trip.backend.domain.dto.party.PartyMemberResponse;
+import mallang_trip.backend.domain.dto.party.PartyRequest;
+import mallang_trip.backend.domain.dto.party.ProposalResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.PartyHistory;
@@ -64,6 +66,7 @@ public class PartyService {
 
 	private final UserService userService;
 	private final CourseService courseService;
+	private final DriverService driverService;
 	private final CourseRepository courseRepository;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
@@ -76,18 +79,17 @@ public class PartyService {
 	public PartyIdResponse createParty(PartyRequest request) {
 		Driver driver = driverRepository.findById(request.getDriverId())
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		// Exception Check
-
-		// 코스 변경 유무 Check
-		Course course;
-		if (request.getChangeCourse()) {
-			course = courseService.createCourse(request.getNewCourse());
-		} else {
-			course = courseService.copyCourse(
-				courseRepository.findById(request.getCourseId())
-					.orElseThrow(() -> new BaseException(Not_Found)));
+		User user = userService.getCurrentUser();
+		// 드라이버나 사용자가 가능한 시간인지 CHECK
+		if (!driverService.isDatePossible(driver, request.getStartDate())
+			|| !partyRepository.existsValidPartyByUserAndStartDate(user.getId(), request.getStartDate())) {
+			throw new BaseException(Conflict);
 		}
-
+		// 코스 생성
+		Course course =
+			request.getChangeCourse() ? courseService.createCourse(request.getNewCourse())
+				: courseService.copyCourse(courseRepository.findById(request.getCourseId())
+					.orElseThrow(() -> new BaseException(Not_Found)));
 		// 파티 생성
 		Party party = partyRepository.save(Party.builder()
 			.driver(driver)
@@ -98,11 +100,10 @@ public class PartyService {
 			.startDate(LocalDate.parse(request.getStartDate()))
 			.endDate(LocalDate.parse(request.getEndDate()))
 			.build());
-
 		// 파티 멤버 추가
 		partyMembersRepository.save(PartyMembers.builder()
 			.party(party)
-			.user(userService.getCurrentUser())
+			.user(user)
 			.headcount(request.getHeadcount())
 			.build());
 
@@ -115,37 +116,88 @@ public class PartyService {
 	public void acceptCreateParty(Long partyId, Boolean accept) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-
-		// Exception Check
+		// 권한 CHECK
 		if (!party.getDriver().getUser().equals(userService.getCurrentUser())) {
 			throw new BaseException(Unauthorized);
 		}
-
-		if (accept) { // 파티 수락
-			party.setStatus(RECRUITING);
-		} else { // 파티 거절
-			party.setStatus(DRIVER_REFUSED);
+		// STATUS CHECK
+		if(!party.getStatus().equals(WAITING_DRIVER_APPROVAL)){
+			throw new BaseException(Bad_Request);
 		}
+		// STATUS 변경
+		party.setStatus(accept ? RECRUITING : DRIVER_REFUSED);
 	}
 
 	// 파티 가입 신청
 	public void joinParty(JoinPartyRequest request) {
-		// Exception Check
 		Party party = partyRepository.findById(request.getPartyId())
 			.orElseThrow(() -> new BaseException(Not_Found));
+		// STATUS CHECK
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(PARTY_NOT_RECRUITING);
 		}
+		// 인원수 CHECK
 		if (request.getHeadcount() + party.getHeadcount() > party.getCapacity()) {
 			throw new BaseException(EXCEED_PARTY_CAPACITY);
 		}
-
-		party.setPrevStatus(RECRUITING);
+		// 내 파티인지 CHECK
+		if(isMyParty(party)){
+			throw new BaseException(Bad_Request);
+		}
+		// 가입 신청 진행
 		if (request.getChangeCourse()) {
 			joinPartyWithCourseChange(request, party);
 		} else {
 			joinPartyWithoutCourseChange(request, party);
 		}
+	}
+	// 가입신청 WITHOUT 코스변경
+	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
+		User user = userService.getCurrentUser();
+		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
+			.course(party.getCourse())
+			.party(party)
+			.proposer(user)
+			.headcount(request.getHeadcount())
+			.content(request.getContent())
+			.driverAgreement(ACCEPT)
+			.type(ProposalType.JOIN)
+			.driverAgreement(ACCEPT)
+			.build());
+
+		partyMembersRepository.findByParty(party)
+			.forEach(member -> {
+				partyAgreementRepository.save(PartyAgreement.builder()
+					.proposal(proposal)
+					.members(member)
+					.build());
+			});
+
+		party.setStatus(WAITING_JOIN_APPROVAL);
+	}
+	// 가입신청 WITH 코스변경
+	private void joinPartyWithCourseChange(JoinPartyRequest request, Party party) {
+		User user = userService.getCurrentUser();
+		Course course = courseService.createCourse(request.getNewCourse());
+
+		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
+			.course(course)
+			.party(party)
+			.proposer(user)
+			.headcount(request.getHeadcount())
+			.content(request.getContent())
+			.type(ProposalType.JOIN_WITH_COURSE_CHANGE)
+			.build());
+
+		partyMembersRepository.findByParty(party)
+			.forEach(member -> {
+				partyAgreementRepository.save(PartyAgreement.builder()
+					.proposal(proposal)
+					.members(member)
+					.build());
+			});
+
+		party.setStatus(WAITING_JOIN_APPROVAL);
 	}
 
 	// 코스 변경 제안
@@ -157,8 +209,7 @@ public class PartyService {
 
 		// Exception Check
 		PartyStatus partyStatus = party.getStatus();
-		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(MONOPOLIZED)
-			|| partyStatus.equals(RECRUITING_COMPLETED))) {
+		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(RECRUITING_COMPLETED))) {
 			throw new BaseException(CANNOT_CHANGE_COURSE);
 		}
 		if (!isMyParty(party)) {
@@ -218,12 +269,8 @@ public class PartyService {
 	// 모집중인 파티 조회 By 지역, 인원수, 날짜
 	public List<PartyBriefResponse> findParties(String region, Integer headcount,
 		String startDate, String endDate, Integer maxPrice) {
-		List<Party> parties;
-		if (region.equals("all")) {
-			parties = partyRepository.findByStatus(RECRUITING);
-		} else {
-			parties = partyRepository.findByRegionAndStatus(region, RECRUITING);
-		}
+		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)
+			: partyRepository.findByRegionAndStatus(region, RECRUITING);
 		return parties.stream()
 			.filter(party -> party.checkHeadcount(headcount))
 			.filter(party -> party.checkDate(startDate, endDate))
@@ -317,58 +364,11 @@ public class PartyService {
 
 	//파티 본 내역 조회
 	public List<PartyBriefResponse> getHistory() {
-		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser()).stream()
+		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser())
+			.stream()
 			.map(history -> history.getParty())
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
-	}
-
-	private void joinPartyWithoutCourseChange(JoinPartyRequest request, Party party) {
-		User user = userService.getCurrentUser();
-		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
-			.course(party.getCourse())
-			.party(party)
-			.proposer(user)
-			.headcount(request.getHeadcount())
-			.content(request.getContent())
-			.driverAgreement(ACCEPT)
-			.type(ProposalType.JOIN)
-			.driverAgreement(ACCEPT)
-			.build());
-
-		partyMembersRepository.findByParty(party)
-			.forEach(member -> {
-				partyAgreementRepository.save(PartyAgreement.builder()
-					.proposal(proposal)
-					.members(member)
-					.build());
-			});
-
-		party.setStatus(WAITING_JOIN_APPROVAL);
-	}
-
-	private void joinPartyWithCourseChange(JoinPartyRequest request, Party party) {
-		User user = userService.getCurrentUser();
-		Course course = courseService.createCourse(request.getNewCourse());
-
-		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
-			.course(course)
-			.party(party)
-			.proposer(user)
-			.headcount(request.getHeadcount())
-			.content(request.getContent())
-			.type(ProposalType.JOIN_WITH_COURSE_CHANGE)
-			.build());
-
-		partyMembersRepository.findByParty(party)
-			.forEach(member -> {
-				partyAgreementRepository.save(PartyAgreement.builder()
-					.proposal(proposal)
-					.members(member)
-					.build());
-			});
-
-		party.setStatus(WAITING_JOIN_APPROVAL);
 	}
 
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
@@ -602,7 +602,7 @@ public class PartyService {
 	}
 
 	private void addHistory(Party party) {
-		if(userService.getCurrentUser() == null){
+		if (userService.getCurrentUser() == null) {
 			return;
 		}
 		PartyHistory history = partyHistoryRepository.findByUserAndParty(

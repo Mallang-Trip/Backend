@@ -6,13 +6,14 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
-import mallang_trip.backend.domain.dto.Party.JoinPartyRequest;
-import mallang_trip.backend.domain.dto.Party.PartyBriefResponse;
-import mallang_trip.backend.domain.dto.Party.PartyDetailsResponse;
-import mallang_trip.backend.domain.dto.Party.PartyIdResponse;
-import mallang_trip.backend.domain.dto.Party.PartyRequest;
+import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
+import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
+import mallang_trip.backend.domain.dto.party.PartyIdResponse;
+import mallang_trip.backend.domain.dto.party.PartyRequest;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.service.PartyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Api(tags = "Party API")
 @RestController
@@ -34,6 +34,7 @@ public class PartyController {
 
 	@PostMapping("/start")
 	@ApiOperation(value = "파티 생성")
+	@PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
 	public BaseResponse<PartyIdResponse> createParty(@RequestBody PartyRequest request)
 		throws BaseException {
 		return new BaseResponse<>(partyService.createParty(request));
@@ -41,6 +42,7 @@ public class PartyController {
 
 	@PostMapping("/accept/start/{id}")
 	@ApiOperation(value = "(드라이버) 파티 생성 수락/거절")
+	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<String> acceptCreateParty(@PathVariable Long id,
 		@RequestParam Boolean accept) throws BaseException {
 		partyService.acceptCreateParty(id, accept);

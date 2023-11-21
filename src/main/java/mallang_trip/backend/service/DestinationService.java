@@ -52,10 +52,8 @@ public class DestinationService {
 
 	// 여행지 삭제
 	public void deleteDestination(Long destinationId) {
-		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
-		if (destination == null) {
-			throw new BaseException(Not_Found);
-		}
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
+			.orElseThrow(() -> new BaseException(Not_Found));
 		destination.setDeleted(true);
 	}
 
@@ -78,10 +76,8 @@ public class DestinationService {
 
 	// 여행지 수정
 	public void changeDestination(Long destinationId, DestinationRequest request) {
-		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
-		if (destination == null) {
-			throw new BaseException(Not_Found);
-		}
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
+			.orElseThrow(() -> new BaseException(Not_Found));
 		destination.setName(request.getName());
 		destination.setAddress(request.getAddress());
 		destination.setLon(request.getLon());
@@ -92,8 +88,9 @@ public class DestinationService {
 
 	// 여행지 상세 조회
 	public DestinationDetailsResponse getDestinationDetails(Long destinationId) {
-		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
-		if (destination == null || destination.getType().equals(BY_USER)) {
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
+			.orElseThrow(() -> new BaseException(Not_Found));
+		if (destination.getType().equals(BY_USER)) {
 			throw new BaseException(Not_Found);
 		}
 
@@ -122,10 +119,8 @@ public class DestinationService {
 
 	// 여행지 리뷰 추가
 	public void createDestinationReview(Long destinationId, DestinationReviewRequest request) {
-		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false);
-		if (destination == null) {
-			throw new BaseException(Not_Found);
-		}
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
+			.orElseThrow(() -> new BaseException(Not_Found));
 		User user = userService.getCurrentUser();
 		// 1인 1리뷰 CHECK
 		if (destinationReviewRepository.existsByDestinationAndUser(destination, user)) {

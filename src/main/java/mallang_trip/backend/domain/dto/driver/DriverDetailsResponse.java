@@ -3,7 +3,7 @@ package mallang_trip.backend.domain.dto.driver;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.dto.course.CourseNameResponse;
+import mallang_trip.backend.domain.dto.course.CourseBriefResponse;
 
 @Getter
 @Builder
@@ -17,5 +17,5 @@ public class DriverDetailsResponse {
     private String introduction;
     private String region;
     private List<DriverReviewResponse> reviews;
-    private List<CourseNameResponse> courses;
+    private List<CourseBriefResponse> courses;
 }

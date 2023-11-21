@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.course.CourseDayResponse;
 import mallang_trip.backend.domain.dto.course.CourseDetailsResponse;
-import mallang_trip.backend.domain.dto.course.CourseNameResponse;
+import mallang_trip.backend.domain.dto.course.CourseBriefResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationResponse;
 import mallang_trip.backend.domain.entity.course.Course;
@@ -164,11 +164,11 @@ public class CourseService {
     }
 
     // 드라이버의 코스 목록 조회
-    public List<CourseNameResponse> getCourseNames(User user) {
-        List<CourseNameResponse> responses =
+    public List<CourseBriefResponse> getCourseNames(User user) {
+        List<CourseBriefResponse> responses =
             courseRepository.findAllByOwnerAndDeleted(user, false)
                 .stream()
-                .map(CourseNameResponse::of)
+                .map(CourseBriefResponse::of)
                 .collect(Collectors.toList());
         return responses;
     }

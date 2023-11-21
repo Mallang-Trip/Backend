@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.dto.Party;
+package mallang_trip.backend.domain.dto.party;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +29,7 @@ public class PartyBriefResponse {
         return PartyBriefResponse.builder()
             .partyId(party.getId())
             .status(party.getStatus())
-            .image(course.getImages().get(0))
+            .image(course.getImages().isEmpty() ? null : course.getImages().get(0))
             .name(course.getName())
             .startDate(party.getStartDate())
             .endDate(party.getEndDate())
