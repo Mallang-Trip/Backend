@@ -2,12 +2,12 @@ package mallang_trip.backend.service;
 
 import static mallang_trip.backend.constant.AgreementStatus.ACCEPT;
 import static mallang_trip.backend.constant.AgreementStatus.WAITING;
-import static mallang_trip.backend.constant.PartyStatus.COURSE_CHANGE_APPROVAL_WAITING;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
 import static mallang_trip.backend.constant.PartyStatus.DRIVER_REFUSED;
-import static mallang_trip.backend.constant.PartyStatus.JOIN_APPROVAL_WAITING;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.constant.PartyStatus.MONOPOLIZED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
-import static mallang_trip.backend.constant.PartyStatus.RECRUIT_COMPLETED;
+import static mallang_trip.backend.constant.PartyStatus.RECRUITING_COMPLETED;
 import static mallang_trip.backend.constant.ProposalStatus.ACCEPTED;
 import static mallang_trip.backend.constant.ProposalStatus.CANCELED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
@@ -158,7 +158,7 @@ public class PartyService {
 		// Exception Check
 		PartyStatus partyStatus = party.getStatus();
 		if (!(partyStatus.equals(RECRUITING) || partyStatus.equals(MONOPOLIZED)
-			|| partyStatus.equals(RECRUIT_COMPLETED))) {
+			|| partyStatus.equals(RECRUITING_COMPLETED))) {
 			throw new BaseException(CANNOT_CHANGE_COURSE);
 		}
 		if (!isMyParty(party)) {
@@ -187,7 +187,7 @@ public class PartyService {
 					.build());
 			});
 
-		party.setStatus(PartyStatus.COURSE_CHANGE_APPROVAL_WAITING);
+		party.setStatus(PartyStatus.WAITING_COURSE_CHANGE_APPROVAL);
 	}
 
 	// 제안 수락 or 거절
@@ -344,7 +344,7 @@ public class PartyService {
 					.build());
 			});
 
-		party.setStatus(JOIN_APPROVAL_WAITING);
+		party.setStatus(WAITING_JOIN_APPROVAL);
 	}
 
 	private void joinPartyWithCourseChange(JoinPartyRequest request, Party party) {
@@ -368,7 +368,7 @@ public class PartyService {
 					.build());
 			});
 
-		party.setStatus(JOIN_APPROVAL_WAITING);
+		party.setStatus(WAITING_JOIN_APPROVAL);
 	}
 
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
@@ -413,7 +413,7 @@ public class PartyService {
 	private void acceptPartyJoin(PartyAgreement agreement, boolean accept) {
 		PartyProposal proposal = agreement.getProposal();
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(JOIN_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_JOIN_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -429,7 +429,7 @@ public class PartyService {
 	private void acceptCourseChange(PartyAgreement agreement, boolean accept) {
 		PartyProposal proposal = agreement.getProposal();
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(COURSE_CHANGE_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -444,7 +444,7 @@ public class PartyService {
 
 	private void acceptPartyJoinByDriver(PartyProposal proposal, boolean accept) {
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(JOIN_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_JOIN_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -459,7 +459,7 @@ public class PartyService {
 
 	private void acceptCourseChangeByDriver(PartyProposal proposal, boolean accept) {
 		PartyStatus partyStatus = proposal.getParty().getStatus();
-		if (!partyStatus.equals(COURSE_CHANGE_APPROVAL_WAITING)) {
+		if (!partyStatus.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
 			throw new BaseException(PROPOSAL_END);
 		}
 		if (accept) {
@@ -489,7 +489,7 @@ public class PartyService {
 		party.setCourse(proposal.getCourse());
 		// Party status 변경
 		if (party.getCapacity() == party.getHeadcount()) {
-			party.setStatus(RECRUIT_COMPLETED);
+			party.setStatus(RECRUITING_COMPLETED);
 		} else {
 			party.setStatus(RECRUITING);
 		}
