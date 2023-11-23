@@ -1,7 +1,10 @@
 package mallang_trip.backend.controller;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
 import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
@@ -10,8 +13,8 @@ import mallang_trip.backend.domain.dto.article.ArticleRequest;
 import mallang_trip.backend.service.ArticleService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
-@ApiIgnore
+@Api(tags = "Article API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/article")
@@ -31,39 +33,78 @@ public class ArticleController {
 
     private final ArticleService articleService;
 
+    @ApiOperation(value = "글 등록")
     @PostMapping
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<ArticleIdResponse> createArticle(
         @RequestBody @Valid ArticleRequest request) {
         return new BaseResponse<>(articleService.createArticle(request));
     }
 
-    @PutMapping("/{id}")
-    public BaseResponse<ArticleIdResponse> changeArticle(@PathVariable Long id,
+    @ApiOperation(value = "글 수정")
+    @PutMapping("/{articleId}")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> changeArticle(@PathVariable(value = "articleId") Long id,
         @RequestBody @Valid ArticleRequest request) {
-        return new BaseResponse<>(articleService.changeArticle(id, request));
+        articleService.changeArticle(id, request);
+        return new BaseResponse<>("성공");
     }
 
-    @DeleteMapping("/{id}")
-    public BaseResponse<String> deleteArticle(@PathVariable Long id) {
+    @ApiOperation(value = "글 삭제")
+    @DeleteMapping("/{articleId}")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> deleteArticle(@PathVariable(value = "articleId") Long id) {
         articleService.deleteArticle(id);
         return new BaseResponse<>("성공");
     }
 
-    @GetMapping("/{id}")
-    public BaseResponse<ArticleDetailsResponse> viewDetails(@PathVariable Long id) {
+    @ApiOperation(value = "글 상세조회")
+    @GetMapping("/{articleId}")
+    @PreAuthorize("permitAll()") // anyone
+    public BaseResponse<ArticleDetailsResponse> viewDetails(
+        @PathVariable(value = "articleId") Long id) {
         return new BaseResponse<>(articleService.getArticleDetails(id));
     }
 
+    @ApiOperation(value = "키워드 검색")
     @GetMapping("/search")
-    public BaseResponse<Page<ArticleBriefResponse>> searchArticles(@RequestParam String type,
-        @RequestParam String keyword,
-        @PageableDefault(size = 6, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return new BaseResponse<>(articleService.searchArticles(type, keyword, pageable));
+    @PreAuthorize("permitAll()") // anyone
+    public BaseResponse<Page<ArticleBriefResponse>> searchArticles(@RequestParam String keyword,
+        @PageableDefault(size = 6) Pageable pageable) {
+        return new BaseResponse<>(articleService.getArticlesByKeyword(keyword, pageable));
     }
 
+    @ApiOperation(value = "게시글 리스트 조회")
+    @GetMapping()
+    @PreAuthorize("permitAll()") // anyone
+    public BaseResponse<Page<ArticleBriefResponse>> getArticles(@RequestParam String type,
+        @PageableDefault(size = 6) Pageable pageable) {
+        return new BaseResponse<>(articleService.getArticlesByType(type, pageable));
+    }
+
+    @ApiOperation(value = "내가 쓴 글 리스트 조회")
     @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<Page<ArticleBriefResponse>> getMyArticles(
-        @PageableDefault(size = 6, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        @PageableDefault(size = 6) Pageable pageable) {
         return new BaseResponse<>(articleService.getMyArticles(pageable));
+    }
+
+    @PostMapping("/dibs/{article_id}")
+    @ApiOperation(value = "게시글 좋아요")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> createArticleDibs(@PathVariable(value = "article_id") Long id)
+        throws BaseException {
+        articleService.createArticleDibs(id);
+        return new BaseResponse<>("성공");
+    }
+
+    @DeleteMapping("/dibs/{article_id}")
+    @ApiOperation(value = "게시글 좋아요 취소")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> deleteArticleDibs(@PathVariable(value = "article_id") Long id)
+        throws BaseException {
+        articleService.deleteArticleDibs(id);
+        return new BaseResponse<>("성공");
     }
 }

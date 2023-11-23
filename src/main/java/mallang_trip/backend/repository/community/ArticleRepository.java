@@ -11,11 +11,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseAndType
-        (String titleKeyword, String contentKeyword, ArticleType type, Pageable pageable);
+    Page<Article> findAllByCreatedAtDesc(Pageable pageable);
 
-    Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase
+    Page<Article> findByTypeOrderByCreatedAtDesc(ArticleType type, Pageable pageable);
+
+    Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByCreatedAtDesc
         (String titleKeyword, String contentKeyword, Pageable pageable);
 
-    Page<Article> findByUser(User user, Pageable pageable);
+    Page<Article> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 }
