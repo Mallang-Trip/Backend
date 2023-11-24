@@ -120,7 +120,7 @@ public class ArticleService {
     // 카테고리 별 조회
     public Page<ArticleBriefResponse> getArticlesByType(String type, Pageable pageable) {
         Page<Article> articles =
-            type.equals("all") ? articleRepository.findAllByCreatedAtDesc(pageable)
+            type.equals("all") ? articleRepository.findAllByOrderByCreatedAtDesc(pageable)
                 : articleRepository.findByTypeOrderByCreatedAtDesc(ArticleType.from(type),
                     pageable);
         List<ArticleBriefResponse> responses = articles.stream()

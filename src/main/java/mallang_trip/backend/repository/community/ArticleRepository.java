@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    Page<Article> findAllByCreatedAtDesc(Pageable pageable);
+    Page<Article> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<Article> findByTypeOrderByCreatedAtDesc(ArticleType type, Pageable pageable);
 
