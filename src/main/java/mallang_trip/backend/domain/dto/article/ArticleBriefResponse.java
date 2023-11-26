@@ -18,9 +18,9 @@ public class ArticleBriefResponse {
     private String image;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private int commentsCount;
+    private Integer commentsCount;
 
-    public static ArticleBriefResponse of(Article article){
+    public static ArticleBriefResponse of(Article article, Integer commentsCount){
         return ArticleBriefResponse.builder()
             .articleId(article.getId())
             .nickname(article.getUser().getNickname())
@@ -31,7 +31,7 @@ public class ArticleBriefResponse {
             .image(article.getImages() == null ? null : article.getImages().get(0))
             .createdAt(article.getCreatedAt())
             .updatedAt(article.getUpdatedAt())
-            .commentsCount(0)
+            .commentsCount(commentsCount)
             .build();
     }
 }

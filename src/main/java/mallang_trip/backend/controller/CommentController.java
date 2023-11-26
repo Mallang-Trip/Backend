@@ -24,34 +24,6 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/comment/{id}")
-    public BaseResponse<String> createComment(
-        @PathVariable Long id,
-        @RequestBody @Valid CommentRequest request) {
-        commentService.createComment(id, request);
-        return new BaseResponse<>("성공");
-    }
-
-    @PostMapping("/reply/{id}")
-    public BaseResponse<String> createReply(
-        @PathVariable Long id,
-        @RequestBody @Valid CommentRequest request) {
-        commentService.createReply(id, request);
-        return new BaseResponse<>("성공");
-    }
-
-    @DeleteMapping("/comment/{id}")
-    public BaseResponse<String> createComment(@PathVariable Long id) {
-        commentService.deleteComment(id);
-        return new BaseResponse<>("성공");
-    }
-
-    @DeleteMapping("/reply/{id}")
-    public BaseResponse<String> createReply(@PathVariable Long id) {
-        commentService.deleteReply(id);
-        return new BaseResponse<>("성공");
-    }
-
     @GetMapping("/comment/my")
     public BaseResponse<Page<MyCommentResponse>> getMyCommentsAndReplies(
         @PageableDefault(size = 6) Pageable pageable) {

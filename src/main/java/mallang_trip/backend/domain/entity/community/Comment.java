@@ -25,7 +25,7 @@ import org.hibernate.annotations.SQLDelete;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE article_comment SET content = '삭제된 댓글입니다.', deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE article_comment SET deleted = true WHERE id = ?")
 public class Comment extends BaseEntity {
 
     @Id

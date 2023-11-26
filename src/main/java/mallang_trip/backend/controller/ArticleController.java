@@ -10,6 +10,7 @@ import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
 import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
 import mallang_trip.backend.domain.dto.article.ArticleIdResponse;
 import mallang_trip.backend.domain.dto.article.ArticleRequest;
+import mallang_trip.backend.domain.dto.comment.MyCommentResponse;
 import mallang_trip.backend.service.ArticleService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -107,4 +108,39 @@ public class ArticleController {
         articleService.deleteArticleDibs(id);
         return new BaseResponse<>("성공");
     }
+
+    @PostMapping("/comment/{article_id}")
+    @ApiOperation(value = "댓글 작성")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> createComment(@PathVariable(value = "article_id") Long id,
+        @RequestParam String content) throws BaseException {
+        articleService.createComment(id, content);
+        return new BaseResponse<>("성공");
+    }
+
+    @PostMapping("/reply/{comment_id}")
+    @ApiOperation(value = "대댓글 작성")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> createReply(@PathVariable(value = "comment_id") Long id,
+        @RequestParam String content) throws BaseException {
+        articleService.createReply(id, content);
+        return new BaseResponse<>("성공");
+    }
+
+    @DeleteMapping("/comment/{comment_id}")
+    @ApiOperation(value = "댓글 삭제")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> deleteComment(@PathVariable(value = "comment_id") Long id) throws BaseException {
+        articleService.deleteComment(id);
+        return new BaseResponse<>("성공");
+    }
+
+    @DeleteMapping("/reply/{reply_id}")
+    @ApiOperation(value = "대댓글 삭제")
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> deleteReply(@PathVariable(value = "reply_id") Long id) throws BaseException {
+        articleService.deleteReply(id);
+        return new BaseResponse<>("성공");
+    }
+
 }
