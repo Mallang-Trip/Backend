@@ -1,37 +1,41 @@
 package mallang_trip.backend.domain.dto.article;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.entity.community.Article;
+import mallang_trip.backend.domain.entity.user.User;
 
 @Getter
 @Builder
-public class ArticleBriefResponse {
+@AllArgsConstructor
+public class MyCommentResponse {
 
     private Long articleId;
-    private String nickname;
     private String profileImg;
+    private String nickname;
     private String introduction;
     private String title;
-    private String content;
     private String image;
+    private String content;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private Integer commentsCount;
 
-    public static ArticleBriefResponse of(Article article, Integer commentsCount){
-        return ArticleBriefResponse.builder()
+    public static MyCommentResponse of(Article article, String content, LocalDateTime createdAt,
+        Integer commentsCount) {
+        User user = article.getUser();
+        return MyCommentResponse.builder()
             .articleId(article.getId())
-            .nickname(article.getUser().getNickname())
-            .profileImg(article.getUser().getProfileImage())
-            .introduction(article.getUser().getIntroduction())
+            .profileImg(user.getProfileImage())
+            .nickname(user.getNickname())
+            .introduction(user.getIntroduction())
             .title(article.getTitle())
-            .content(article.getContent())
             .image(article.getImages().isEmpty() ? null : article.getImages().get(0))
-            .createdAt(article.getCreatedAt())
-            .updatedAt(article.getUpdatedAt())
+            .content(content)
+            .createdAt(createdAt)
             .commentsCount(commentsCount)
             .build();
     }
 }
+

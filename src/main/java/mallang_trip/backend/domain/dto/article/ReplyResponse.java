@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.dto.comment;
+package mallang_trip.backend.domain.dto.article;
 
 import java.time.LocalDateTime;
 import lombok.Builder;

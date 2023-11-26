@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.dto.comment;
+package mallang_trip.backend.domain.dto.article;
 
 import javax.validation.constraints.NotNull;
 import lombok.Builder;

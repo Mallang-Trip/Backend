@@ -5,7 +5,6 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.constant.ArticleType;
-import mallang_trip.backend.domain.dto.comment.CommentResponse;
 
 @Getter
 @Builder
@@ -15,8 +14,8 @@ public class ArticleDetailsResponse {
     private Long userId;
     private Long partyId;
     private String partyName;
-    private String userNickname;
-    private String userProfileImage;
+    private String nickname;
+    private String profileImg;
     private ArticleType type;
     private String title;
     private String content;

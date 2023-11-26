@@ -3,14 +3,18 @@ package mallang_trip.backend.service;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponseStatus;
-import mallang_trip.backend.domain.dto.comment.CommentResponse;
-import mallang_trip.backend.domain.dto.comment.ReplyResponse;
+import mallang_trip.backend.domain.dto.article.CommentResponse;
+import mallang_trip.backend.domain.dto.article.MyCommentResponse;
+import mallang_trip.backend.domain.dto.article.ReplyResponse;
 import mallang_trip.backend.domain.entity.community.Article;
 import mallang_trip.backend.domain.dto.article.ArticleBriefResponse;
 import mallang_trip.backend.domain.dto.article.ArticleDetailsResponse;
@@ -38,7 +42,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
-    private final CommentService commentService;
     private final UserService userService;
     private final PartyRepository partyRepository;
     private final ArticleDibsRepository articleDibsRepository;
@@ -68,7 +71,7 @@ public class ArticleService {
         Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if (userService.getCurrentUser().equals(article.getUser())) {
+        if (!userService.getCurrentUser().equals(article.getUser())) {
             throw new BaseException(BaseResponseStatus.Forbidden);
         }
         // 수정
@@ -87,10 +90,10 @@ public class ArticleService {
         Article article = articleRepository.findById(ArticleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if (userService.getCurrentUser().equals(article.getUser())) {
+        if (!userService.getCurrentUser().equals(article.getUser())) {
             throw new BaseException(BaseResponseStatus.Forbidden);
         }
-        articleRepository.delete(article);
+        article.setDeleted(true);
     }
 
     // 상세보기
@@ -102,8 +105,8 @@ public class ArticleService {
             .partyId(article.getParty() == null ? null : article.getParty().getId())
             .partyName(article.getParty() == null ? null : article.getParty().getCourse().getName())
             .userId(article.getUser().getId())
-            .userNickname(article.getUser().getNickname())
-            .userProfileImage(article.getUser().getProfileImage())
+            .nickname(article.getUser().getNickname())
+            .profileImg(article.getUser().getProfileImage())
             .type(article.getType())
             .title(article.getTitle())
             .content(article.getContent())
@@ -152,9 +155,30 @@ public class ArticleService {
     }
 
     // 댓글 단 게시글 조회
-/*    public Page<ArticleBriefResponse> getMyComments(Pageable pageable){
-
-    }*/
+    public Page<MyCommentResponse> getMyComments(Pageable pageable) {
+        User user = userService.getCurrentUser();
+        // 댓글 조회
+        List<MyCommentResponse> comments = commentRepository.findByUser(user).stream()
+            .map(comment -> MyCommentResponse.of(comment.getArticle(), comment.getContent(),
+                comment.getCreatedAt(), getCommentsCount(comment.getArticle())))
+            .collect(Collectors.toList());
+        // 대댓글 조회
+        List<MyCommentResponse> replies = replyRepository.findByUser(user).stream()
+            .map(reply -> {
+                Article article = reply.getComment().getArticle();
+                return MyCommentResponse.of(article, reply.getContent(), reply.getCreatedAt(), getCommentsCount(article));
+            })
+            .collect(Collectors.toList());
+        // 댓글 + 대댓글
+        List<MyCommentResponse> responses = new ArrayList<>();
+        responses.addAll(comments);
+        responses.addAll(replies);
+        Collections.sort(responses, Comparator.comparing(MyCommentResponse::getCreatedAt).reversed());
+        // List -> PageImpl
+        int start = (int)pageable.getOffset();
+        int end = (start + pageable.getPageSize()) > responses.size() ? responses.size() : (start + pageable.getPageSize());
+        return new PageImpl<>(responses.subList(start, end), pageable, responses.size());
+    }
 
     // 찜하기
     public void createArticleDibs(Long articleId) {
@@ -215,29 +239,29 @@ public class ArticleService {
     }
 
     // 댓글 삭제
-    public void deleteComment(Long commentId){
+    public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if(!userService.getCurrentUser().equals(comment.getUser())){
+        if (!userService.getCurrentUser().equals(comment.getUser())) {
             throw new BaseException(Unauthorized);
         }
         commentRepository.delete(comment);
     }
 
     // 대댓글 삭제
-    public void deleteReply(Long replyId){
+    public void deleteReply(Long replyId) {
         Reply reply = replyRepository.findById(replyId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if(!userService.getCurrentUser().equals(reply.getUser())){
+        if (!userService.getCurrentUser().equals(reply.getUser())) {
             throw new BaseException(Unauthorized);
         }
         replyRepository.delete(reply);
     }
 
     // 댓글 + 대댓글 조회
-    private List<CommentResponse> getComments(Article article){
+    private List<CommentResponse> getComments(Article article) {
         return commentRepository.findByArticle(article).stream()
             .map(comment -> {
                 CommentResponse response = CommentResponse.of(comment);
@@ -248,14 +272,14 @@ public class ArticleService {
     }
 
     //대댓글 조회
-    private List<ReplyResponse> getReplies(Comment comment){
+    private List<ReplyResponse> getReplies(Comment comment) {
         return replyRepository.findByComment(comment).stream()
             .map(ReplyResponse::of)
             .collect(Collectors.toList());
     }
 
     // 댓글 수 조회
-    private Integer getCommentsCount(Article article){
+    private Integer getCommentsCount(Article article) {
         int count = 0;
         List<Comment> comments = commentRepository.findByArticle(article);
         for (Comment comment : comments) {
