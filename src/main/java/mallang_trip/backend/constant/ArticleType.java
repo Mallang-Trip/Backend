@@ -7,10 +7,8 @@ import lombok.RequiredArgsConstructor;
 public enum ArticleType {
 
 	FIND_PARTNER,
-	DESTINATION,
-	POPULAR,
-	QUESTION,
-	EVENT,
+	FREE_BOARD,
+	FEEDBACK,
 	;
 
 	@JsonCreator
