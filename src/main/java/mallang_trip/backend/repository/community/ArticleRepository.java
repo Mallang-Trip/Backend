@@ -11,12 +11,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    Page<Article> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    Page<Article> findAllByOrderByUpdatedAtDesc(Pageable pageable);
 
-    Page<Article> findByTypeOrderByCreatedAtDesc(ArticleType type, Pageable pageable);
+    Page<Article> findByTypeOrderByUpdatedAtDesc(ArticleType type, Pageable pageable);
 
-    Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByCreatedAtDesc
+    Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc
         (String titleKeyword, String contentKeyword, Pageable pageable);
 
-    Page<Article> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    Page<Article> findByUserOrderByUpdatedAtDesc(User user, Pageable pageable);
 }

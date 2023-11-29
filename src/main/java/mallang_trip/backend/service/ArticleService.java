@@ -120,7 +120,7 @@ public class ArticleService {
 
     // 키워드 검색
     public Page<ArticleBriefResponse> getArticlesByKeyword(String keyword, Pageable pageable) {
-        Page<Article> articles = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByCreatedAtDesc(
+        Page<Article> articles = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc(
             keyword, keyword, pageable);
         List<ArticleBriefResponse> responses = articles.stream()
             .map(article -> ArticleBriefResponse.of(article, getCommentsCount(article)))
@@ -132,8 +132,8 @@ public class ArticleService {
     // 카테고리 별 조회
     public Page<ArticleBriefResponse> getArticlesByType(String type, Pageable pageable) {
         Page<Article> articles =
-            type.equals("all") ? articleRepository.findAllByOrderByCreatedAtDesc(pageable)
-                : articleRepository.findByTypeOrderByCreatedAtDesc(ArticleType.from(type),
+            type.equals("all") ? articleRepository.findAllByOrderByUpdatedAtDesc(pageable)
+                : articleRepository.findByTypeOrderByUpdatedAtDesc(ArticleType.from(type),
                     pageable);
         List<ArticleBriefResponse> responses = articles.stream()
             .map(article -> ArticleBriefResponse.of(article, getCommentsCount(article)))
@@ -145,7 +145,7 @@ public class ArticleService {
     // 내가 작성한 글 조회
     public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
         User user = userService.getCurrentUser();
-        Page<Article> articles = articleRepository.findByUserOrderByCreatedAtDesc(
+        Page<Article> articles = articleRepository.findByUserOrderByUpdatedAtDesc(
             user, pageable);
         List<ArticleBriefResponse> responses = articles.stream()
             .map(article -> ArticleBriefResponse.of(article, getCommentsCount(article)))
