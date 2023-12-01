@@ -19,6 +19,7 @@ public class ArticleDetailsResponse {
     private ArticleType type;
     private String title;
     private String content;
+    private List<String> images;
     private Boolean dibs;
     private int commentsCount;
     private List<CommentResponse> comments;

@@ -110,6 +110,7 @@ public class ArticleService {
             .type(article.getType())
             .title(article.getTitle())
             .content(article.getContent())
+            .images(article.getImages())
             .comments(getComments(article))
             .commentsCount(getCommentsCount(article))
             .dibs(checkArticleDibs(article))
