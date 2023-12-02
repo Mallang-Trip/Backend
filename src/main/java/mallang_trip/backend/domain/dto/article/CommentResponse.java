@@ -13,6 +13,7 @@ import mallang_trip.backend.domain.entity.user.User;
 @Builder
 public class CommentResponse {
 
+    private Long commentId;
     private Long userId;
     private String nickname;
     private String profileImg;
@@ -25,6 +26,7 @@ public class CommentResponse {
         User user = comment.getUser();
         String content = comment.getDeleted() ? "[삭제된 댓글]" : comment.getContent();
         return CommentResponse.builder()
+            .commentId(comment.getId())
             .userId(user.getId())
             .nickname(user.getNickname())
             .profileImg(user.getProfileImage())
