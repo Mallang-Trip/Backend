@@ -1,5 +1,6 @@
 package mallang_trip.backend.repository.community;
 
+import java.util.Optional;
 import mallang_trip.backend.constant.ArticleType;
 import mallang_trip.backend.domain.entity.community.Article;
 import mallang_trip.backend.domain.entity.user.User;
@@ -11,12 +12,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    Page<Article> findAllByOrderByUpdatedAtDesc(Pageable pageable);
+    Page<Article> findByDeletedOrderByUpdatedAtDesc(Boolean deleted, Pageable pageable);
 
-    Page<Article> findByTypeOrderByUpdatedAtDesc(ArticleType type, Pageable pageable);
+    Page<Article> findByDeletedAndTypeOrderByUpdatedAtDesc(Boolean deleted,ArticleType type, Pageable pageable);
 
-    Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc
-        (String titleKeyword, String contentKeyword, Pageable pageable);
+    Page<Article> findByDeletedAndTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc
+        (Boolean deleted, String titleKeyword, String contentKeyword, Pageable pageable);
 
-    Page<Article> findByUserOrderByUpdatedAtDesc(User user, Pageable pageable);
+    Page<Article> findByDeletedAndUserOrderByUpdatedAtDesc(Boolean deleted, User user, Pageable pageable);
+
+    Optional<Article> findByDeletedAndId(Boolean deleted, Long articleId);
 }

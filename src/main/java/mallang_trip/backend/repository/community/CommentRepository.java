@@ -12,5 +12,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findByArticle(Article article);
 
-    List<Comment> findByUser(User user);
+    List<Comment> findByDeletedAndUser(Boolean deleted, User user);
 }

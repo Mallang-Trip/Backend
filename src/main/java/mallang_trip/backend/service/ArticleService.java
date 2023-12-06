@@ -67,8 +67,8 @@ public class ArticleService {
     }
 
     // 수정
-    public void changeArticle(Long ArticleId, ArticleRequest request) {
-        Article article = articleRepository.findById(ArticleId)
+    public void changeArticle(Long articleId, ArticleRequest request) {
+        Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
         if (!userService.getCurrentUser().equals(article.getUser())) {
@@ -86,8 +86,8 @@ public class ArticleService {
     }
 
     // 삭제
-    public void deleteArticle(Long ArticleId) {
-        Article article = articleRepository.findById(ArticleId)
+    public void deleteArticle(Long articleId) {
+        Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
         if (!userService.getCurrentUser().equals(article.getUser())) {
@@ -97,8 +97,8 @@ public class ArticleService {
     }
 
     // 상세보기
-    public ArticleDetailsResponse getArticleDetails(Long ArticleId) {
-        Article article = articleRepository.findById(ArticleId)
+    public ArticleDetailsResponse getArticleDetails(Long articleId) {
+        Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         return ArticleDetailsResponse.builder()
             .articleId(article.getId())
@@ -121,8 +121,8 @@ public class ArticleService {
 
     // 키워드 검색
     public Page<ArticleBriefResponse> getArticlesByKeyword(String keyword, Pageable pageable) {
-        Page<Article> articles = articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc(
-            keyword, keyword, pageable);
+        Page<Article> articles = articleRepository.findByDeletedAndTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc(
+            false, keyword, keyword, pageable);
         List<ArticleBriefResponse> responses = articles.stream()
             .map(article -> ArticleBriefResponse.of(article, getCommentsCount(article)))
             .collect(Collectors.toList());
@@ -133,8 +133,8 @@ public class ArticleService {
     // 카테고리 별 조회
     public Page<ArticleBriefResponse> getArticlesByType(String type, Pageable pageable) {
         Page<Article> articles =
-            type.equals("all") ? articleRepository.findAllByOrderByUpdatedAtDesc(pageable)
-                : articleRepository.findByTypeOrderByUpdatedAtDesc(ArticleType.from(type),
+            type.equals("all") ? articleRepository.findByDeletedOrderByUpdatedAtDesc(false, pageable)
+                : articleRepository.findByDeletedAndTypeOrderByUpdatedAtDesc(false, ArticleType.from(type),
                     pageable);
         List<ArticleBriefResponse> responses = articles.stream()
             .map(article -> ArticleBriefResponse.of(article, getCommentsCount(article)))
@@ -146,8 +146,8 @@ public class ArticleService {
     // 내가 작성한 글 조회
     public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
         User user = userService.getCurrentUser();
-        Page<Article> articles = articleRepository.findByUserOrderByUpdatedAtDesc(
-            user, pageable);
+        Page<Article> articles = articleRepository.findByDeletedAndUserOrderByUpdatedAtDesc(
+            false, user, pageable);
         List<ArticleBriefResponse> responses = articles.stream()
             .map(article -> ArticleBriefResponse.of(article, getCommentsCount(article)))
             .collect(Collectors.toList());
@@ -159,12 +159,12 @@ public class ArticleService {
     public Page<MyCommentResponse> getMyComments(Pageable pageable) {
         User user = userService.getCurrentUser();
         // 댓글 조회
-        List<MyCommentResponse> comments = commentRepository.findByUser(user).stream()
+        List<MyCommentResponse> comments = commentRepository.findByDeletedAndUser(false, user).stream()
             .map(comment -> MyCommentResponse.of(comment.getArticle(), comment.getContent(),
                 comment.getCreatedAt(), getCommentsCount(comment.getArticle())))
             .collect(Collectors.toList());
         // 대댓글 조회
-        List<MyCommentResponse> replies = replyRepository.findByUser(user).stream()
+        List<MyCommentResponse> replies = replyRepository.findByDeletedAndUser(false, user).stream()
             .map(reply -> {
                 Article article = reply.getComment().getArticle();
                 return MyCommentResponse.of(article, reply.getContent(), reply.getCreatedAt(), getCommentsCount(article));
@@ -183,7 +183,7 @@ public class ArticleService {
 
     // 찜하기
     public void createArticleDibs(Long articleId) {
-        Article article = articleRepository.findById(articleId)
+        Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 이미 찜한 경우
         if (checkArticleDibs(article)) {
@@ -197,7 +197,7 @@ public class ArticleService {
 
     // 찜 취소
     public void deleteArticleDibs(Long articleId) {
-        Article article = articleRepository.findById(articleId)
+        Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 찜한 여행지 아닐 때
         if (!checkArticleDibs(article)) {
@@ -217,7 +217,7 @@ public class ArticleService {
 
     // 댓글 작성
     public void createComment(Long articleId, String content) {
-        Article article = articleRepository.findById(articleId)
+        Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         Comment comment = Comment.builder()
             .article(article)

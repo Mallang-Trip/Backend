@@ -19,6 +19,7 @@ public class MyCommentResponse {
     private String title;
     private String image;
     private String content;
+    private Boolean articleDeleted;
     private LocalDateTime createdAt;
     private Integer commentsCount;
 
@@ -33,6 +34,7 @@ public class MyCommentResponse {
             .title(article.getTitle())
             .image(article.getImages().isEmpty() ? null : article.getImages().get(0))
             .content(content)
+            .articleDeleted(article.getDeleted())
             .createdAt(createdAt)
             .commentsCount(commentsCount)
             .build();
