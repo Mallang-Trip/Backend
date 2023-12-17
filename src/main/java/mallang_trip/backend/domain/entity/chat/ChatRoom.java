@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.chat;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -24,4 +25,11 @@ public class ChatRoom extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column
+    private String roomName;
+
+    @Column(name = "is_group")
+    @Builder.Default()
+    private Boolean isGroup = false;
 }
