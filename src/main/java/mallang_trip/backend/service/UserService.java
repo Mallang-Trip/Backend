@@ -11,6 +11,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.config.security.TokenProvider;
 import mallang_trip.backend.controller.io.BaseException;
@@ -23,6 +25,7 @@ import mallang_trip.backend.domain.dto.User.LoginIdResponse;
 import mallang_trip.backend.domain.dto.User.LoginRequest;
 import mallang_trip.backend.domain.dto.User.ResetPasswordRequest;
 import mallang_trip.backend.domain.dto.User.SignupRequest;
+import mallang_trip.backend.domain.dto.User.UserBriefResponse;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.user.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -180,4 +183,15 @@ public class UserService {
 		user.setIntroduction(request.getIntroduction());
 	}
 
+	public List<UserBriefResponse> findByNickname(String nickname){
+		return userRepository.findByNicknameContainingIgnoreCase(nickname).stream()
+			.map(UserBriefResponse::of)
+			.collect(Collectors.toList());
+	}
+
+	public UserBriefResponse getUserBriefInfo(Long userId){
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BaseException(Not_Found));
+		return UserBriefResponse.of(user);
+	}
 }
