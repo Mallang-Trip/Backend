@@ -49,7 +49,7 @@ public class SecurityConfig {
             .antMatchers(HttpMethod.GET, "/course/**").permitAll() // course API
             .antMatchers(HttpMethod.GET, "/article/**").permitAll() // article API
             .antMatchers("/party/list", "/party/view/**").permitAll() // party API
-            .antMatchers("/ws/chat/**").permitAll()
+            .antMatchers("/ws/chat/**").permitAll() // STOMP chat
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
 

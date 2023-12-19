@@ -26,7 +26,7 @@ public class ChatRoom extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(name = "room_name")
     private String roomName;
 
     @Column(name = "is_group")

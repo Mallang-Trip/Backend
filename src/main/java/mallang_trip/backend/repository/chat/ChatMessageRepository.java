@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-    ChatMessage findOneByChatRoomOrderByCreatedAtAsc(ChatRoom chatroom);
+    List<ChatMessage> findByChatRoomOrderByCreatedAtDesc(ChatRoom chatroom);
 
     @Query(value = "SELECT cm.* FROM chat_message cm\n"
         + "    JOIN chat_room cr ON cm.chat_room_id = cr.id\n"

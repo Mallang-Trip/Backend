@@ -1,8 +1,10 @@
 package mallang_trip.backend.service;
 
 import static mallang_trip.backend.constant.ChatType.INFO;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +26,6 @@ import mallang_trip.backend.repository.chat.ChatMessageRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
 import mallang_trip.backend.repository.redis.ChatRoomConnection;
 import mallang_trip.backend.repository.user.UserRepository;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,7 @@ public class ChatService {
         List<User> users = userIds.stream()
             .map(userId -> userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(Not_Found)))
+            .filter(user -> !userService.getCurrentUser().equals(user))
             .collect(Collectors.toList());
         users.stream().forEach(user -> createChatMember(room, user));
         // 초대 메시지 생성
@@ -80,7 +82,8 @@ public class ChatService {
         users.stream()
             .forEach(user -> createChatMember(room, user));
         // 초대 메시지 생성
-        createInviteMessage(users, room);
+        /*template.convertAndSend("/sub/room/" + room.getId(),
+            ChatMessageResponse.of(createInviteMessage(users, room)));*/
     }
 
     // 1:1 채팅방 생성
@@ -88,6 +91,10 @@ public class ChatService {
         User user = userService.getCurrentUser();
         User receiver = userRepository.findById(userIds)
             .orElseThrow(() -> new BaseException(Not_Found));
+        // 자신을 초대하는 경우
+        if (user.equals(receiver)) {
+            throw new BaseException(Bad_Request);
+        }
         // 두 명으로 구성된 1:1 채팅방 탐색
         ChatRoom chatRoom = chatRoomRepository.findExistedChatRoom(user.getId(), receiver.getId());
         // 진행중인 채팅방이 없는 경우
@@ -120,8 +127,7 @@ public class ChatService {
             userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
         chatMemberRepository.delete(member);
         // 나가기 메시지 생성
-
-       /* template.convertAndSend("/sub/room/" + room.getId(),
+        /* template.convertAndSend("/sub/room/" + room.getId(),
             ChatMessageResponse.of(createLeaveMessage(room)));*/
     }
 
@@ -171,6 +177,10 @@ public class ChatService {
     public ChatRoomDetailsResponse getChatRoomDetails(Long chatRoomId) {
         ChatRoom room = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        // 권한 CHECK
+        if (!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())) {
+            throw new BaseException(Unauthorized);
+        }
         String roomName =
             room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getName();
         List<UserBriefResponse> members = getMembers(room).stream()
@@ -192,6 +202,10 @@ public class ChatService {
             .orElseThrow(() -> new BaseException(Not_Found));
         ChatRoom room = chatRoomRepository.findById(request.getChatRoomId())
             .orElseThrow(() -> new BaseException(Not_Found));
+        // 권한 CHECK
+        if (!chatMemberRepository.existsByChatRoomAndUser(room, user)) {
+            throw new BaseException(Unauthorized);
+        }
         // 채팅 저장
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
             .user(user)
@@ -257,7 +271,12 @@ public class ChatService {
     }
 
     private ChatMessage getLastMessage(ChatRoom room) {
-        return chatMessageRepository.findOneByChatRoomOrderByCreatedAtAsc(room);
+        List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtDesc(
+            room);
+        if (messages == null) {
+            return null;
+        }
+        return messages.get(0);
     }
 
     private List<String> getProfileImages(ChatRoom room) {
@@ -296,13 +315,13 @@ public class ChatService {
             .get(0).getUser();
     }
 
-    private void createInviteMessage(List<User> users, ChatRoom room) {
+    private ChatMessage createInviteMessage(List<User> users, ChatRoom room) {
         List<String> nicknames = users.stream()
             .map(user -> user.getNickname())
             .collect(Collectors.toList());
         User user = userService.getCurrentUser();
         String message = user.getNickname() + "님이 " + String.join(", ", nicknames) + "님을 초대했습니다.";
-        chatMessageRepository.save(ChatMessage.builder()
+        return chatMessageRepository.save(ChatMessage.builder()
             .user(user)
             .chatRoom(room)
             .type(INFO)
@@ -310,7 +329,7 @@ public class ChatService {
             .build());
     }
 
-    private ChatMessage createLeaveMessage(ChatRoom room){
+    private ChatMessage createLeaveMessage(ChatRoom room) {
         User user = userService.getCurrentUser();
         String message = user.getNickname() + "님이 나갔습니다.";
         return chatMessageRepository.save(ChatMessage.builder()
