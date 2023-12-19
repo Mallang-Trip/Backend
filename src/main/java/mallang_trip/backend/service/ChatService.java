@@ -26,7 +26,7 @@ import mallang_trip.backend.repository.chat.ChatMessageRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
 import mallang_trip.backend.repository.redis.ChatRoomConnection;
 import mallang_trip.backend.repository.user.UserRepository;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,7 +40,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final ChatRoomConnection chatRoomConnection;
-    //private final SimpMessagingTemplate template;
+    private final SimpMessagingTemplate template;
 
     // 새로운 그룹 채팅방 생성
     public ChatRoomIdResponse startGroupChat(List<Long> userIds, String roomName) {
@@ -81,9 +81,9 @@ public class ChatService {
         // chatMember 추가
         users.stream()
             .forEach(user -> createChatMember(room, user));
-        // 초대 메시지 생성
-        /*template.convertAndSend("/sub/room/" + room.getId(),
-            ChatMessageResponse.of(createInviteMessage(users, room)));*/
+        // 초대 메시지 작성
+        template.convertAndSend("/sub/room/" + room.getId(),
+            ChatMessageResponse.of(createInviteMessage(users, room)));
     }
 
     // 1:1 채팅방 생성
@@ -126,9 +126,9 @@ public class ChatService {
         ChatMember member = chatMemberRepository.findByChatRoomAndUser(room,
             userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
         chatMemberRepository.delete(member);
-        // 나가기 메시지 생성
-        /* template.convertAndSend("/sub/room/" + room.getId(),
-            ChatMessageResponse.of(createLeaveMessage(room)));*/
+        // 나가기 메시지 작성
+        template.convertAndSend("/sub/room/" + room.getId(),
+            ChatMessageResponse.of(createLeaveMessage(room)));
     }
 
     // 1:1 채팅방 나가기
@@ -165,7 +165,7 @@ public class ChatService {
                         .roomName(other.getName())
                         .profileImages(List.of(other.getProfileImage()))
                         .content(getLastMessage(chatRoom).getContent())
-                        .headCount(2)
+                        .headCount(countMembers(chatRoom))
                         .unreadCount(getUnreadCount(chatRoom, user))
                         .updatedAt(getLastMessage(chatRoom).getCreatedAt())
                         .build();
@@ -218,18 +218,6 @@ public class ChatService {
         // 현재 접속중인 멤버 제외하고 unreadCount++
         plusUnreadCount(room);
         return ChatMessageResponse.of(message);
-    }
-
-    public void connectToChatRoom(StompHeaderAccessor accessor, Long chatRoomId) {
-        User user = userService.getCurrentUser(accessor);
-        ChatRoom room = chatRoomRepository.findById(chatRoomId)
-            .orElseThrow(() -> new BaseException(Not_Found));
-        ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
-            .orElseThrow(() -> new BaseException(Not_Found));
-        // 모두 읽음 표시
-        member.setUnreadCount(0);
-        // Redis 채팅 연결 상태 저장
-        chatRoomConnection.saveConnection(member, room);
     }
 
     public void disconnectToChatRoom(Long userId, Long chatRoomId) {
@@ -295,18 +283,6 @@ public class ChatService {
         return chatMember.getUnreadCount();
     }
 
-    private void plusUnreadCount(ChatRoom chatRoom) {
-        List<Long> connectedMemberIds = chatRoomConnection.getConnection(chatRoom);
-        chatMemberRepository.findByChatRoom(chatRoom).stream()
-            .filter(member -> !connectedMemberIds.contains(member.getId()))
-            .forEach(member -> member.plusUnreadCount());
-    }
-
-    private void makeMembersActive(ChatRoom room) {
-        chatMemberRepository.findByChatRoomAndActive(room, false).stream()
-            .forEach(member -> member.setActive(true));
-    }
-
     private User getOtherUserInCoupleChat(ChatRoom chatRoom) {
         User user = userService.getCurrentUser();
         return chatMemberRepository.findByChatRoom(chatRoom).stream()
@@ -315,7 +291,7 @@ public class ChatService {
             .get(0).getUser();
     }
 
-    private ChatMessage createInviteMessage(List<User> users, ChatRoom room) {
+    public ChatMessage createInviteMessage(List<User> users, ChatRoom room) {
         List<String> nicknames = users.stream()
             .map(user -> user.getNickname())
             .collect(Collectors.toList());
@@ -338,5 +314,17 @@ public class ChatService {
             .type(INFO)
             .content(message)
             .build());
+    }
+
+    private void makeMembersActive(ChatRoom room) {
+        chatMemberRepository.findByChatRoomAndActive(room, false).stream()
+            .forEach(member -> member.setActive(true));
+    }
+
+    private void plusUnreadCount(ChatRoom chatRoom) {
+        List<Long> connectedMemberIds = chatRoomConnection.getConnection(chatRoom);
+        chatMemberRepository.findByChatRoom(chatRoom).stream()
+            .filter(member -> !connectedMemberIds.contains(member.getId()))
+            .forEach(member -> member.plusUnreadCount());
     }
 }
