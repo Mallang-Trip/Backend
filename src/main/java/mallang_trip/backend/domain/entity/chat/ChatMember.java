@@ -45,4 +45,8 @@ public class ChatMember extends BaseEntity {
     @Column(name = "is_active")
     @Builder.Default()
     private Boolean active = false;
+
+    public void plusUnreadCount(){
+        this.unreadCount++;
+    }
 }

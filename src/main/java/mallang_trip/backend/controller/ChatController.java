@@ -11,16 +11,16 @@ import mallang_trip.backend.domain.dto.chat.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomIdResponse;
 import mallang_trip.backend.service.ChatService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Api(tags = "Chat API")
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat")
 public class ChatController {
@@ -54,7 +54,17 @@ public class ChatController {
 		return new BaseResponse<>("성공");
 	}
 
-	@DeleteMapping("/{chat_room_id}")
+	@DeleteMapping("/{chat_room_id}/{user_id}")
+	@ApiOperation(value = "채팅 페이지 나가기")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<String> deleteConnection(
+		@PathVariable(value = "chat_room_id") Long chatRoomId,
+		@PathVariable(value = "user_id") Long userId) throws BaseException {
+		chatService.disconnectToChatRoom(userId, chatRoomId);
+		return new BaseResponse<>("성공");
+	}
+
+	@DeleteMapping("/leave/{chat_room_id}")
 	@ApiOperation(value = "채팅방 나가기")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> leave(

@@ -1,4 +1,4 @@
-package mallang_trip.backend.repository.sms;
+package mallang_trip.backend.repository.redis;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
