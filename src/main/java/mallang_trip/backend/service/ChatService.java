@@ -4,7 +4,6 @@ import static mallang_trip.backend.constant.ChatType.INFO;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +13,6 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.User.UserBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatMessageRequest;
 import mallang_trip.backend.domain.dto.chat.ChatMessageResponse;
-import mallang_trip.backend.domain.dto.chat.ChatReadRequest;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomIdResponse;
@@ -139,7 +137,7 @@ public class ChatService {
     }
 
     // 채팅방 리스트 조회
-    public List<ChatRoomBriefResponse> getChatRooms(){
+    public List<ChatRoomBriefResponse> getChatRooms() {
         User user = userService.getCurrentUser();
         return getChatRooms(user);
     }
@@ -202,14 +200,11 @@ public class ChatService {
     }
 
     // 새 메시지 handle
-    public ChatMessageResponse handleNewMessage(ChatMessageRequest request) {
-        User user = userService.getCurrentUser(request.getAccessToken());
-        ChatRoom room = chatRoomRepository.findById(request.getChatRoomId())
+    public ChatMessageResponse handleNewMessage(ChatMessageRequest request, StompHeaderAccessor accessor) {
+        User user = userService.getCurrentUser(accessor.getFirstNativeHeader("access-token"));
+        ChatRoom room = chatRoomRepository.findById(
+                Long.parseLong(accessor.getFirstNativeHeader("room-id")))
             .orElseThrow(() -> new BaseException(Not_Found));
-        // 권한 CHECK
-        if (!chatMemberRepository.existsByChatRoomAndUser(room, user)) {
-            throw new BaseException(Unauthorized);
-        }
         // 채팅 저장
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
             .user(user)
@@ -224,9 +219,10 @@ public class ChatService {
         return ChatMessageResponse.of(message);
     }
 
-    public void setUnreadCountZero(ChatReadRequest request) {
-        User user = userService.getCurrentUser(request.getAccessToken());
-        ChatRoom room = chatRoomRepository.findById(request.getChatRoomId())
+    public void setUnreadCountZero(StompHeaderAccessor accessor) {
+        User user = userService.getCurrentUser(accessor.getFirstNativeHeader("access-token"));
+        ChatRoom room = chatRoomRepository.findById(
+                Long.parseLong(accessor.getFirstNativeHeader("room-id")))
             .orElseThrow(() -> new BaseException(Not_Found));
         ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
             .orElseThrow(() -> new BaseException(Not_Found));

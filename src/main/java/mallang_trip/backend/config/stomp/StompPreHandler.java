@@ -49,6 +49,7 @@ public class StompPreHandler implements ChannelInterceptor {
                 checkSubscribe(accessor);
                 break;
             case SEND:
+                checkSend(accessor);
                 break;
         }
     }
@@ -62,6 +63,25 @@ public class StompPreHandler implements ChannelInterceptor {
             checkPermissionForChatList(user, destination);
         } else {
             throw new MessageDeliveryException("BAD_REQUEST");
+        }
+    }
+
+    private void checkSend(StompHeaderAccessor accessor) {
+        String destination = accessor.getDestination();
+        User user = getCurrentUser(accessor);
+        try{
+            if (destination.startsWith("/pub/read") || destination.startsWith("/pub/write")) {
+                Long roomId = Long.parseLong(accessor.getFirstNativeHeader("room-id"));
+                ChatRoom room = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new MessageDeliveryException("CANNOT_FOUND_CHAT_ROOM"));
+                if (!chatMemberRepository.existsByChatRoomAndUser(room, user)) {
+                    throw new MessageDeliveryException("UNAUTHORIZED");
+                }
+            } else {
+                throw new MessageDeliveryException("BAD_REQUEST");
+            }
+        } catch (NumberFormatException e){
+            throw new MessageDeliveryException("INVALID_FORMAT");
         }
     }
 
@@ -89,7 +109,7 @@ public class StompPreHandler implements ChannelInterceptor {
         }
     }
 
-    public User getCurrentUser(StompHeaderAccessor accessor) {
+    private User getCurrentUser(StompHeaderAccessor accessor) {
         String accessToken = accessor.getFirstNativeHeader("access-token");
         if (accessToken == null) {
             throw new MessageDeliveryException("EMPTY_JWT");

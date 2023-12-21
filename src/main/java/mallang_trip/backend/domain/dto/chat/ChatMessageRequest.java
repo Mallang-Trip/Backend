@@ -8,8 +8,6 @@ import mallang_trip.backend.constant.ChatType;
 @Builder
 public class ChatMessageRequest {
 
-    private String accessToken;
-    private Long chatRoomId;
     private ChatType type;
     private String content;
 }
