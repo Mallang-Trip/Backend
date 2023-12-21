@@ -14,6 +14,7 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.User.UserBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatMessageRequest;
 import mallang_trip.backend.domain.dto.chat.ChatMessageResponse;
+import mallang_trip.backend.domain.dto.chat.ChatReadRequest;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomIdResponse;
@@ -24,9 +25,9 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatMemberRepository;
 import mallang_trip.backend.repository.chat.ChatMessageRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
-import mallang_trip.backend.repository.redis.ChatRoomConnection;
 import mallang_trip.backend.repository.user.UserRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,7 +40,6 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMemberRepository chatMemberRepository;
-    private final ChatRoomConnection chatRoomConnection;
     private final SimpMessagingTemplate template;
 
     // 새로운 그룹 채팅방 생성
@@ -139,8 +139,12 @@ public class ChatService {
     }
 
     // 채팅방 리스트 조회
-    public List<ChatRoomBriefResponse> getChatRooms() {
+    public List<ChatRoomBriefResponse> getChatRooms(){
         User user = userService.getCurrentUser();
+        return getChatRooms(user);
+    }
+
+    private List<ChatRoomBriefResponse> getChatRooms(User user) {
         return chatMemberRepository.findByUserAndActive(user, true).stream()
             // 속한 채팅방 찾기
             .map(chatMember -> chatMember.getChatRoom())
@@ -177,15 +181,16 @@ public class ChatService {
     public ChatRoomDetailsResponse getChatRoomDetails(Long chatRoomId) {
         ChatRoom room = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new BaseException(Not_Found));
-        // 권한 CHECK
-        if (!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())) {
-            throw new BaseException(Unauthorized);
-        }
+        ChatMember user = chatMemberRepository.findByChatRoomAndUser(room,
+            userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
+        // unreadCount 0 초기화
+        user.setUnreadCount(0);
+        // 채팅방 이름
         String roomName =
             room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getName();
+        // 멤버 정보
         List<UserBriefResponse> members = getMembers(room).stream()
             .map(member -> UserBriefResponse.of(member.getUser())).collect(Collectors.toList());
-
         return ChatRoomDetailsResponse.builder()
             .chatRoomId(room.getId())
             .isGroup(room.getIsGroup())
@@ -198,8 +203,7 @@ public class ChatService {
 
     // 새 메시지 handle
     public ChatMessageResponse handleNewMessage(ChatMessageRequest request) {
-        User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new BaseException(Not_Found));
+        User user = userService.getCurrentUser(request.getAccessToken());
         ChatRoom room = chatRoomRepository.findById(request.getChatRoomId())
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
@@ -215,19 +219,18 @@ public class ChatService {
             .build());
         // 모든 멤버 visibility 전환
         makeMembersActive(room);
-        // 현재 접속중인 멤버 제외하고 unreadCount++
+        // 멤버 unreadCount++
         plusUnreadCount(room);
         return ChatMessageResponse.of(message);
     }
 
-    public void disconnectToChatRoom(Long userId, Long chatRoomId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BaseException(Not_Found));
-        ChatRoom room = chatRoomRepository.findById(chatRoomId)
+    public void setUnreadCountZero(ChatReadRequest request) {
+        User user = userService.getCurrentUser(request.getAccessToken());
+        ChatRoom room = chatRoomRepository.findById(request.getChatRoomId())
             .orElseThrow(() -> new BaseException(Not_Found));
         ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
             .orElseThrow(() -> new BaseException(Not_Found));
-        chatRoomConnection.deleteConnection(member, room);
+        member.setUnreadCount(0);
     }
 
     private List<ChatMessageResponse> getChatMessages(ChatRoom room, User user) {
@@ -322,9 +325,15 @@ public class ChatService {
     }
 
     private void plusUnreadCount(ChatRoom chatRoom) {
-        List<Long> connectedMemberIds = chatRoomConnection.getConnection(chatRoom);
-        chatMemberRepository.findByChatRoom(chatRoom).stream()
-            .filter(member -> !connectedMemberIds.contains(member.getId()))
-            .forEach(member -> member.plusUnreadCount());
+        List<ChatMember> members = chatMemberRepository.findByChatRoom(chatRoom);
+        members.stream().forEach(member -> member.plusUnreadCount());
+        sendNewChatRoomList(members);
+    }
+
+    private void sendNewChatRoomList(List<ChatMember> members) {
+        members.stream()
+            .map(member -> member.getUser())
+            .forEach(user -> template.convertAndSend("/sub/list/" + user.getId(),
+                getChatRooms(user)));
     }
 }

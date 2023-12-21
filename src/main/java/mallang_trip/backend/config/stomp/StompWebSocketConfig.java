@@ -1,4 +1,4 @@
-package mallang_trip.backend.config;
+package mallang_trip.backend.config.stomp;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final StompHandler stompHandler;
+    private final StompPreHandler stompPreHandler;
+    private final StompErrorHandler stompErrorHandler;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -21,6 +22,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws/chat")
             .setAllowedOriginPatterns("*")
             .withSockJS();
+        registry.setErrorHandler(stompErrorHandler);
     }
 
     @Override
@@ -31,6 +33,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(stompHandler);
+        registration.interceptors(stompPreHandler);
     }
 }

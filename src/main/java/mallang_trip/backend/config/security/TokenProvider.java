@@ -9,6 +9,8 @@ import mallang_trip.backend.domain.dto.TokensDto;
 import mallang_trip.backend.repository.user.UserRepository;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.MessageDeliveryException;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -142,6 +144,32 @@ public class TokenProvider implements InitializingBean {
         }
 
         return false;
+    }
+
+    public void validateToken(StompHeaderAccessor accessor){
+        String tokenHeader = accessor.getFirstNativeHeader("access-token");
+        if (tokenHeader == null || tokenHeader.isEmpty()) {
+            throw new MessageDeliveryException("EMPTY_JWT");
+        }
+        String token = tokenHeader.substring(7);
+        try{
+            Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
+        }
+        catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            throw new MessageDeliveryException("INVALID_JWT");
+        }
+        catch (ExpiredJwtException e) {
+            throw new MessageDeliveryException("EXPIRED_JWT");
+        }
+        catch (UnsupportedJwtException e) {
+            throw new MessageDeliveryException("INVALID_JWT");
+        }
+        catch (IllegalArgumentException e) {
+            throw new MessageDeliveryException("INVALID_JWT");
+        }
     }
 
 

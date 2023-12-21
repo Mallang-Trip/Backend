@@ -3,6 +3,7 @@ package mallang_trip.backend.service;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.EMPTY_JWT;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
@@ -28,6 +29,7 @@ import mallang_trip.backend.domain.dto.User.SignupRequest;
 import mallang_trip.backend.domain.dto.User.UserBriefResponse;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.user.UserRepository;
+import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -107,15 +109,18 @@ public class UserService {
 		}
 		User user = authentication.getName().equals("anonymousUser") ? null
 			: userRepository.findById(Long.parseLong(authentication.getName()))
-				.orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
+				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		return user;
 	}
 
-	public User getCurrentUser(StompHeaderAccessor accessor){
-		String token = accessor.getFirstNativeHeader("access-token").substring(7);
+	public User getCurrentUser(String accessToken){
+		if(accessToken == null){
+			throw new BaseException(EMPTY_JWT);
+		}
+		String token = accessToken.substring(7);
 		Authentication authentication = tokenProvider.getAuthentication(token);
 		User user = userRepository.findById(Long.parseLong(authentication.getName()))
-			.orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		return user;
 	}
 

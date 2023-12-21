@@ -54,16 +54,6 @@ public class ChatController {
 		return new BaseResponse<>("성공");
 	}
 
-	@DeleteMapping("/{chat_room_id}/{user_id}")
-	@ApiOperation(value = "채팅 페이지 나가기")
-	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> deleteConnection(
-		@PathVariable(value = "chat_room_id") Long chatRoomId,
-		@PathVariable(value = "user_id") Long userId) throws BaseException {
-		chatService.disconnectToChatRoom(userId, chatRoomId);
-		return new BaseResponse<>("성공");
-	}
-
 	@DeleteMapping("/leave/{chat_room_id}")
 	@ApiOperation(value = "채팅방 나가기")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자

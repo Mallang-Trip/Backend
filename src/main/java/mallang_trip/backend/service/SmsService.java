@@ -16,7 +16,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.repository.redis.SmsCertification;
+import mallang_trip.backend.repository.sms.SmsCertification;
 import mallang_trip.backend.domain.dto.sms.SmsMessage;
 import mallang_trip.backend.domain.dto.sms.SmsRequest;
 import mallang_trip.backend.domain.dto.sms.SmsResponse;
