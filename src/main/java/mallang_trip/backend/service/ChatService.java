@@ -183,6 +183,8 @@ public class ChatService {
             userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
         // unreadCount 0 초기화
         user.setUnreadCount(0);
+        template.convertAndSend("/sub/list/" + user.getUser().getId(),
+            getChatRooms(user.getUser()));
         // 채팅방 이름
         String roomName =
             room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getName();
@@ -200,7 +202,8 @@ public class ChatService {
     }
 
     // 새 메시지 handle
-    public ChatMessageResponse handleNewMessage(ChatMessageRequest request, StompHeaderAccessor accessor) {
+    public ChatMessageResponse handleNewMessage(ChatMessageRequest request,
+        StompHeaderAccessor accessor) {
         User user = userService.getCurrentUser(accessor.getFirstNativeHeader("access-token"));
         ChatRoom room = chatRoomRepository.findById(
                 Long.parseLong(accessor.getFirstNativeHeader("room-id")))
@@ -227,6 +230,7 @@ public class ChatService {
         ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
             .orElseThrow(() -> new BaseException(Not_Found));
         member.setUnreadCount(0);
+        template.convertAndSend("/sub/list/" + user.getId(), getChatRooms(user));
     }
 
     private List<ChatMessageResponse> getChatMessages(ChatRoom room, User user) {
