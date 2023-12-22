@@ -149,28 +149,9 @@ public class ChatService {
             // 채팅방 -> ChatRoomBriefResponse
             .map(chatRoom -> {
                 if (chatRoom.getIsGroup()) {
-                    return ChatRoomBriefResponse.builder()
-                        .chatRoomId(chatRoom.getId())
-                        .isGroup(true)
-                        .roomName(chatRoom.getRoomName())
-                        .profileImages(getProfileImages(chatRoom))
-                        .content(getLastMessage(chatRoom).getContent())
-                        .headCount(countMembers(chatRoom))
-                        .unreadCount(getUnreadCount(chatRoom, user))
-                        .updatedAt(getLastMessage(chatRoom).getCreatedAt())
-                        .build();
+                    return groupChatToResponse(chatRoom, user);
                 } else {
-                    User other = getOtherUserInCoupleChat(chatRoom);
-                    return ChatRoomBriefResponse.builder()
-                        .chatRoomId(chatRoom.getId())
-                        .isGroup(false)
-                        .roomName(other.getName())
-                        .profileImages(List.of(other.getProfileImage()))
-                        .content(getLastMessage(chatRoom).getContent())
-                        .headCount(countMembers(chatRoom))
-                        .unreadCount(getUnreadCount(chatRoom, user))
-                        .updatedAt(getLastMessage(chatRoom).getCreatedAt())
-                        .build();
+                    return coupleChatToResponse(chatRoom, user);
                 }
             }).collect(Collectors.toList());
     }
@@ -262,12 +243,7 @@ public class ChatService {
     }
 
     private ChatMessage getLastMessage(ChatRoom room) {
-        List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtDesc(
-            room);
-        if (messages == null) {
-            return null;
-        }
-        return messages.get(0);
+        return chatMessageRepository.findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(room, INFO);
     }
 
     private List<String> getProfileImages(ChatRoom room) {
@@ -335,5 +311,34 @@ public class ChatService {
             .map(member -> member.getUser())
             .forEach(user -> template.convertAndSend("/sub/list/" + user.getId(),
                 getChatRooms(user)));
+    }
+
+    private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user){
+        User other = getOtherUserInCoupleChat(chatRoom);
+        ChatMessage lastMessage = getLastMessage(chatRoom);
+        return ChatRoomBriefResponse.builder()
+            .chatRoomId(chatRoom.getId())
+            .isGroup(false)
+            .roomName(other.getName())
+            .profileImages(List.of(other.getProfileImage()))
+            .content(lastMessage == null ? "" : lastMessage.getContent())
+            .headCount(countMembers(chatRoom))
+            .unreadCount(getUnreadCount(chatRoom, user))
+            .updatedAt(lastMessage == null ? chatRoom.getUpdatedAt() : lastMessage.getCreatedAt())
+            .build();
+    }
+
+    private ChatRoomBriefResponse groupChatToResponse(ChatRoom chatRoom, User user){
+        ChatMessage lastMessage = getLastMessage(chatRoom);
+        return ChatRoomBriefResponse.builder()
+            .chatRoomId(chatRoom.getId())
+            .isGroup(true)
+            .roomName(chatRoom.getRoomName())
+            .profileImages(getProfileImages(chatRoom))
+            .content(lastMessage == null ? "" : lastMessage.getContent())
+            .headCount(countMembers(chatRoom))
+            .unreadCount(getUnreadCount(chatRoom, user))
+            .updatedAt(lastMessage == null ? chatRoom.getUpdatedAt() : lastMessage.getCreatedAt())
+            .build();
     }
 }

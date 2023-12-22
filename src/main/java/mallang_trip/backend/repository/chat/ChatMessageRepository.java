@@ -1,6 +1,7 @@
 package mallang_trip.backend.repository.chat;
 
 import java.util.List;
+import mallang_trip.backend.constant.ChatType;
 import mallang_trip.backend.domain.entity.chat.ChatMessage;
 import mallang_trip.backend.domain.entity.chat.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
         + "ORDER BY cm.created_at ASC;", nativeQuery = true)
     List<ChatMessage> findByChatRoomAndUser(@Param(value = "chat_room_id") Long chatRoomId,
         @Param(value = "user_id") Long userId);
+
+    ChatMessage findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(ChatRoom chatRoom, ChatType type);
 }
