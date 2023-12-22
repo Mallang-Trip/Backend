@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,7 @@ public class ChatController {
 	private final ChatService chatService;
 
 	@GetMapping("/groupChat")
-	@ApiOperation(value = "그룹채팅방 만들기")
+	@ApiOperation(value = "그룹 채팅방 만들기")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<ChatRoomIdResponse> startGroupChat(
 		@RequestParam(value = "userId") List<Long> userId,
@@ -45,12 +46,22 @@ public class ChatController {
 	}
 
 	@PostMapping("/invite/{chat_room_id}")
-	@ApiOperation(value = "채팅방 초대")
+	@ApiOperation(value = "그룹 채팅방 초대")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> invite(
 		@PathVariable(value = "chat_room_id") Long chatRoomId,
 		@RequestParam(value = "userId") List<Long> userId) throws BaseException {
-		chatService.inviteGroupChatMember(chatRoomId, userId);
+		chatService.inviteToGroupChat(chatRoomId, userId);
+		return new BaseResponse<>("성공");
+	}
+
+	@PutMapping("/groupChat/{chat_room_id}")
+	@ApiOperation(value = "그룹 채팅방 이름 변경")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<String> changeGroupChatRoomName(
+		@PathVariable(value = "chat_room_id") Long chatRoomId,
+		@RequestParam(value = "room_name") String roomName) throws BaseException {
+		chatService.changeGroupChatRoomName(chatRoomId, roomName);
 		return new BaseResponse<>("성공");
 	}
 

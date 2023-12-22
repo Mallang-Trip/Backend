@@ -4,6 +4,7 @@ import static mallang_trip.backend.constant.ChatType.INFO;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ public class ChatService {
     }
 
     // 그룹 채팅방 초대
-    public void inviteGroupChatMember(Long chatRoomId, List<Long> userIds) {
+    public void inviteToGroupChat(Long chatRoomId, List<Long> userIds) {
         ChatRoom room = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 그룹 채팅방이 아닌 경우
@@ -106,6 +107,20 @@ public class ChatService {
         } else { // 진행중인 채팅방이 존재하는 경우
             return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
         }
+    }
+
+    public void changeGroupChatRoomName(Long roomId, String roomName){
+        ChatRoom room = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        // 권한 확인
+        if(!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())){
+            throw new BaseException(Unauthorized);
+        }
+        // 그룹채팅방이 아닌 경우
+        if (!room.getIsGroup()) {
+            throw new BaseException(Forbidden);
+        }
+        room.setRoomName(roomName);
     }
 
     // 채팅방 나가기
