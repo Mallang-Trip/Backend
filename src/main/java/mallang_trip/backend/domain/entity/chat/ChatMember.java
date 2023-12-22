@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.chat;
 
+import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -46,7 +47,18 @@ public class ChatMember extends BaseEntity {
     @Builder.Default()
     private Boolean active = false;
 
+    @Column(name = "joined_at")
+    @Builder.Default()
+    private LocalDateTime joinedAt = LocalDateTime.now();
+
     public void plusUnreadCount(){
         this.unreadCount++;
+    }
+
+    public void setActiveTrue(){
+        if(this.active == false){
+            this.setActive(true);
+        }
+        this.joinedAt = LocalDateTime.now();
     }
 }

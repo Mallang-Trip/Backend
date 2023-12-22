@@ -321,7 +321,7 @@ public class ChatService {
 
     private void makeMembersActive(ChatRoom room) {
         chatMemberRepository.findByChatRoomAndActive(room, false).stream()
-            .forEach(member -> member.setActive(true));
+            .forEach(member -> member.setActiveTrue());
     }
 
     private void plusUnreadCount(ChatRoom chatRoom) {
