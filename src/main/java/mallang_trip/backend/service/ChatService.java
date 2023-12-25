@@ -46,7 +46,7 @@ public class ChatService {
         // 채팅방 생성
         ChatRoom room = createChatRoom(true, roomName);
         // 현재 유저 멤버 추가
-        createChatMember(room, userService.getCurrentUser()).setActive(true);
+        createChatMember(room, userService.getCurrentUser()).setActiveTrue();
         // 멤버 초대
         List<User> users = userIds.stream()
             .map(userId -> userRepository.findById(userId)
@@ -101,7 +101,7 @@ public class ChatService {
             // 채팅방 생성
             ChatRoom newChatRoom = createChatRoom(false, null);
             // 멤버 추가
-            createChatMember(newChatRoom, userService.getCurrentUser());
+            createChatMember(newChatRoom, userService.getCurrentUser()).setActiveTrue();
             createChatMember(newChatRoom, receiver);
             return ChatRoomIdResponse.builder().chatRoomId(newChatRoom.getId()).build();
         } else { // 진행중인 채팅방이 존재하는 경우
@@ -183,7 +183,7 @@ public class ChatService {
             getChatRooms(user.getUser()));
         // 채팅방 이름
         String roomName =
-            room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getName();
+            room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getNickname();
         // 멤버 정보
         List<UserBriefResponse> members = getMembers(room).stream()
             .map(member -> UserBriefResponse.of(member.getUser())).collect(Collectors.toList());
