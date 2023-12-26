@@ -1,6 +1,7 @@
 package mallang_trip.backend.repository.chat;
 
 import java.util.List;
+import java.util.Optional;
 import mallang_trip.backend.constant.ChatType;
 import mallang_trip.backend.domain.entity.chat.ChatMessage;
 import mallang_trip.backend.domain.entity.chat.ChatRoom;
@@ -20,23 +21,22 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
         + "  AND cmm.user_id = :user_id\n"
         + "  AND cm.created_at >= cmm.joined_at\n"
         + "ORDER BY cm.created_at ASC;", nativeQuery = true)
-    List<ChatMessage> findByChatRoomAndUser(@Param(value = "chat_room_id") Long chatRoomId,
+    List<ChatMessage> findByChatRoomAndUser(
+        @Param(value = "chat_room_id") Long chatRoomId,
         @Param(value = "user_id") Long userId);
 
-    //ChatMessage findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(ChatRoom chatRoom, ChatType type);
 
     @Query(value = "SELECT cm.* FROM chat_message cm " +
-        "JOIN chat_room cr ON cm.chat_room_id = cr.id " +
-        "JOIN chat_member cmm ON cmm.chat_room_id = cr.id " +
-        "WHERE cr = :chatRoom " +
-        "AND cmm.user = :user " +
-        "AND cm.created_at >= cmm.joined_at " +
-        "AND cm.type <> :type " +
+        "   JOIN chat_room cr ON cm.chat_room_id = cr.id " +
+        "   JOIN chat_member cmm ON cmm.chat_room_id = cr.id " +
+        "WHERE cr.id = :chat_room_id " +
+        "   AND cmm.user_id = :user_id " +
+        "   AND cm.created_at >= cmm.joined_at " +
+        "   AND cm.type != 2 " +
         "ORDER BY cm.created_at DESC " +
         "LIMIT 1", nativeQuery = true)
-    ChatMessage findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(
-        @Param("chatRoom") ChatRoom chatRoom,
-        @Param("user") User user,
-        @Param("type") ChatType type
+    ChatMessage getLastMessage(
+        @Param("chat_room_id") Long chatRoomId,
+        @Param("user_id") Long userId
     );
 }

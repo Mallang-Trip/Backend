@@ -1,5 +1,6 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.constant.ChatType.IMAGE;
 import static mallang_trip.backend.constant.ChatType.INFO;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
@@ -264,7 +265,7 @@ public class ChatService {
     }
 
     private ChatMessage getLastMessage(ChatRoom room, User user) {
-        return chatMessageRepository.findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(room, user, INFO);
+        return chatMessageRepository.getLastMessage(room.getId(), user.getId());
     }
 
     private List<String> getProfileImages(ChatRoom room) {
@@ -334,13 +335,14 @@ public class ChatService {
     private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user) {
         User other = getOtherUserInCoupleChat(chatRoom, user);
         ChatMessage lastMessage = getLastMessage(chatRoom, user);
-        List<String> profileImg = other.getProfileImage() == null ? null : List.of(other.getProfileImage());
+        List<String> profileImg =
+            other.getProfileImage() == null ? null : List.of(other.getProfileImage());
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
             .isGroup(false)
             .roomName(other.getNickname())
             .profileImages(profileImg)
-            .content(lastMessage == null ? "" : lastMessage.getContent())
+            .content(getContentOfLastMessage(lastMessage))
             .headCount(countMembers(chatRoom))
             .unreadCount(getUnreadCount(chatRoom, user))
             .updatedAt(lastMessage == null ? chatRoom.getUpdatedAt() : lastMessage.getCreatedAt())
@@ -354,10 +356,20 @@ public class ChatService {
             .isGroup(true)
             .roomName(chatRoom.getRoomName())
             .profileImages(getProfileImages(chatRoom))
-            .content(lastMessage == null ? "" : lastMessage.getContent())
+            .content(getContentOfLastMessage(lastMessage))
             .headCount(countMembers(chatRoom))
             .unreadCount(getUnreadCount(chatRoom, user))
             .updatedAt(lastMessage == null ? chatRoom.getUpdatedAt() : lastMessage.getCreatedAt())
             .build();
+    }
+
+    private String getContentOfLastMessage(ChatMessage message) {
+        if (message == null) {
+            return "";
+        } else if (message.getType().equals(IMAGE)) {
+            return "사진";
+        } else {
+            return message.getContent();
+        }
     }
 }
