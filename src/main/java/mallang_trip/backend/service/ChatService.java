@@ -105,6 +105,8 @@ public class ChatService {
             createChatMember(newChatRoom, receiver);
             return ChatRoomIdResponse.builder().chatRoomId(newChatRoom.getId()).build();
         } else { // 진행중인 채팅방이 존재하는 경우
+            chatMemberRepository.findByChatRoomAndUser(chatRoom, user)
+                .orElseThrow(() -> new BaseException(Not_Found)).setActiveTrue();
             return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
         }
     }

@@ -19,7 +19,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
         + "    JOIN chat_member cmm ON cmm.chat_room_id = cr.id\n"
         + "WHERE cr.id = :chat_room_id\n"
         + "  AND cmm.user_id = :user_id\n"
-        + "  AND cm.created_at > cmm.joined_at\n"
+        + "  AND cm.created_at >= cmm.joined_at\n"
         + "ORDER BY cm.created_at ASC;", nativeQuery = true)
     List<ChatMessage> findByChatRoomAndUser(@Param(value = "chat_room_id") Long chatRoomId,
         @Param(value = "user_id") Long userId);
