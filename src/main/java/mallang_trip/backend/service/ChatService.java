@@ -263,8 +263,8 @@ public class ChatService {
         return chatMemberRepository.findByChatRoom(room);
     }
 
-    private ChatMessage getLastMessage(ChatRoom room) {
-        return chatMessageRepository.findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(room, INFO);
+    private ChatMessage getLastMessage(ChatRoom room, User user) {
+        return chatMessageRepository.findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(room, user, INFO);
     }
 
     private List<String> getProfileImages(ChatRoom room) {
@@ -333,7 +333,7 @@ public class ChatService {
 
     private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user) {
         User other = getOtherUserInCoupleChat(chatRoom, user);
-        ChatMessage lastMessage = getLastMessage(chatRoom);
+        ChatMessage lastMessage = getLastMessage(chatRoom, user);
         List<String> profileImg = other.getProfileImage() == null ? null : List.of(other.getProfileImage());
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
@@ -348,7 +348,7 @@ public class ChatService {
     }
 
     private ChatRoomBriefResponse groupChatToResponse(ChatRoom chatRoom, User user) {
-        ChatMessage lastMessage = getLastMessage(chatRoom);
+        ChatMessage lastMessage = getLastMessage(chatRoom, user);
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
             .isGroup(true)
