@@ -25,14 +25,15 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     //ChatMessage findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(ChatRoom chatRoom, ChatType type);
 
-    @Query("SELECT cm FROM ChatMessage cm " +
-        "JOIN cm.chatRoom cr " +
-        "JOIN ChatMember cmm ON cmm.chatRoom = cr " +
+    @Query(value = "SELECT cm.* FROM chat_message cm " +
+        "JOIN chat_room cr ON cm.chat_room_id = cr.id " +
+        "JOIN chat_member cmm ON cmm.chat_room_id = cr.id " +
         "WHERE cr = :chatRoom " +
         "AND cmm.user = :user " +
-        "AND cm.createdAt >= cmm.joinedAt " +
+        "AND cm.created_at >= cmm.joined_at " +
         "AND cm.type <> :type " +
-        "ORDER BY cm.createdAt DESC")
+        "ORDER BY cm.created_at DESC " +
+        "LIMIT 1", nativeQuery = true)
     ChatMessage findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(
         @Param("chatRoom") ChatRoom chatRoom,
         @Param("user") User user,
