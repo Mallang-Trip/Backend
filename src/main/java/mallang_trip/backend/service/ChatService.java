@@ -207,13 +207,6 @@ public class ChatService {
         ChatRoom room = chatRoomRepository.findById(
                 Long.parseLong(accessor.getFirstNativeHeader("room-id")))
             .orElseThrow(() -> new BaseException(Not_Found));
-        // 채팅 저장
-        ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
-            .user(user)
-            .chatRoom(room)
-            .type(request.getType())
-            .content(request.getContent())
-            .build());
         // 모든 멤버 visibility 전환
         makeMembersActive(room);
         // 멤버 unreadCount++
@@ -221,6 +214,13 @@ public class ChatService {
         plusUnreadCount(members);
         // 멤버들에게 업데이트된 채팅방 리스트 send
         sendNewChatRoomList(members);
+        // 채팅 저장
+        ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
+            .user(user)
+            .chatRoom(room)
+            .type(request.getType())
+            .content(request.getContent())
+            .build());
         return ChatMessageResponse.of(message);
     }
 
