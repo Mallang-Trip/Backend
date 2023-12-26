@@ -109,11 +109,11 @@ public class ChatService {
         }
     }
 
-    public void changeGroupChatRoomName(Long roomId, String roomName){
+    public void changeGroupChatRoomName(Long roomId, String roomName) {
         ChatRoom room = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 확인
-        if(!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())){
+        if (!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())) {
             throw new BaseException(Unauthorized);
         }
         // 그룹채팅방이 아닌 경우
@@ -183,7 +183,8 @@ public class ChatService {
             getChatRooms(user.getUser()));
         // 채팅방 이름
         String roomName =
-            room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getNickname();
+            room.getIsGroup() ? room.getRoomName()
+                : getOtherUserInCoupleChat(room, userService.getCurrentUser()).getNickname();
         // 멤버 정보
         List<UserBriefResponse> members = getMembers(room).stream()
             .map(member -> UserBriefResponse.of(member.getUser())).collect(Collectors.toList());
@@ -214,7 +215,10 @@ public class ChatService {
         // 모든 멤버 visibility 전환
         makeMembersActive(room);
         // 멤버 unreadCount++
-        plusUnreadCount(room);
+        List<ChatMember> members = chatMemberRepository.findByChatRoom(room);
+        plusUnreadCount(members);
+        // 멤버들에게 업데이트된 채팅방 리스트 send
+        sendNewChatRoomList(members);
         return ChatMessageResponse.of(message);
     }
 
@@ -277,8 +281,7 @@ public class ChatService {
         return chatMember.getUnreadCount();
     }
 
-    private User getOtherUserInCoupleChat(ChatRoom chatRoom) {
-        User user = userService.getCurrentUser();
+    private User getOtherUserInCoupleChat(ChatRoom chatRoom, User user) {
         return chatMemberRepository.findByChatRoom(chatRoom).stream()
             .filter(member -> !member.getUser().equals(user))
             .collect(Collectors.toList())
@@ -315,10 +318,8 @@ public class ChatService {
             .forEach(member -> member.setActiveTrue());
     }
 
-    private void plusUnreadCount(ChatRoom chatRoom) {
-        List<ChatMember> members = chatMemberRepository.findByChatRoom(chatRoom);
+    private void plusUnreadCount(List<ChatMember> members) {
         members.stream().forEach(member -> member.plusUnreadCount());
-        sendNewChatRoomList(members);
     }
 
     private void sendNewChatRoomList(List<ChatMember> members) {
@@ -328,8 +329,8 @@ public class ChatService {
                 getChatRooms(user)));
     }
 
-    private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user){
-        User other = getOtherUserInCoupleChat(chatRoom);
+    private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user) {
+        User other = getOtherUserInCoupleChat(chatRoom, user);
         ChatMessage lastMessage = getLastMessage(chatRoom);
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
@@ -343,7 +344,7 @@ public class ChatService {
             .build();
     }
 
-    private ChatRoomBriefResponse groupChatToResponse(ChatRoom chatRoom, User user){
+    private ChatRoomBriefResponse groupChatToResponse(ChatRoom chatRoom, User user) {
         ChatMessage lastMessage = getLastMessage(chatRoom);
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
