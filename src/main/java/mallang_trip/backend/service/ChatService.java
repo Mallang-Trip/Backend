@@ -101,7 +101,7 @@ public class ChatService {
             // 채팅방 생성
             ChatRoom newChatRoom = createChatRoom(false, null);
             // 멤버 추가
-            createChatMember(newChatRoom, userService.getCurrentUser()).setActiveTrue();
+            createChatMember(newChatRoom, user).setActiveTrue();
             createChatMember(newChatRoom, receiver);
             return ChatRoomIdResponse.builder().chatRoomId(newChatRoom.getId()).build();
         } else { // 진행중인 채팅방이 존재하는 경우
@@ -332,11 +332,12 @@ public class ChatService {
     private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user) {
         User other = getOtherUserInCoupleChat(chatRoom, user);
         ChatMessage lastMessage = getLastMessage(chatRoom);
+        List<String> profileImg = other.getProfileImage() == null ? null : List.of(other.getProfileImage());
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
             .isGroup(false)
-            .roomName(other.getName())
-            .profileImages(List.of(other.getProfileImage()))
+            .roomName(other.getNickname())
+            .profileImages(profileImg)
             .content(lastMessage == null ? "" : lastMessage.getContent())
             .headCount(countMembers(chatRoom))
             .unreadCount(getUnreadCount(chatRoom, user))
