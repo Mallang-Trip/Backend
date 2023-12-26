@@ -212,8 +212,6 @@ public class ChatService {
         // 멤버 unreadCount++
         List<ChatMember> members = chatMemberRepository.findByChatRoom(room);
         plusUnreadCount(members);
-        // 멤버들에게 업데이트된 채팅방 리스트 send
-        sendNewChatRoomList(members);
         // 채팅 저장
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
             .user(user)
@@ -221,6 +219,8 @@ public class ChatService {
             .type(request.getType())
             .content(request.getContent())
             .build());
+        // 멤버들에게 업데이트된 채팅방 리스트 send
+        sendNewChatRoomList(members);
         return ChatMessageResponse.of(message);
     }
 
