@@ -43,7 +43,7 @@ public class Alarm extends BaseEntity {
     @Column(name = "target_id")
     private Long targetId;
 
-    @Column
+    @Column(name = "is_read")
     @Builder.Default()
-    private Boolean read = false;
+    private Boolean isRead = false;
 }
