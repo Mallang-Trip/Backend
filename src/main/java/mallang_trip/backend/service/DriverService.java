@@ -48,7 +48,7 @@ public class DriverService {
 	private final DriverReviewRepository driverReviewRepository;
 	private final PartyRepository partyRepository;
 
-	// 드라이버 전환 신청
+	/** 드라이버 전환 신청 */
 	public void registerDriver(DriverRegistrationRequest request) {
 		// 이미 신청 정보가 있을 경우
 		if (driverRepository.existsById(userService.getCurrentUser().getId())) {
@@ -60,7 +60,7 @@ public class DriverService {
 		);
 	}
 
-	// 드라이버 전환 신청 수정 or 재신청
+	/** 드라이버 전환 신청 수정 or 재신청 */
 	public void changeDriverRegistration(DriverRegistrationRequest request) {
 		Driver driver = getCurrentDriver();
 		// 이미 수락된 경우
@@ -84,7 +84,7 @@ public class DriverService {
 		setPrice(driver, request.getPrices());
 	}
 
-	// 드라이버 전환 신청 취소
+	/** 드라이버 전환 신청 취소 */
 	public void cancelDriverRegistration() {
 		Driver driver = getCurrentDriver();
 		// 신청중이 아닐 경우
@@ -95,13 +95,13 @@ public class DriverService {
 		driver.setStatus(REFUSED_OR_CANCELED);
 	}
 
-	// 내 드라이버 신청 상태 확인
+	/** 현재 유저 드라이버 신청 상태 확인 */
 	public DriverRegistrationResponse getMyDriverRegistration() {
 		Driver driver = getCurrentDriver();
 		return DriverRegistrationResponse.of(driver, getDriverPrice(driver));
 	}
 
-	// 승인 대기중인 드라이버 조회 (관리자)
+	/** 승인 대기중인 드라이버 조회 (관리자) */
 	public List<DriverRegistrationResponse> getDriverRegistrationList() {
 		List<DriverRegistrationResponse> responses = driverRepository
 			.findAllByStatus(DriverStatus.WAITING)
@@ -111,7 +111,7 @@ public class DriverService {
 		return responses;
 	}
 
-	// 드라이버 수락 or 거절 (관리자)
+	/** 드라이버 수락 or 거절 (관리자) */
 	public void acceptDriverRegistration(Long driverId, Boolean accept) {
 		Driver driver = driverRepository.findById(driverId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -127,7 +127,7 @@ public class DriverService {
 		}
 	}
 
-	// 드라이버 프로필 변경
+	/** 드라이버 프로필 변경 */
 	public void changeProfile(ChangeDriverProfileRequest request) {
 		User user = userService.getCurrentUser();
 		Driver driver = getCurrentDriver();
@@ -148,28 +148,28 @@ public class DriverService {
 		driver.setIntroduction(request.getIntroduction());
 	}
 
-	// 정기 휴일 설정
+	/** 정기 휴일 설정 */
 	private void setWeeklyHoliday(Driver driver, List<String> holidays) {
 		driver.setWeeklyHoliday(holidays.stream()
 			.map(DayOfWeek::valueOf)
 			.collect(Collectors.toList()));
 	}
 
-	// 휴일 설정
+	/** 휴일 설정 */
 	private void setHoliday(Driver driver, List<String> holidays) {
 		driver.setHoliday(holidays.stream()
 			.map(LocalDate::parse)
 			.collect(Collectors.toList()));
 	}
 
-	// 가격 설정
+	/** 가격 설정 */
 	private void setPrice(Driver driver, List<DriverPriceRequest> requests) {
 		driverPriceRepository.deleteAllByDriver(driver);
 		requests.stream()
 			.forEach(request -> driverPriceRepository.save(request.toDriverPrice(driver)));
 	}
 
-	// 드라이버 내 프로필 조회
+	/** 드라이버 내 프로필 조회 */
 	public MyDriverProfileResponse getMyDriverProfile() {
 		Driver driver = getCurrentDriver();
 		User user = userService.getCurrentUser();
@@ -196,8 +196,8 @@ public class DriverService {
 			.build();
 	}
 
-	// 드라이버 프로필 조회
-	// reservation count 추가 필요
+	/** 드라이버 프로필 조회 */
+	// TODO: reservation count 설정
 	public DriverDetailsResponse getDriverDetails(Long driverId) {
 		Driver driver = driverRepository.findByIdAndDeletedAndStatus(driverId, false, ACCEPTED)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
@@ -221,7 +221,7 @@ public class DriverService {
 			.build();
 	}
 
-	// 드라이버 리뷰 등록
+	/** 드라이버 리뷰 등록 */
 	public void createDriverReview(Long driverId, DriverReviewRequest request) {
 		Driver driver = driverRepository.findByIdAndDeletedAndStatus(driverId, false, ACCEPTED)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
@@ -239,7 +239,7 @@ public class DriverService {
 			.build());
 	}
 
-	// 드라이버 리뷰 수정
+	/** 드라이버 리뷰 수정 */
 	public void changeDriverReview(Long reviewId, DriverReviewRequest request) {
 		DriverReview review = driverReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -252,7 +252,7 @@ public class DriverService {
 		review.setImages(request.getImages());
 	}
 
-	// 드라이버 리뷰 삭제
+	/** 드라이버 리뷰 삭제 */
 	public void deleteDriverReview(Long reviewId) {
 		DriverReview review = driverReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -263,7 +263,7 @@ public class DriverService {
 		driverReviewRepository.delete(review);
 	}
 
-	// 가능한 드라이버 조회
+	/** 가능한 드라이버 조회 */
 	public List<DriverBriefResponse> getPossibleDriver(String region, Integer headcount,
 		String startDate) {
 		return driverRepository.findAllByRegionAndDeletedAndStatus(region, false, ACCEPTED)
@@ -274,6 +274,7 @@ public class DriverService {
 			.collect(Collectors.toList());
 	}
 
+	/** 특정 날짜 예약가능 여부 판별 */
 	public Boolean isDatePossible(Driver driver, String startDate) {
 		LocalDate date = LocalDate.parse(startDate);
 		if (partyRepository.existsValidPartyByDriverAndStartDate(driver.getId(), startDate) // 진행중인 파티가 있는지 CHECK
@@ -284,12 +285,14 @@ public class DriverService {
 		return true;
 	}
 
+	 /** 현재 드라이버 조회 */
 	private Driver getCurrentDriver() {
 		Driver driver = driverRepository.findById(userService.getCurrentUser().getId())
 			.orElseThrow(() -> new BaseException(Not_Found));
 		return driver;
 	}
 
+	/** 드라이버 가격 조회 */
 	private List<DriverPriceResponse> getDriverPrice(Driver driver) {
 		return driverPriceRepository.findAllByDriver((driver)).stream()
 			.map(DriverPriceResponse::of)

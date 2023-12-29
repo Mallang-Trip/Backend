@@ -48,7 +48,7 @@ public class ArticleService {
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
 
-    // 작성
+    /** 게시글 작성 */
     public ArticleIdResponse createArticle(ArticleRequest request) {
         Party party = request.getPartyId() == null ? null
             : partyRepository.findById(request.getPartyId())
@@ -66,7 +66,7 @@ public class ArticleService {
             .build();
     }
 
-    // 수정
+    /** 게시글 수정 */
     public void changeArticle(Long articleId, ArticleRequest request) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -85,7 +85,7 @@ public class ArticleService {
         article.setImages(request.getImages());
     }
 
-    // 삭제
+    /** 게시글 삭제 */
     public void deleteArticle(Long articleId) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -96,7 +96,7 @@ public class ArticleService {
         article.setDeleted(true);
     }
 
-    // 상세보기
+    /** 게시글 상세보기 */
     public ArticleDetailsResponse getArticleDetails(Long articleId) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -119,7 +119,7 @@ public class ArticleService {
             .build();
     }
 
-    // 키워드 검색
+    /** 키워드 검색 */
     public Page<ArticleBriefResponse> getArticlesByKeyword(String keyword, Pageable pageable) {
         Page<Article> articles = articleRepository.findByDeletedAndTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc(
             false, keyword, keyword, pageable);
@@ -130,7 +130,7 @@ public class ArticleService {
         return new PageImpl<>(responses, pageable, articles.getTotalElements());
     }
 
-    // 카테고리 별 조회
+    /** 카테고리 별 조회 */
     public Page<ArticleBriefResponse> getArticlesByType(String type, Pageable pageable) {
         Page<Article> articles =
             type.equals("all") ? articleRepository.findByDeletedOrderByUpdatedAtDesc(false, pageable)
@@ -143,7 +143,7 @@ public class ArticleService {
         return new PageImpl<>(responses, pageable, articles.getTotalElements());
     }
 
-    // 내가 작성한 글 조회
+    /** 내가 작성한 글 조회 */
     public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
         User user = userService.getCurrentUser();
         Page<Article> articles = articleRepository.findByDeletedAndUserOrderByUpdatedAtDesc(
@@ -155,7 +155,7 @@ public class ArticleService {
         return new PageImpl<>(responses, pageable, articles.getTotalElements());
     }
 
-    // 댓글 단 게시글 조회
+    /** 댓글 단 게시글 조회 */
     public Page<MyCommentResponse> getMyComments(Pageable pageable) {
         User user = userService.getCurrentUser();
         // 댓글 조회
@@ -181,7 +181,7 @@ public class ArticleService {
         return new PageImpl<>(responses.subList(start, end), pageable, responses.size());
     }
 
-    // 찜하기
+    /** 게시글 찜하기 */
     public void createArticleDibs(Long articleId) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -195,7 +195,7 @@ public class ArticleService {
             .build());
     }
 
-    // 찜 취소
+    /** 게시글 찜 취소 */
     public void deleteArticleDibs(Long articleId) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -206,7 +206,7 @@ public class ArticleService {
         articleDibsRepository.deleteByArticleAndUser(article, userService.getCurrentUser());
     }
 
-    // 찜 여부 확인
+    /** 찜 여부 확인 */
     private boolean checkArticleDibs(Article article) {
         User user = userService.getCurrentUser();
         if (user == null) {
@@ -215,7 +215,7 @@ public class ArticleService {
         return articleDibsRepository.existsByArticleAndUser(article, user);
     }
 
-    // 댓글 작성
+    /** 댓글 작성 */
     public void createComment(Long articleId, String content) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -227,7 +227,7 @@ public class ArticleService {
         commentRepository.save(comment);
     }
 
-    // 대댓글 작성
+    /** 대댓글 작성 */
     public void createReply(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -239,7 +239,7 @@ public class ArticleService {
         replyRepository.save(reply);
     }
 
-    // 댓글 삭제
+    /** 댓글 삭제 */
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -250,7 +250,7 @@ public class ArticleService {
         commentRepository.delete(comment);
     }
 
-    // 대댓글 삭제
+    /** 대댓글 삭제 */
     public void deleteReply(Long replyId) {
         Reply reply = replyRepository.findById(replyId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -261,7 +261,7 @@ public class ArticleService {
         replyRepository.delete(reply);
     }
 
-    // 댓글 + 대댓글 조회
+    /** 댓글 + 대댓글 조회 */
     private List<CommentResponse> getComments(Article article) {
         return commentRepository.findByArticle(article).stream()
             .map(comment -> {
@@ -272,14 +272,14 @@ public class ArticleService {
             .collect(Collectors.toList());
     }
 
-    //대댓글 조회
+    /** 대댓글 조회 */
     private List<ReplyResponse> getReplies(Comment comment) {
         return replyRepository.findByComment(comment).stream()
             .map(ReplyResponse::of)
             .collect(Collectors.toList());
     }
 
-    // 댓글 수 조회
+    /** 댓글 수 조회 */
     private Integer getCommentsCount(Article article) {
         int count = 0;
         List<Comment> comments = commentRepository.findByArticle(article);

@@ -38,7 +38,7 @@ public class DestinationService {
 	private final DestinationDibsRepository destinationDibsRepository;
 	private final UserService userService;
 
-	// 여행지 추가
+	/** 여행지 추가 */
 	public DestinationIdResponse createDestination(DestinationRequest request,
 		DestinationType type) {
 		Destination destination = request.toDestination();
@@ -50,14 +50,14 @@ public class DestinationService {
 			.build();
 	}
 
-	// 여행지 삭제
+	/** 여행지 삭제 */
 	public void deleteDestination(Long destinationId) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		destination.setDeleted(true);
 	}
 
-	// 여행지 키워드 검색
+	/** 여행지 키워드 검색 */
 	public List<DestinationBriefResponse> searchDestination(String keyword) {
 		List<Destination> destinations = destinationRepository.searchByKeyword(keyword);
 		return destinations.stream()
@@ -67,14 +67,14 @@ public class DestinationService {
 			.collect(Collectors.toList());
 	}
 
-	// 전체 지도 마커 조회
+	/** 전체 지도 마커 조회 */
 	public List<DestinationMarkerResponse> getDestinationMarkers() {
 		return destinationRepository.findByTypeAndDeleted(BY_ADMIN, false).stream()
 			.map(DestinationMarkerResponse::of)
 			.collect(Collectors.toList());
 	}
 
-	// 여행지 수정
+	/** 여행지 수정 */
 	public void changeDestination(Long destinationId, DestinationRequest request) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -86,14 +86,13 @@ public class DestinationService {
 		destination.setImages(request.getImages());
 	}
 
-	// 여행지 상세 조회
+	/** 여행지 상세 조회 */
 	public DestinationDetailsResponse getDestinationDetails(Long destinationId) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		if (destination.getType().equals(BY_USER)) {
 			throw new BaseException(Not_Found);
 		}
-
 		// 조회수 ++
 		destination.setViews(destination.getViews() + 1);
 
@@ -117,7 +116,7 @@ public class DestinationService {
 			.build();
 	}
 
-	// 여행지 리뷰 추가
+	/** 여행지 리뷰 추가 */
 	public void createDestinationReview(Long destinationId, DestinationReviewRequest request) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -135,7 +134,7 @@ public class DestinationService {
 			.build());
 	}
 
-	// 여행지 리뷰 수정
+	/** 여행지 리뷰 수정 */
 	public void changeDestinationReview(Long reviewId, DestinationReviewRequest request) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -148,7 +147,7 @@ public class DestinationService {
 		review.setImages(request.getImages());
 	}
 
-	// 여행지 리뷰 삭제
+	/** 여행지 리뷰 삭제 */
 	public void deleteDestinationReview(Long reviewId) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -159,7 +158,7 @@ public class DestinationService {
 		destinationReviewRepository.delete(review);
 	}
 
-	// 여행지 찜하기
+	/** 여행지 찜하기 */
 	public void createDestinationDibs(Long destinationId) {
 		Destination destination = destinationRepository.findById(destinationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -173,7 +172,7 @@ public class DestinationService {
 			.build());
 	}
 
-	// 여행지 찜 취소
+	/** 여행지 찜 취소 */
 	public void deleteDestinationDibs(Long destinationId) {
 		Destination destination = destinationRepository.findById(destinationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -185,7 +184,7 @@ public class DestinationService {
 			userService.getCurrentUser());
 	}
 
-	// 내가 찜한 여행지 조회
+	/** 현재 유저 찜한 여행지 조회 */
 	public List<DestinationBriefResponse> getMyDestinationDibs() {
 		return destinationDibsRepository.findAllByUserOrderByUpdatedAtDesc(userService.getCurrentUser()).stream()
 			.filter(dib -> !dib.getDestination().getDeleted()) // 삭제된 여행지 제외
@@ -194,7 +193,7 @@ public class DestinationService {
 			.collect(Collectors.toList());
 	}
 
-	// 여행지 찜 여부 확인
+	/** 현재 유저 여행지 찜 여부 확인 */
 	private boolean checkDestinationDibs(Destination destination) {
 		User user = userService.getCurrentUser();
 		if (user == null) {
