@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.User.UserBriefResponse;
+import mallang_trip.backend.domain.dto.user.UserBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatMessageRequest;
 import mallang_trip.backend.domain.dto.chat.ChatMessageResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;

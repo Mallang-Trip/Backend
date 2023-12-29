@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity.alarm;
+package mallang_trip.backend.domain.entity.notification;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mallang_trip.backend.constant.NotificationType;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
 
@@ -24,7 +25,7 @@ import mallang_trip.backend.domain.entity.user.User;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Alarm extends BaseEntity {
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,12 +39,12 @@ public class Alarm extends BaseEntity {
     private String content;
 
     @Column
-    private String category;
+    private NotificationType type;
 
     @Column(name = "target_id")
     private Long targetId;
 
-    @Column(name = "is_read")
+    @Column
     @Builder.Default()
-    private Boolean isRead = false;
+    private Boolean checked = false;
 }
