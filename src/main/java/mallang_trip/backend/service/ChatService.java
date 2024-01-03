@@ -1,5 +1,6 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.constant.ChatType.IMAGE;
 import static mallang_trip.backend.constant.ChatType.INFO;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.User.UserBriefResponse;
+import mallang_trip.backend.domain.dto.user.UserBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatMessageRequest;
 import mallang_trip.backend.domain.dto.chat.ChatMessageResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
@@ -41,12 +42,12 @@ public class ChatService {
     private final ChatMemberRepository chatMemberRepository;
     private final SimpMessagingTemplate template;
 
-    // 새로운 그룹 채팅방 생성
+    /** 새로운 그룹 채팅방 생성  */
     public ChatRoomIdResponse startGroupChat(List<Long> userIds, String roomName) {
         // 채팅방 생성
         ChatRoom room = createChatRoom(true, roomName);
         // 현재 유저 멤버 추가
-        createChatMember(room, userService.getCurrentUser()).setActive(true);
+        createChatMember(room, userService.getCurrentUser()).setActiveTrue();
         // 멤버 초대
         List<User> users = userIds.stream()
             .map(userId -> userRepository.findById(userId)
@@ -59,7 +60,7 @@ public class ChatService {
         return ChatRoomIdResponse.builder().chatRoomId(room.getId()).build();
     }
 
-    // 그룹 채팅방 초대
+    /** 그룹 채팅방 초대  */
     public void inviteToGroupChat(Long chatRoomId, List<Long> userIds) {
         ChatRoom room = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -85,7 +86,7 @@ public class ChatService {
             ChatMessageResponse.of(createInviteMessage(users, room)));
     }
 
-    // 1:1 채팅방 생성
+    /** 1:1 채팅방 생성 */
     public ChatRoomIdResponse startCoupleChat(Long userIds) {
         User user = userService.getCurrentUser();
         User receiver = userRepository.findById(userIds)
@@ -101,19 +102,22 @@ public class ChatService {
             // 채팅방 생성
             ChatRoom newChatRoom = createChatRoom(false, null);
             // 멤버 추가
-            createChatMember(newChatRoom, userService.getCurrentUser());
+            createChatMember(newChatRoom, user).setActiveTrue();
             createChatMember(newChatRoom, receiver);
             return ChatRoomIdResponse.builder().chatRoomId(newChatRoom.getId()).build();
         } else { // 진행중인 채팅방이 존재하는 경우
+            chatMemberRepository.findByChatRoomAndUser(chatRoom, user)
+                .orElseThrow(() -> new BaseException(Not_Found)).setActiveTrue();
             return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
         }
     }
 
-    public void changeGroupChatRoomName(Long roomId, String roomName){
+    /** 그룹 채팅방 이름 변경 */
+    public void changeGroupChatRoomName(Long roomId, String roomName) {
         ChatRoom room = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 확인
-        if(!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())){
+        if (!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())) {
             throw new BaseException(Unauthorized);
         }
         // 그룹채팅방이 아닌 경우
@@ -123,7 +127,7 @@ public class ChatService {
         room.setRoomName(roomName);
     }
 
-    // 채팅방 나가기
+    /** 채팅방 나가기 */
     public void leaveChat(Long chatRoomId) {
         ChatRoom room = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -134,7 +138,7 @@ public class ChatService {
         }
     }
 
-    // 그룹 채팅방 나가기
+    /** 그룹 채팅방 나가기 */
     private void leaveGroupChatRoom(ChatRoom room) {
         ChatMember member = chatMemberRepository.findByChatRoomAndUser(room,
             userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
@@ -144,19 +148,20 @@ public class ChatService {
             ChatMessageResponse.of(createLeaveMessage(room)));
     }
 
-    // 1:1 채팅방 나가기
+    /** 1:1 채팅방 나가기 */
     private void leaveCoupleChatRoom(ChatRoom room) {
         ChatMember member = chatMemberRepository.findByChatRoomAndUser(room,
             userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
         member.setActive(false);
     }
 
-    // 채팅방 리스트 조회
+    /** 현재 유저의 채팅방 목록 조회 */
     public List<ChatRoomBriefResponse> getChatRooms() {
         User user = userService.getCurrentUser();
         return getChatRooms(user);
     }
 
+    /** 유저의 채팅방 목록 조회 */
     private List<ChatRoomBriefResponse> getChatRooms(User user) {
         return chatMemberRepository.findByUserAndActive(user, true).stream()
             // 속한 채팅방 찾기
@@ -171,19 +176,21 @@ public class ChatService {
             }).collect(Collectors.toList());
     }
 
-    // 채팅방 상세 조회
+    /** 채팅방 상세조회 */
     public ChatRoomDetailsResponse getChatRoomDetails(Long chatRoomId) {
         ChatRoom room = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new BaseException(Not_Found));
-        ChatMember user = chatMemberRepository.findByChatRoomAndUser(room,
+        ChatMember currentMember = chatMemberRepository.findByChatRoomAndUser(room,
             userService.getCurrentUser()).orElseThrow(() -> new BaseException(Not_Found));
-        // unreadCount 0 초기화
-        user.setUnreadCount(0);
-        template.convertAndSend("/sub/list/" + user.getUser().getId(),
-            getChatRooms(user.getUser()));
+        // 현재 유저 unreadCount 0 초기화
+        currentMember.setUnreadCount(0);
+        // 업데이트된 채팅방 리스트 STOMP publish
+        template.convertAndSend("/sub/list/" + currentMember.getUser().getId(),
+            getChatRooms(currentMember.getUser()));
         // 채팅방 이름
         String roomName =
-            room.getIsGroup() ? room.getRoomName() : getOtherUserInCoupleChat(room).getName();
+            room.getIsGroup() ? room.getRoomName()
+                : getOtherUserInCoupleChat(room, userService.getCurrentUser()).getNickname();
         // 멤버 정보
         List<UserBriefResponse> members = getMembers(room).stream()
             .map(member -> UserBriefResponse.of(member.getUser())).collect(Collectors.toList());
@@ -197,13 +204,18 @@ public class ChatService {
             .build();
     }
 
-    // 새 메시지 handle
+    /** handle new message */
     public ChatMessageResponse handleNewMessage(ChatMessageRequest request,
         StompHeaderAccessor accessor) {
         User user = userService.getCurrentUser(accessor.getFirstNativeHeader("access-token"));
         ChatRoom room = chatRoomRepository.findById(
                 Long.parseLong(accessor.getFirstNativeHeader("room-id")))
             .orElseThrow(() -> new BaseException(Not_Found));
+        // 모든 멤버 visibility 전환
+        makeMembersActive(room);
+        // 멤버 unreadCount++
+        List<ChatMember> members = chatMemberRepository.findByChatRoom(room);
+        plusUnreadCount(members);
         // 채팅 저장
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
             .user(user)
@@ -211,13 +223,12 @@ public class ChatService {
             .type(request.getType())
             .content(request.getContent())
             .build());
-        // 모든 멤버 visibility 전환
-        makeMembersActive(room);
-        // 멤버 unreadCount++
-        plusUnreadCount(room);
+        // 멤버들에게 업데이트된 채팅방 리스트 send
+        sendNewChatRoomList(members);
         return ChatMessageResponse.of(message);
     }
 
+    /** STOMP header 기반으로 unreadCount -> 0으로 초기화 */
     public void setUnreadCountZero(StompHeaderAccessor accessor) {
         User user = userService.getCurrentUser(accessor.getFirstNativeHeader("access-token"));
         ChatRoom room = chatRoomRepository.findById(
@@ -229,12 +240,14 @@ public class ChatService {
         template.convertAndSend("/sub/list/" + user.getId(), getChatRooms(user));
     }
 
+    /** 유저의 채팅방 가입 이후의 모든 메시지 조회 */
     private List<ChatMessageResponse> getChatMessages(ChatRoom room, User user) {
         return chatMessageRepository.findByChatRoomAndUser(room.getId(), user.getId()).stream()
             .map(ChatMessageResponse::of)
             .collect(Collectors.toList());
     }
 
+    /** ChatRoom 생성 및 저장 */
     private ChatRoom createChatRoom(Boolean isGroup, String roomName) {
         return chatRoomRepository.save(ChatRoom.builder()
             .roomName(roomName)
@@ -242,6 +255,7 @@ public class ChatService {
             .build());
     }
 
+    /** ChatMember 생성 및 저장 */
     private ChatMember createChatMember(ChatRoom room, User user) {
         return chatMemberRepository.save(ChatMember.builder()
             .chatRoom(room)
@@ -249,18 +263,22 @@ public class ChatService {
             .build());
     }
 
+    /** ChatRoom의 멤버 수 조회 */
     private Integer countMembers(ChatRoom room) {
         return chatMemberRepository.countByChatRoom(room);
     }
 
+    /** ChatRoom의 멤버 조회 */
     private List<ChatMember> getMembers(ChatRoom room) {
         return chatMemberRepository.findByChatRoom(room);
     }
 
-    private ChatMessage getLastMessage(ChatRoom room) {
-        return chatMessageRepository.findFirstByChatRoomAndTypeNotOrderByCreatedAtDesc(room, INFO);
+    /** ChatRoom의 가장 최근 메시지 조회 (INFO 제외) */
+    private ChatMessage getLastMessage(ChatRoom room, User user) {
+        return chatMessageRepository.getLastMessage(room.getId(), user.getId());
     }
 
+    /** 채팅 멤버의 프로필 이미지 조회 (최대 4명) */
     private List<String> getProfileImages(ChatRoom room) {
         List<String> images = getMembers(room).stream()
             .map(member -> member.getUser().getProfileImage())
@@ -271,21 +289,23 @@ public class ChatService {
         return images;
     }
 
+    /** ChatRoom의 읽지 않은 메시지 갯수 조회 */
     private Integer getUnreadCount(ChatRoom room, User user) {
         ChatMember chatMember = chatMemberRepository.findByChatRoomAndUser(room, user)
             .orElseThrow(() -> new BaseException(Not_Found));
         return chatMember.getUnreadCount();
     }
 
-    private User getOtherUserInCoupleChat(ChatRoom chatRoom) {
-        User user = userService.getCurrentUser();
+    /** 1:1 ChatRoom에서 상대방 유저 조회 */
+    private User getOtherUserInCoupleChat(ChatRoom chatRoom, User user) {
         return chatMemberRepository.findByChatRoom(chatRoom).stream()
             .filter(member -> !member.getUser().equals(user))
             .collect(Collectors.toList())
             .get(0).getUser();
     }
 
-    public ChatMessage createInviteMessage(List<User> users, ChatRoom room) {
+    /** 채팅 초대 메시지 생성 및 저장 */
+    private ChatMessage createInviteMessage(List<User> users, ChatRoom room) {
         List<String> nicknames = users.stream()
             .map(user -> user.getNickname())
             .collect(Collectors.toList());
@@ -299,6 +319,7 @@ public class ChatService {
             .build());
     }
 
+    /** 채팅 나가기 메시지 생성 및 저장 */
     private ChatMessage createLeaveMessage(ChatRoom room) {
         User user = userService.getCurrentUser();
         String message = user.getNickname() + "님이 나갔습니다.";
@@ -310,17 +331,17 @@ public class ChatService {
             .build());
     }
 
+    /** ChatRoom의 모든 멤버들를 활성화 */
     private void makeMembersActive(ChatRoom room) {
         chatMemberRepository.findByChatRoomAndActive(room, false).stream()
             .forEach(member -> member.setActiveTrue());
     }
-
-    private void plusUnreadCount(ChatRoom chatRoom) {
-        List<ChatMember> members = chatMemberRepository.findByChatRoom(chatRoom);
+    /** 채팅 멤버들의 unread++ 처리 */
+    private void plusUnreadCount(List<ChatMember> members) {
         members.stream().forEach(member -> member.plusUnreadCount());
-        sendNewChatRoomList(members);
     }
 
+    /** 채팅 멤버들에게 업데이트된 ChatRoomList STOMP Publish */
     private void sendNewChatRoomList(List<ChatMember> members) {
         members.stream()
             .map(member -> member.getUser())
@@ -328,32 +349,47 @@ public class ChatService {
                 getChatRooms(user)));
     }
 
-    private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user){
-        User other = getOtherUserInCoupleChat(chatRoom);
-        ChatMessage lastMessage = getLastMessage(chatRoom);
+    /** 1:1 ChatRoom -> ChatRoomBriefResponse 변환 */
+    private ChatRoomBriefResponse coupleChatToResponse(ChatRoom chatRoom, User user) {
+        User other = getOtherUserInCoupleChat(chatRoom, user);
+        ChatMessage lastMessage = getLastMessage(chatRoom, user);
+        List<String> profileImg =
+            other.getProfileImage() == null ? null : List.of(other.getProfileImage());
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
             .isGroup(false)
-            .roomName(other.getName())
-            .profileImages(List.of(other.getProfileImage()))
-            .content(lastMessage == null ? "" : lastMessage.getContent())
+            .roomName(other.getNickname())
+            .profileImages(profileImg)
+            .content(getContentOfLastMessage(lastMessage))
             .headCount(countMembers(chatRoom))
             .unreadCount(getUnreadCount(chatRoom, user))
             .updatedAt(lastMessage == null ? chatRoom.getUpdatedAt() : lastMessage.getCreatedAt())
             .build();
     }
 
-    private ChatRoomBriefResponse groupChatToResponse(ChatRoom chatRoom, User user){
-        ChatMessage lastMessage = getLastMessage(chatRoom);
+    /** Group ChatRoom -> ChatRoomBriefResponse 변환 */
+    private ChatRoomBriefResponse groupChatToResponse(ChatRoom chatRoom, User user) {
+        ChatMessage lastMessage = getLastMessage(chatRoom, user);
         return ChatRoomBriefResponse.builder()
             .chatRoomId(chatRoom.getId())
             .isGroup(true)
             .roomName(chatRoom.getRoomName())
             .profileImages(getProfileImages(chatRoom))
-            .content(lastMessage == null ? "" : lastMessage.getContent())
+            .content(getContentOfLastMessage(lastMessage))
             .headCount(countMembers(chatRoom))
             .unreadCount(getUnreadCount(chatRoom, user))
             .updatedAt(lastMessage == null ? chatRoom.getUpdatedAt() : lastMessage.getCreatedAt())
             .build();
+    }
+
+    /** 사용자에게 보여질 ChatMessage의 content 조회 */
+    private String getContentOfLastMessage(ChatMessage message) {
+        if (message == null) {
+            return "";
+        } else if (message.getType().equals(IMAGE)) {
+            return "사진";
+        } else {
+            return message.getContent();
+        }
     }
 }

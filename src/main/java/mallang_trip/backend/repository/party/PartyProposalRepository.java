@@ -27,7 +27,7 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
     Boolean existsByPartyAndStatus(Party party, ProposalStatus status);
 
     @Query(value = "SELECT * FROM party_proposal "
-        + "WHERE status='WAITING' "
+        + "WHERE status='WAITING' " //enum 수정 필요
         + "AND created_at > :time", nativeQuery = true)
     List<PartyProposal> findExpiredProposal(@Param(value = "time") LocalDateTime time);
 }

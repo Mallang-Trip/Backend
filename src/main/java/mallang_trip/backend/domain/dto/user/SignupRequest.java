@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.dto.User;
+package mallang_trip.backend.domain.dto.user;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDate;

@@ -48,6 +48,7 @@ public class SmsService {
     @Value("${naver-cloud-sms.senderPhone}")
     private String phone;
 
+     /** 인증번호 문자 발송  */
     public void sendSmsCertification(String phoneNumber)
         throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         // 인증코드 생성
@@ -63,7 +64,7 @@ public class SmsService {
         }
     }
 
-    // 인증번호 일치 확인 -> 일치 시 인증번호 삭제
+    /** 인증번호 일치 확인 -> 일치 시 인증번호 삭제 */
     public Boolean verifyAndDeleteCode(String phoneNumber, String code) {
         if (smsCertification.hasKey(phoneNumber) && smsCertification.getSmsCertification(
             phoneNumber).equals(code)) {
@@ -74,7 +75,7 @@ public class SmsService {
         }
     }
 
-    // 인증번호 일치 확인 -> 일치 시 인증번호 연장
+    /** 인증번호 일치 확인 -> 일치 시 인증번호 연장 */
     public Boolean verifyAndExtendCode(String phoneNumber, String code) {
         if (smsCertification.hasKey(phoneNumber) && smsCertification.getSmsCertification(
             phoneNumber).equals(code)) {
@@ -85,6 +86,23 @@ public class SmsService {
         }
     }
 
+     /** SMS content 생성 */
+    private String createCertificationContent(String code) {
+        String content = "[말랑트립] " + code + " 인증 번호입니다.";
+        return content;
+    }
+
+     /** 인증코드 생성  */
+    private String createCode() {
+        StringBuffer code = new StringBuffer();
+        Random rnd = new Random();
+        for (int i = 0; i < 6; i++) {
+            code.append((rnd.nextInt(10)));
+        }
+        return code.toString();
+    }
+
+    /** SENS API 형식 */
     private String makeSignature(Long time)
         throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
         String space = " ";
@@ -115,6 +133,7 @@ public class SmsService {
         return encodeBase64String;
     }
 
+    /** SENS 문자 발송 API 요청 */
     private SmsResponse sendSms(String to, String content)
         throws JsonProcessingException, RestClientException, URISyntaxException, InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
         Long time = System.currentTimeMillis();
@@ -148,19 +167,5 @@ public class SmsService {
             httpBody, SmsResponse.class);
 
         return response;
-    }
-
-    private String createCertificationContent(String code) {
-        String content = "[말랑트립] " + code + " 인증 번호입니다.";
-        return content;
-    }
-
-    private String createCode() {
-        StringBuffer code = new StringBuffer();
-        Random rnd = new Random();
-        for (int i = 0; i < 6; i++) {
-            code.append((rnd.nextInt(10)));
-        }
-        return code.toString();
     }
 }

@@ -31,7 +31,7 @@ public class CourseService {
     private final CourseDayRepository courseDayRepository;
     private final DestinationRepository destinationRepository;
 
-    // 코스 생성
+    /** 코스 생성 */
     public Course createCourse(CourseRequest request) {
         Course course = courseRepository.save(Course.builder()
             .owner(userService.getCurrentUser())
@@ -46,7 +46,7 @@ public class CourseService {
         return course;
     }
 
-    // 드라이버 내 코스 수정
+    /** (드라이버) 내 코스 수정 */
     public void changeCourseByDriver(Long courseId, CourseRequest request){
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -57,7 +57,7 @@ public class CourseService {
         changeCourse(course, request);
     }
 
-    // 코스 수정
+    /** 코스 수정  */
     public Course changeCourse(Course course, CourseRequest request) {
         // 코스 정보 변경
         course.setOwner(userService.getCurrentUser());
@@ -66,7 +66,6 @@ public class CourseService {
         course.setTotalPrice(request.getTotalPrice());
         course.setName(request.getName());
         course.setCapacity(request.getCapacity());
-
         // courseDay 삭제 후 재생성
         courseDayRepository.deleteAllByCourse(course);
         request.getDays().forEach(day -> courseDayRepository.save(day.toCourseDay(course)));
@@ -74,13 +73,14 @@ public class CourseService {
         return course;
     }
 
-    // 코스 상세 조회
+    /** 코스 상세 조회 by id */
     public CourseDetailsResponse getCourseDetails(Long courseId) {
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
         return getCourseDetails(course);
     }
 
+    /** 코스 상세 조회 */
     public CourseDetailsResponse getCourseDetails(Course course){
         List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
             .stream()
@@ -114,7 +114,7 @@ public class CourseService {
             .build();
     }
 
-    // 코스 복사
+    /** 코스 복사 */
     public Course copyCourse(Course course) {
         List<String> images = course.getImages().stream()
             .collect(Collectors.toList());
@@ -131,6 +131,7 @@ public class CourseService {
         return newCourse;
     }
 
+    /** 기존 Course의 CourseDays를 새로운 Course로 복사 */
     private void copyCourseDays(Course course, Course newCourse) {
         courseDayRepository.findAllByCourse(course)
             .forEach(courseDay -> {
@@ -148,7 +149,7 @@ public class CourseService {
             });
     }
 
-    // 코스 삭제
+    /** 코스 삭제 by id */
     public void deleteCourse(Long courseId){
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BaseException(Not_Found));
@@ -159,11 +160,12 @@ public class CourseService {
         deleteCourse(course);
     }
 
-    public void deleteCourse(Course course) {
+    /** 코스 삭제 */
+    private void deleteCourse(Course course) {
         courseRepository.delete(course);
     }
 
-    // 드라이버의 코스 목록 조회
+    /** 드라이버의 코스 목록 조회 */
     public List<CourseBriefResponse> getCourseNames(User user) {
         List<CourseBriefResponse> responses =
             courseRepository.findAllByOwnerAndDeleted(user, false)

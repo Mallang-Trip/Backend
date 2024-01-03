@@ -17,14 +17,14 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.TokensDto;
-import mallang_trip.backend.domain.dto.User.AuthResponse;
-import mallang_trip.backend.domain.dto.User.ChangePasswordRequest;
-import mallang_trip.backend.domain.dto.User.ChangeProfileRequest;
-import mallang_trip.backend.domain.dto.User.LoginIdResponse;
-import mallang_trip.backend.domain.dto.User.LoginRequest;
-import mallang_trip.backend.domain.dto.User.ResetPasswordRequest;
-import mallang_trip.backend.domain.dto.User.SignupRequest;
-import mallang_trip.backend.domain.dto.User.UserBriefResponse;
+import mallang_trip.backend.domain.dto.user.AuthResponse;
+import mallang_trip.backend.domain.dto.user.ChangePasswordRequest;
+import mallang_trip.backend.domain.dto.user.ChangeProfileRequest;
+import mallang_trip.backend.domain.dto.user.LoginIdResponse;
+import mallang_trip.backend.domain.dto.user.LoginRequest;
+import mallang_trip.backend.domain.dto.user.ResetPasswordRequest;
+import mallang_trip.backend.domain.dto.user.SignupRequest;
+import mallang_trip.backend.domain.dto.user.UserBriefResponse;
 import mallang_trip.backend.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,9 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @Api(tags = "User API")
 @RestController
