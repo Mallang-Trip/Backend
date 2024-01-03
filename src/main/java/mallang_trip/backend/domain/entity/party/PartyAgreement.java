@@ -37,7 +37,7 @@ public class PartyAgreement extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "members_id", nullable = false)
-    private PartyMembers members;
+    private PartyMember members;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()

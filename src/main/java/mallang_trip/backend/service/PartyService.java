@@ -48,13 +48,13 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyAgreement;
-import mallang_trip.backend.domain.entity.party.PartyMembers;
+import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.course.CourseRepository;
 import mallang_trip.backend.repository.party.PartyAgreementRepository;
 import mallang_trip.backend.repository.party.PartyHistoryRepository;
-import mallang_trip.backend.repository.party.PartyMembersRepository;
+import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -71,7 +71,7 @@ public class PartyService {
 	private final CourseRepository courseRepository;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
-	private final PartyMembersRepository partyMembersRepository;
+	private final PartyMemberRepository partyMemberRepository;
 	private final PartyProposalRepository partyProposalRepository;
 	private final PartyAgreementRepository partyAgreementRepository;
 	private final PartyHistoryRepository partyHistoryRepository;
@@ -102,7 +102,7 @@ public class PartyService {
 			.endDate(LocalDate.parse(request.getEndDate()))
 			.build());
 		// 파티 멤버 추가
-		partyMembersRepository.save(PartyMembers.builder()
+		partyMemberRepository.save(PartyMember.builder()
 			.party(party)
 			.user(user)
 			.headcount(request.getHeadcount())
@@ -166,7 +166,7 @@ public class PartyService {
 			.driverAgreement(ACCEPT)
 			.build());
 
-		partyMembersRepository.findByParty(party)
+		partyMemberRepository.findByParty(party)
 			.forEach(member -> {
 				partyAgreementRepository.save(PartyAgreement.builder()
 					.proposal(proposal)
@@ -190,7 +190,7 @@ public class PartyService {
 			.type(ProposalType.JOIN_WITH_COURSE_CHANGE)
 			.build());
 
-		partyMembersRepository.findByParty(party)
+		partyMemberRepository.findByParty(party)
 			.forEach(member -> {
 				partyAgreementRepository.save(PartyAgreement.builder()
 					.proposal(proposal)
@@ -226,7 +226,7 @@ public class PartyService {
 			.type(ProposalType.COURSE_CHANGE)
 			.build());
 
-		partyMembersRepository.findByParty(party)
+		partyMemberRepository.findByParty(party)
 			.forEach(member -> {
 				AgreementStatus status = WAITING;
 				if (member.getUser().equals(user)) {
@@ -343,7 +343,7 @@ public class PartyService {
 
 	// 파티 나가기
 	public void leaveParty(Party party) {
-		PartyMembers members = partyMembersRepository.findByPartyAndUser(party,
+		PartyMember members = partyMemberRepository.findByPartyAndUser(party,
 			userService.getCurrentUser());
 		//
 		// exception check
@@ -358,7 +358,7 @@ public class PartyService {
 		party.setHeadcount(headcount);
 
 		// 파티 멤버 삭제
-		partyMembersRepository.delete(members);
+		partyMemberRepository.delete(members);
 
 		// 환불
 	}
@@ -374,7 +374,7 @@ public class PartyService {
 
 	private void acceptProposalByUser(PartyProposal proposal, Boolean accept) {
 		User user = userService.getCurrentUser();
-		PartyMembers members = partyMembersRepository.findByPartyAndUser(proposal.getParty(), user);
+		PartyMember members = partyMemberRepository.findByPartyAndUser(proposal.getParty(), user);
 		System.out.println(members.getId());
 		PartyAgreement agreement = partyAgreementRepository.findByMembersAndProposal(members,
 			proposal);
@@ -395,7 +395,7 @@ public class PartyService {
 	}
 
 	private List<PartyBriefResponse> getMyPartiesByUser(User user) {
-		List<Party> parties = partyMembersRepository.findByUser(user)
+		List<Party> parties = partyMemberRepository.findByUser(user)
 			.stream()
 			.map(partyMembers -> partyMembers.getParty())
 			.collect(Collectors.toList());
@@ -479,7 +479,7 @@ public class PartyService {
 		// proposal status 변경
 		proposal.setStatus(ACCEPTED);
 		// 멤버 추가
-		partyMembersRepository.save(PartyMembers.builder()
+		partyMemberRepository.save(PartyMember.builder()
 			.party(party)
 			.user(proposal.getProposer())
 			.headcount(proposal.getHeadcount())
@@ -529,7 +529,7 @@ public class PartyService {
 	}
 
 	private PartyDetailsResponse getPartyDetails(Party party, Boolean isMyParty) {
-		List<PartyMemberResponse> members = partyMembersRepository.findByParty(party)
+		List<PartyMemberResponse> members = partyMemberRepository.findByParty(party)
 			.stream()
 			.map(PartyMemberResponse::of)
 			.collect(Collectors.toList());
@@ -592,7 +592,7 @@ public class PartyService {
 		if (userService.getCurrentUser().equals(party.getDriver().getUser())) {
 			return true;
 		}
-		return partyMembersRepository.existsByPartyAndUser(party, userService.getCurrentUser());
+		return partyMemberRepository.existsByPartyAndUser(party, userService.getCurrentUser());
 	}
 
 	private Boolean isProposalExist(Party party) {

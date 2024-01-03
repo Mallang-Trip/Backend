@@ -24,7 +24,7 @@ import mallang_trip.backend.domain.entity.user.User;
 @Table(name = "party_members")
 @AllArgsConstructor
 @NoArgsConstructor
-public class PartyMembers extends BaseEntity {
+public class PartyMember extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,4 +40,8 @@ public class PartyMembers extends BaseEntity {
 
     @Column
     private Integer headcount;
+
+    @Column
+    @Builder.Default()
+    private Boolean ready = false;
 }

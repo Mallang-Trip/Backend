@@ -57,7 +57,7 @@ public class CourseService {
         changeCourse(course, request);
     }
 
-    // 코스 수정 (기존 코스 삭제 -> 새 코스 생성)
+    // 코스 수정
     public Course changeCourse(Course course, CourseRequest request) {
         // 코스 정보 변경
         course.setOwner(userService.getCurrentUser());

@@ -27,6 +27,7 @@ public class CourseRequest {
     @NotNull
     @Min(value = 0)
     private Integer totalPrice;
+
     private List<CourseDayRequest> days;
 
 }

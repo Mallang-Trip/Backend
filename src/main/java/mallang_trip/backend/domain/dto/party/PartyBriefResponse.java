@@ -22,6 +22,7 @@ public class PartyBriefResponse {
     private String driverName;
     private Integer headcount;
     private Integer capacity;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static PartyBriefResponse of(Party party){
@@ -37,6 +38,7 @@ public class PartyBriefResponse {
             .driverName(party.getDriver().getUser().getName())
             .headcount(party.getHeadcount())
             .capacity(party.getCapacity())
+            .createdAt(party.getCreatedAt())
             .updatedAt(party.getUpdatedAt())
             .build();
     }
