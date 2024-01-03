@@ -40,6 +40,7 @@ public class PartyServiceV2 {
 
 	private final UserService userService;
 	private final PartyMemberService partyMemberService;
+	private final PartyProposalService partyProposalService;
 	private final DriverService driverService;
 	private final CourseService courseService;
 	private final DriverRepository driverRepository;
@@ -123,15 +124,7 @@ public class PartyServiceV2 {
 
 	/** 코스 변경과 함께 파티 가입 신청 */
 	private void joinPartyWithCourseChange(Party party, JoinPartyRequest request) {
-		Course course = courseService.createCourse(request.getNewCourse());
-		partyProposalRepository.save(PartyProposal.builder()
-			.course(course)
-			.party(party)
-			.proposer(userService.getCurrentUser())
-			.headcount(request.getHeadcount())
-			.content(request.getContent())
-			.type(JOIN_WITH_COURSE_CHANGE)
-			.build());
+		partyProposalService.createJoinWithCourseChange(party, request);
 		party.setStatus(WAITING_JOIN_APPROVAL);
 	}
 
