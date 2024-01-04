@@ -22,10 +22,10 @@ import mallang_trip.backend.domain.entity.BaseEntity;
 @Getter
 @Setter
 @Builder
-@Table(name = "party_agreement")
+@Table(name = "party_proposal_agreement")
 @AllArgsConstructor
 @NoArgsConstructor
-public class PartyAgreement extends BaseEntity {
+public class PartyProposalAgreement extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +36,8 @@ public class PartyAgreement extends BaseEntity {
     private PartyProposal proposal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "members_id", nullable = false)
-    private PartyMember members;
+    @JoinColumn(name = "member_id", nullable = false)
+    private PartyMember member;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default()

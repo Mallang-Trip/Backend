@@ -8,7 +8,6 @@ import mallang_trip.backend.domain.dto.course.CourseRequest;
 @Builder
 public class JoinPartyRequest {
 
-    private Long partyId;
     private int headcount;
     private String content;
 

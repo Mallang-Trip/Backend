@@ -22,6 +22,8 @@ import mallang_trip.backend.constant.ProposalType;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.user.User;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter

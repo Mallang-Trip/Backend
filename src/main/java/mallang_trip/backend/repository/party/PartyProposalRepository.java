@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 public interface PartyProposalRepository extends JpaRepository<PartyProposal, Long> {
 
     @Query(value = "SELECT CASE WHEN p.driver_agreement = 'ACCEPT'\n"
-        + "    AND NOT EXISTS (SELECT * FROM party_agreement a WHERE a.proposal_id = p.id AND (a.status = 'REFUSE' OR a.status = 'WAITING'))\n"
+        + "    AND NOT EXISTS (SELECT * FROM party_proposal_agreement a WHERE a.proposal_id = p.id AND (a.status = 'REFUSE' OR a.status = 'WAITING'))\n"
         + "    THEN 'true' ELSE 'false' END\n"
         + "    FROM party_proposal p WHERE p.id = :proposalId", nativeQuery = true)
     Boolean isUnanimity(@Param(value = "proposalId") Long proposalId);

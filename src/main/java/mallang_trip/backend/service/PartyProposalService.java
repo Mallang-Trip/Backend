@@ -1,14 +1,35 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.constant.PartyStatus.SEALED;
+import static mallang_trip.backend.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.EXPIRED_PROPOSAL;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.constant.AgreementStatus;
+import mallang_trip.backend.constant.PartyStatus;
+import mallang_trip.backend.constant.ProposalStatus;
+import mallang_trip.backend.constant.Role;
+import mallang_trip.backend.controller.io.BaseException;
+import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
 import mallang_trip.backend.domain.entity.course.Course;
+import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.Party;
+import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
-import mallang_trip.backend.repository.party.PartyAgreementRepository;
+import mallang_trip.backend.domain.entity.party.PartyProposalAgreement;
+import mallang_trip.backend.domain.entity.user.User;
+import mallang_trip.backend.repository.party.PartyProposalAgreementRepository;
+import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
+import mallang_trip.backend.repository.party.PartyRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,14 +39,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class PartyProposalService {
 
 	private final UserService userService;
+	private final DriverService driverService;
 	private final CourseService courseService;
+	private final PartyMemberService partyMemberService;
 	private final PartyProposalRepository partyProposalRepository;
-	private final PartyAgreementRepository partyAgreementRepository;
+	private final PartyProposalAgreementRepository partyProposalAgreementRepository;
+	private final PartyMemberRepository partyMemberRepository;
 
-	/** 파티 가입 with 코스 변경 신청 */
-	public void createJoinWithCourseChange(Party party, JoinPartyRequest request){
+	/**
+	 * PartyProposal (Type: JOIN_WITH_COURSE_CHANGE) 생성
+	 */
+	public void createJoinWithCourseChange(Party party, JoinPartyRequest request) {
 		Course course = courseService.createCourse(request.getNewCourse());
-		partyProposalRepository.save(PartyProposal.builder()
+		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
 			.party(party)
 			.proposer(userService.getCurrentUser())
@@ -33,14 +59,142 @@ public class PartyProposalService {
 			.content(request.getContent())
 			.type(JOIN_WITH_COURSE_CHANGE)
 			.build());
+		createPartyProposalAgreements(proposal);
 	}
-	/** 코스 변경 신청 */
 
-	/** 신청 취소 */
+	/**
+	 * PartyProposal (Type: COURSE_CHANGE) 생성
+	 */
+	public void createCourseChange(Party party, ChangeCourseRequest request) {
+		Course course = courseService.createCourse(request.getCourse());
+		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
+			.course(course)
+			.party(party)
+			.proposer(userService.getCurrentUser())
+			.headcount(null)
+			.content(request.getContent())
+			.type(COURSE_CHANGE)
+			.build());
+		createPartyProposalAgreements(proposal);
+		voteProposalByMember(proposal, true);
+	}
 
-	/** Proposal 수락 */
+	/**
+	 * PartyProposal Status -> CANCELED
+	 */
+	public void cancelProposal(PartyProposal proposal) {
+		// 권한 CHECK
+		if (!userService.getCurrentUser().equals(proposal.getProposer())) {
+			throw new BaseException(Forbidden);
+		}
+		// proposal status CHECK
+		if (!proposal.getStatus().equals(ProposalStatus.WAITING)) {
+			throw new BaseException(EXPIRED_PROPOSAL);
+		}
+		proposal.setStatus(ProposalStatus.CANCELED);
+	}
 
-	/** Proposal 거절 */
+	/**
+	 * 제안 수락 or 거절 투표
+	 */
+	public void voteProposal(PartyProposal proposal, Boolean accept){
+		if(userService.getCurrentUser().getRole().equals(Role.ROLE_DRIVER)){
+			voteProposalByDriver(proposal, accept);
+		}
+		if(userService.getCurrentUser().getRole().equals(Role.ROLE_USER)){
+			voteProposalByMember(proposal, accept);
+		}
+	}
 
-	/** 만장일치 수락 확인 */
+	/**
+	 * (드라이버) Proposal 수락 or 거절 투표
+	 */
+	private void voteProposalByDriver(PartyProposal proposal, Boolean accept) {
+		Driver driver = driverService.getCurrentDriver();
+		if(!proposal.getParty().getDriver().equals(driver)){
+			throw new BaseException(NOT_PARTY_MEMBER);
+		}
+		if (accept) {
+			proposal.setDriverAgreement(AgreementStatus.ACCEPT);
+		} else {
+			proposal.setDriverAgreement(AgreementStatus.REFUSE);
+			refuseProposal(proposal);
+		}
+	}
+
+	/**
+	 * (파티 멤버) Proposal 수락 or 거절 투표
+	 */
+	private void voteProposalByMember(PartyProposal proposal, Boolean accept) {
+		User user = userService.getCurrentUser();
+		PartyMember member = partyMemberRepository.findByPartyAndUser(proposal.getParty(),
+				user)
+			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+		PartyProposalAgreement agreement = partyProposalAgreementRepository.findByMemberAndProposal(
+				member, proposal)
+			.orElseThrow(() -> new BaseException(Forbidden));
+		if (accept) {
+			agreement.setStatus(AgreementStatus.ACCEPT);
+		} else {
+			agreement.setStatus(AgreementStatus.REFUSE);
+			refuseProposal(proposal);
+		}
+	}
+
+	/**
+	 * 제안 한 명이라도 거절했을 경우
+	 * Proposal Status -> REFUSED
+	 * Party Status -> 이전 Status
+	 */
+	private void refuseProposal(PartyProposal proposal) {
+		proposal.setStatus(ProposalStatus.REFUSED);
+		if (proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)) {
+			proposal.getParty().setStatus(PartyStatus.RECRUITING);
+		}
+		if (proposal.getType().equals(COURSE_CHANGE)) {
+			proposal.getParty().setStatus(SEALED);
+		}
+	}
+
+	/**
+	 * 제안 만장일치 수락 확인
+	 */
+	public Boolean isUnanimity(PartyProposal proposal) {
+		return partyProposalRepository.isUnanimity(proposal.getId());
+	}
+
+	/**
+	 * 모든 파티 멤버에 대한 party_proposal_agreement 생성
+	 */
+	private void createPartyProposalAgreements(PartyProposal proposal) {
+		partyMemberService.getMembers(proposal.getParty()).stream()
+			.forEach(member -> {
+				partyProposalAgreementRepository.save(PartyProposalAgreement.builder()
+					.proposal(proposal)
+					.member(member)
+					.build());
+			});
+	}
+
+	/** 시간 초과된 제안 거절처리 */
+	@Scheduled(fixedDelay = 60000)
+	public void expireProposal() {
+		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1))
+			.stream()
+			.forEach(proposal -> handleExpiredProposal(proposal));
+	}
+
+	private void handleExpiredProposal(PartyProposal proposal){
+		// 만료된 PartyProposalAgreement 거절 처리
+		partyProposalAgreementRepository.findByProposal(proposal).stream()
+			.forEach(agreement -> {
+				if(agreement.getStatus().equals(AgreementStatus.WAITING)){
+					agreement.setStatus(AgreementStatus.REFUSE);
+				}
+			});
+		if(proposal.getDriverAgreement().equals(AgreementStatus.WAITING)){
+			proposal.setDriverAgreement(AgreementStatus.REFUSE);
+		}
+		proposal.setStatus(ProposalStatus.REFUSED);
+	}
 }

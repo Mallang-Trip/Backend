@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ProposalType {
 
-    JOIN,
     COURSE_CHANGE,
     JOIN_WITH_COURSE_CHANGE,
     ;

@@ -286,7 +286,7 @@ public class DriverService {
 	}
 
 	 /** 현재 드라이버 조회 */
-	private Driver getCurrentDriver() {
+	public Driver getCurrentDriver() {
 		Driver driver = driverRepository.findById(userService.getCurrentUser().getId())
 			.orElseThrow(() -> new BaseException(Not_Found));
 		return driver;

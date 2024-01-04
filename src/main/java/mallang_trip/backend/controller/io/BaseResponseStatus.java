@@ -17,16 +17,20 @@ public enum BaseResponseStatus {
     INVALID_JWT(10002, "JWT에 오류가 있습니다."),
     EXPIRED_JWT(10003, "JWT가 만료되었습니다."),
 
-    CANNOT_FOUND_USER(20000, "유저를 찾을 수 없습니다."),
+    CANNOT_FOUND_USER(404, "유저를 찾을 수 없습니다."),
+
+    // Driver
+    CANNOT_FOUND_DRIVER(404, "드라이버를 찾을 수 없습니다."),
 
     // Party
+    PARTY_CONFLICTED(409, "이미 예약된 파티가 있습니다."),
     CANNOT_FOUND_PARTY(404, "파티를 찾을 수 없습니다."),
     NOT_PARTY_MEMBER(403, "파티원이 아닙니다."),
     ALREADY_PARTY_MEMBER(409, "이미 가입되어있는 파티입니다."),
     PARTY_NOT_RECRUITING(20001, "모집이 종료되었거나, 다른 신청자가 존재합니다."),
     EXCEED_PARTY_CAPACITY(20002, "모집 인원 초과입니다."),
-    CANNOT_CHANGE_COURSE(20003, "코스 변경이 불가능한 상태입니다."),
-    PROPOSAL_END(20004, "종료된 제안입니다."),
+    CANNOT_CHANGE_COURSE(403, "코스 변경이 불가능한 상태입니다."),
+    EXPIRED_PROPOSAL(403, "종료된 제안입니다."),
 
 
     ;

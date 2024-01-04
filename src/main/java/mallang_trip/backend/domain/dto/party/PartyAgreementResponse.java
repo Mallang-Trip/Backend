@@ -3,7 +3,7 @@ package mallang_trip.backend.domain.dto.party;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.constant.AgreementStatus;
-import mallang_trip.backend.domain.entity.party.PartyAgreement;
+import mallang_trip.backend.domain.entity.party.PartyProposalAgreement;
 import mallang_trip.backend.domain.entity.user.User;
 
 @Getter
@@ -14,8 +14,8 @@ public class PartyAgreementResponse {
     private String nickname;
     private AgreementStatus status;
 
-    public static PartyAgreementResponse of(PartyAgreement agreement){
-        User user = agreement.getMembers().getUser();
+    public static PartyAgreementResponse of(PartyProposalAgreement agreement){
+        User user = agreement.getMember().getUser();
         return PartyAgreementResponse.builder()
             .userId(user.getId())
             .nickname(user.getNickname())

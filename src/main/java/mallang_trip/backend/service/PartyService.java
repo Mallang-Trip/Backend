@@ -18,7 +18,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.EXCEED_PARTY_CAPACITY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.PROPOSAL_END;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.EXPIRED_PROPOSAL;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.time.LocalDate;
@@ -44,15 +44,15 @@ import mallang_trip.backend.domain.dto.party.ProposalResponse;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.PartyHistory;
+import mallang_trip.backend.domain.entity.party.PartyProposalAgreement;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.party.Party;
-import mallang_trip.backend.domain.entity.party.PartyAgreement;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.course.CourseRepository;
-import mallang_trip.backend.repository.party.PartyAgreementRepository;
+import mallang_trip.backend.repository.party.PartyProposalAgreementRepository;
 import mallang_trip.backend.repository.party.PartyHistoryRepository;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
@@ -73,7 +73,7 @@ public class PartyService {
 	private final PartyRepository partyRepository;
 	private final PartyMemberRepository partyMemberRepository;
 	private final PartyProposalRepository partyProposalRepository;
-	private final PartyAgreementRepository partyAgreementRepository;
+	private final PartyProposalAgreementRepository partyProposalAgreementRepository;
 	private final PartyHistoryRepository partyHistoryRepository;
 
 	// 파티 생성 신청
@@ -168,7 +168,7 @@ public class PartyService {
 
 		partyMemberRepository.findByParty(party)
 			.forEach(member -> {
-				partyAgreementRepository.save(PartyAgreement.builder()
+				partyProposalAgreementRepository.save(PartyProposalAgreement.builder()
 					.proposal(proposal)
 					.members(member)
 					.build());
@@ -192,7 +192,7 @@ public class PartyService {
 
 		partyMemberRepository.findByParty(party)
 			.forEach(member -> {
-				partyAgreementRepository.save(PartyAgreement.builder()
+				partyProposalAgreementRepository.save(PartyProposalAgreement.builder()
 					.proposal(proposal)
 					.members(member)
 					.build());
@@ -232,7 +232,7 @@ public class PartyService {
 				if (member.getUser().equals(user)) {
 					status = ACCEPT;
 				}
-				partyAgreementRepository.save(PartyAgreement.builder()
+				partyProposalAgreementRepository.save(PartyProposalAgreement.builder()
 					.proposal(proposal)
 					.members(member)
 					.status(status)
@@ -376,7 +376,7 @@ public class PartyService {
 		User user = userService.getCurrentUser();
 		PartyMember members = partyMemberRepository.findByPartyAndUser(proposal.getParty(), user);
 		System.out.println(members.getId());
-		PartyAgreement agreement = partyAgreementRepository.findByMembersAndProposal(members,
+		PartyProposalAgreement agreement = partyProposalAgreementRepository.findByMemberAndProposal(members,
 			proposal);
 		System.out.println(agreement.getId());
 		if (proposal.getType().equals(ProposalType.COURSE_CHANGE)) {
@@ -411,11 +411,11 @@ public class PartyService {
 			.collect(Collectors.toList());
 	}
 
-	private void acceptPartyJoin(PartyAgreement agreement, boolean accept) {
+	private void acceptPartyJoin(PartyProposalAgreement agreement, boolean accept) {
 		PartyProposal proposal = agreement.getProposal();
 		PartyStatus partyStatus = proposal.getParty().getStatus();
 		if (!partyStatus.equals(WAITING_JOIN_APPROVAL)) {
-			throw new BaseException(PROPOSAL_END);
+			throw new BaseException(EXPIRED_PROPOSAL);
 		}
 		if (accept) {
 			agreement.setStatus(ACCEPT);
@@ -427,11 +427,11 @@ public class PartyService {
 		}
 	}
 
-	private void acceptCourseChange(PartyAgreement agreement, boolean accept) {
+	private void acceptCourseChange(PartyProposalAgreement agreement, boolean accept) {
 		PartyProposal proposal = agreement.getProposal();
 		PartyStatus partyStatus = proposal.getParty().getStatus();
 		if (!partyStatus.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
-			throw new BaseException(PROPOSAL_END);
+			throw new BaseException(EXPIRED_PROPOSAL);
 		}
 		if (accept) {
 			agreement.setStatus(ACCEPT);
@@ -446,7 +446,7 @@ public class PartyService {
 	private void acceptPartyJoinByDriver(PartyProposal proposal, boolean accept) {
 		PartyStatus partyStatus = proposal.getParty().getStatus();
 		if (!partyStatus.equals(WAITING_JOIN_APPROVAL)) {
-			throw new BaseException(PROPOSAL_END);
+			throw new BaseException(EXPIRED_PROPOSAL);
 		}
 		if (accept) {
 			proposal.setDriverAgreement(ACCEPT);
@@ -461,7 +461,7 @@ public class PartyService {
 	private void acceptCourseChangeByDriver(PartyProposal proposal, boolean accept) {
 		PartyStatus partyStatus = proposal.getParty().getStatus();
 		if (!partyStatus.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
-			throw new BaseException(PROPOSAL_END);
+			throw new BaseException(EXPIRED_PROPOSAL);
 		}
 		if (accept) {
 			proposal.setDriverAgreement(ACCEPT);
@@ -515,7 +515,7 @@ public class PartyService {
 		PartyStatus prevStatus = party.getPrevStatus();
 		party.setStatus(prevStatus);
 		// party agreement 삭제
-		partyAgreementRepository.deleteByProposal(proposal);
+		partyProposalAgreementRepository.deleteByProposal(proposal);
 	}
 
 	// 가입신청 제안 거절
@@ -525,7 +525,7 @@ public class PartyService {
 		// party status 복구
 		proposal.getParty().setStatus(RECRUITING);
 		// party agreement 삭제
-		partyAgreementRepository.deleteByProposal(proposal);
+		partyProposalAgreementRepository.deleteByProposal(proposal);
 	}
 
 	private PartyDetailsResponse getPartyDetails(Party party, Boolean isMyParty) {
@@ -562,7 +562,7 @@ public class PartyService {
 	}
 
 	private List<PartyAgreementResponse> getAgreement(PartyProposal proposal) {
-		return partyAgreementRepository.findByProposal(proposal)
+		return partyProposalAgreementRepository.findByProposal(proposal)
 			.stream()
 			.map(PartyAgreementResponse::of)
 			.collect(Collectors.toList());

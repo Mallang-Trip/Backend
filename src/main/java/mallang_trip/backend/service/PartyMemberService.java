@@ -1,20 +1,17 @@
 package mallang_trip.backend.service;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.ALREADY_PARTY_MEMBER;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.dto.party.PartyMemberResponse;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
-import mallang_trip.backend.repository.party.PartyRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +22,6 @@ public class PartyMemberService {
 
 	private final UserService userService;
 	private final PartyMemberRepository partyMemberRepository;
-	private final PartyRepository partyRepository;
 
 	/**
 	 * 파티 멤버 상세 조회
@@ -44,7 +40,7 @@ public class PartyMemberService {
 	}
 
 	/**
-	 * 파티 멤버 추가
+	 * 파티 멤버 추가 및 파티 headcount 증가
 	 */
 	public PartyMember createMember(Party party, User user, Integer headcount) {
 		if (partyMemberRepository.existsByPartyAndUser(party, user)) {
@@ -69,9 +65,7 @@ public class PartyMemberService {
 	/**
 	 * 현재 유저 파티 레디
 	 */
-	public void ready(Long partyId) {
-		Party party = partyRepository.findById(partyId)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+	public void ready(Party party) {
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party,
 				userService.getCurrentUser())
 			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
@@ -81,9 +75,7 @@ public class PartyMemberService {
 	/**
 	 * 현재 유저 파티 레디 취소
 	 */
-	public void cancelReady(Long partyId) {
-		Party party = partyRepository.findById(partyId)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+	public void cancelReady(Party party) {
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party,
 				userService.getCurrentUser())
 			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
