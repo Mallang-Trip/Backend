@@ -1,5 +1,6 @@
 package mallang_trip.backend.service;
 
+import static mallang_trip.backend.constant.PartyStatus.CANCELED;
 import static mallang_trip.backend.constant.PartyStatus.DRIVER_REFUSED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.SEALED;
@@ -94,7 +95,24 @@ public class PartyServiceV2 {
 	}
 
 	/**
-	 * (드라이버) 파티 생성 수락 or 거절
+	 * 파티 생성 신청 취소
+	 */
+	private void cancelCreateParty(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		// 권한 CHECK
+		if(!isMyParty(userService.getCurrentUser(), party))	{
+			throw new BaseException(Forbidden);
+		}
+		// status CHECK
+		if(!party.getStatus().equals(WAITING_DRIVER_APPROVAL)){
+			throw new BaseException(Forbidden);
+		}
+		party.setStatus(CANCELED);
+	}
+
+	/**
+	 * (드라이버) 파티 생성 수락/거절
 	 */
 	public void acceptCreateParty(Long partyId, Boolean accept) {
 		Party party = partyRepository.findById(partyId)
@@ -105,7 +123,7 @@ public class PartyServiceV2 {
 		}
 		// STATUS CHECK
 		if (!party.getStatus().equals(WAITING_DRIVER_APPROVAL)) {
-			throw new BaseException(Bad_Request);
+			throw new BaseException(Forbidden);
 		}
 		// STATUS 변경
 		party.setStatus(accept ? RECRUITING : DRIVER_REFUSED);
@@ -113,6 +131,8 @@ public class PartyServiceV2 {
 
 	/**
 	 * 파티 가입 신청
+	 * 코스 변경 없으면, 바로 가입
+	 * 코스 변경이 있으면, PartyProposal 생성
 	 */
 	public void requestPartyJoin(Long partyId, JoinPartyRequest request) {
 		Party party = partyRepository.findById(partyId)
@@ -130,36 +150,25 @@ public class PartyServiceV2 {
 			throw new BaseException(ALREADY_PARTY_MEMBER);
 		}
 		if (request.getChangeCourse()) {
-			joinPartyWithCourseChange(party, request);
+			partyProposalService.createJoinWithCourseChange(party, request);
+			party.setStatus(WAITING_JOIN_APPROVAL);
 		} else {
 			joinParty(party, userService.getCurrentUser(), request.getHeadcount());
 		}
 	}
 
 	/**
-	 * 코스 변경과 함께 파티 가입 신청
-	 */
-	private void joinPartyWithCourseChange(Party party, JoinPartyRequest request) {
-		partyProposalService.createJoinWithCourseChange(party, request);
-		party.setStatus(WAITING_JOIN_APPROVAL);
-	}
-
-	/**
 	 * 파티 가입
+	 * 멤버 추가 후, 파티원 전원 레디 해제
+	 * 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정
 	 */
 	private void joinParty(Party party, User user, Integer headcount) {
-		// 멤버 추가
 		partyMemberService.createMember(party, user, headcount);
-		// 가입으로 정원이 다 찼을 경우
 		if (party.getHeadcount() == party.getCapacity()) {
-			// TODO: 1/N원 자동결제
-
-			// 전원 레디 처리
 			partyMemberService.readyAllMembers(party);
-			// status 변경
+			// TODO: 1/N원 자동결제
 			party.setStatus(SEALED);
 		} else {
-			// 파티원 전원 레디 해제
 			partyMemberService.cancelReadyAllMembers(party);
 		}
 	}
@@ -193,7 +202,7 @@ public class PartyServiceV2 {
 	}
 
 	/**
-	 * 제안 수락 or 거절
+	 * 제안 수락/거절
 	 */
 	public void voteProposal(Long proposalId, Boolean accept) {
 		PartyProposal proposal = partyProposalRepository.findById(proposalId)
@@ -223,21 +232,26 @@ public class PartyServiceV2 {
 	}
 
 	/**
-	 * 현재 유저 파티 레디
+	 * 현재 유저 파티 레디하기
 	 */
 	public void ready(Long partyId) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
-		partyMemberService.ready(party);
-		if (partyMemberService.isEveryoneReady(party)) {
-			handleEveryoneReady(party);
+		// status CHECK
+		if(!party.getStatus().equals(RECRUITING)){
+			throw new BaseException(Forbidden);
 		}
+		partyMemberService.ready(party);
+		checkEveryoneReady(party);
 	}
 
 	/**
 	 * 파티 전원 레디 시 결제 후 SEALED 처리
 	 */
-	public void handleEveryoneReady(Party party) {
+	public void checkEveryoneReady(Party party) {
+		if (!partyMemberService.isEveryoneReady(party)) {
+			return;
+		}
 		// TODO: 1/N원 자동결제
 
 		party.setStatus(SEALED);
@@ -249,6 +263,10 @@ public class PartyServiceV2 {
 	public void cancelReady(Long partyId) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		// status CHECK
+		if(!party.getStatus().equals(RECRUITING)){
+			throw new BaseException(Forbidden);
+		}
 		partyMemberService.cancelReady(party);
 	}
 
