@@ -11,8 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PartyProposalAgreementRepository extends JpaRepository<PartyProposalAgreement, Long> {
 
-    void deleteByProposal(PartyProposal proposal);
-
     List<PartyProposalAgreement> findByProposal(PartyProposal proposal);
 
     Optional<PartyProposalAgreement> findByMemberAndProposal(PartyMember member, PartyProposal proposal);

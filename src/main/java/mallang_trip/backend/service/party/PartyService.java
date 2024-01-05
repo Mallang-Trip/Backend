@@ -286,59 +286,6 @@ public class PartyService {
 	}
 
 	/**
-	 * 매일 0시에 파티 STATUS 업데이트
-	 */
-	@Scheduled(cron = "0 0 0 * * *")
-	public void expireParty() {
-		String today = LocalDate.now().toString();
-
-		handleExpiredRecruitingParty(today);
-		handleExpiredWaitingCourseChangeApprovalParty(today);
-		handleDayOfTravelParty(today);
-		handleFinishedParty(today);
-	}
-
-	/**
-	 * 파티원 모집 중 여행 당일이 된 파티 처리
-	 */
-	private void handleExpiredRecruitingParty(String today) {
-		partyRepository.findExpiredRecruitingParties(today).stream()
-			.forEach(party -> party.setStatus(CANCELED_BY_EXPIRATION));
-	}
-
-	/**
-	 * 코스 변경 제안 중 여행 당일이 된 파티 처리
-	 */
-	private void handleExpiredWaitingCourseChangeApprovalParty(String today) {
-		partyRepository.findExpiredWaitingCourseChangeApprovalParties(today).stream()
-			.forEach(party -> cancelCourseChangeProposalAndSeal(party));
-	}
-
-	/**
-	 * 진행중인 코스 변경 제안을 종료하고 SEALED 상태로 변경
-	 */
-	private void cancelCourseChangeProposalAndSeal(Party party) {
-		partyProposalService.expireWaitingProposalByParty(party);
-		party.setStatus(SEALED);
-	}
-
-	/**
-	 * 예약된 파티 중 여행 당일이 된 파티 처리
-	 */
-	private void handleDayOfTravelParty(String today){
-		partyRepository.findDayOfTravelParties(today).stream()
-			.forEach(party -> party.setStatus(DAY_OF_TRAVEL));
-	}
-
-	/**
-	 * 여행 완료된 파티 처리
-	 */
-	private void handleFinishedParty(String today){
-		partyRepository.findFinishedParties(today).stream()
-			.forEach(party -> party.setStatus(FINISHED));
-	}
-
-	/**
 	 * 모집 단계에서 드라이버의 파티 탈퇴
 	 */
 	public void quitPartyByDriver(Long partyId){

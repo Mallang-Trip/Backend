@@ -10,7 +10,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PartyHistoryRepository extends JpaRepository<PartyHistory, Long> {
 
-	List<PartyHistory> findByUserOrderByUpdatedAtDesc(User user);
-
-	PartyHistory findByUserAndParty(User user, Party party);
- }
+}

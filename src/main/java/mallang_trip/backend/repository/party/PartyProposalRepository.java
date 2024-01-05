@@ -21,11 +21,7 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
         + "    FROM party_proposal p WHERE p.id = :proposalId", nativeQuery = true)
     Boolean isUnanimity(@Param(value = "proposalId") Long proposalId);
 
-    List<PartyProposal> findByProposer(User user);
-
     Optional<PartyProposal> findByPartyAndStatus(Party party, ProposalStatus status);
-
-    Boolean existsByPartyAndStatus(Party party, ProposalStatus status);
 
     @Query(value = "SELECT * FROM party_proposal "
         + "WHERE status='WAITING' " //enum 수정 필요

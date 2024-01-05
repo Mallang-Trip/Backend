@@ -27,12 +27,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     Boolean existsValidPartyByUserAndStartDate(@Param(value = "userId") Long userId,
         @Param(value = "date") String startDate);
 
-    List<Party> findByDriver(Driver driver);
-
-    List<Party> findByStatus(PartyStatus status);
-
-    List<Party> findByRegionAndStatus(String region, PartyStatus status);
-
     @Query(value = "SELECT * FROM party\n"
         + "WHERE start_date <= :today AND (status = 'RECRUITING' OR status = 'WAITING_JOIN_APPROVAL')", nativeQuery = true)
     List<Party> findExpiredRecruitingParties(@Param(value = "today") String today);

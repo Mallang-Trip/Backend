@@ -176,16 +176,6 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * 24시간 초과된 제안 만료
-	 */
-	@Scheduled(fixedDelay = 60000)
-	public void expireProposal() {
-		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1))
-			.stream()
-			.forEach(proposal -> handleExpiredProposal(proposal));
-	}
-
-	/**
 	 * 만료된 제안 처리
 	 * 응답하지 않은 agreement status -> refused
 	 * proposal status -> refused
