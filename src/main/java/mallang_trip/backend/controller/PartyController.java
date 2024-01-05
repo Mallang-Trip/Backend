@@ -12,7 +12,7 @@ import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
 import mallang_trip.backend.domain.dto.party.PartyIdResponse;
 import mallang_trip.backend.domain.dto.party.PartyRequest;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
-import mallang_trip.backend.service.PartyService;
+import mallang_trip.backend.service.party.PartyService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

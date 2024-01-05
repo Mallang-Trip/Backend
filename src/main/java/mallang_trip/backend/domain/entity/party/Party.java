@@ -64,9 +64,6 @@ public class Party extends BaseEntity {
 	@Builder.Default()
 	private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
 
-	@Enumerated(EnumType.STRING)
-	private PartyStatus prevStatus;
-
 	public Boolean checkHeadcount(Integer headcount) {
 		return this.capacity >= this.headcount + headcount ? true : false;
 	}

@@ -2,6 +2,7 @@ package mallang_trip.backend.repository.party;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
@@ -22,7 +23,7 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
 
     List<PartyProposal> findByProposer(User user);
 
-    PartyProposal findByPartyAndStatus(Party party, ProposalStatus status);
+    Optional<PartyProposal> findByPartyAndStatus(Party party, ProposalStatus status);
 
     Boolean existsByPartyAndStatus(Party party, ProposalStatus status);
 

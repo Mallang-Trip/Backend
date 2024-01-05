@@ -1,7 +1,12 @@
-package mallang_trip.backend.service;
+package mallang_trip.backend.service.party;
 
-import static mallang_trip.backend.constant.PartyStatus.CANCELED;
-import static mallang_trip.backend.constant.PartyStatus.DRIVER_REFUSED;
+import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_ALL_QUIT;
+import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_DRIVER_QUIT;
+import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_DRIVER_REFUSED;
+import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_EXPIRATION;
+import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_PROPOSER;
+import static mallang_trip.backend.constant.PartyStatus.DAY_OF_TRAVEL;
+import static mallang_trip.backend.constant.PartyStatus.FINISHED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
@@ -10,28 +15,22 @@ import static mallang_trip.backend.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.ALREADY_PARTY_MEMBER;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_DRIVER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.EXCEED_PARTY_CAPACITY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.EXPIRED_PROPOSAL;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_CONFLICTED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
+import java.time.LocalDate;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.constant.ProposalStatus;
-import mallang_trip.backend.constant.ProposalType;
-import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.course.CourseRequest;
 import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.CreatePartyRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
@@ -46,12 +45,16 @@ import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import mallang_trip.backend.service.CourseService;
+import mallang_trip.backend.service.DriverService;
+import mallang_trip.backend.service.UserService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PartyServiceV2 {
+public class PartyService {
 
 	private final UserService userService;
 	private final PartyMemberService partyMemberService;
@@ -97,18 +100,18 @@ public class PartyServiceV2 {
 	/**
 	 * 파티 생성 신청 취소
 	 */
-	private void cancelCreateParty(Long partyId){
+	private void cancelCreateParty(Long partyId) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		// 권한 CHECK
-		if(!isMyParty(userService.getCurrentUser(), party))	{
+		if (!isMyParty(userService.getCurrentUser(), party)) {
 			throw new BaseException(Forbidden);
 		}
 		// status CHECK
-		if(!party.getStatus().equals(WAITING_DRIVER_APPROVAL)){
+		if (!party.getStatus().equals(WAITING_DRIVER_APPROVAL)) {
 			throw new BaseException(Forbidden);
 		}
-		party.setStatus(CANCELED);
+		party.setStatus(CANCELED_BY_PROPOSER);
 	}
 
 	/**
@@ -126,13 +129,12 @@ public class PartyServiceV2 {
 			throw new BaseException(Forbidden);
 		}
 		// STATUS 변경
-		party.setStatus(accept ? RECRUITING : DRIVER_REFUSED);
+		party.setStatus(accept ? RECRUITING : CANCELED_BY_DRIVER_REFUSED);
 	}
 
 	/**
-	 * 파티 가입 신청
-	 * 코스 변경 없으면, 바로 가입
-	 * 코스 변경이 있으면, PartyProposal 생성
+	 * 파티 가입 신청 코스 변경 없으면, 바로 가입.
+	 * 코스 변경이 있으면, PartyProposal 생성.
 	 */
 	public void requestPartyJoin(Long partyId, JoinPartyRequest request) {
 		Party party = partyRepository.findById(partyId)
@@ -158,9 +160,8 @@ public class PartyServiceV2 {
 	}
 
 	/**
-	 * 파티 가입
-	 * 멤버 추가 후, 파티원 전원 레디 해제
-	 * 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정
+	 * 파티 가입 멤버 추가 후, 파티원 전원 레디 해제.
+	 * 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정.
 	 */
 	private void joinParty(Party party, User user, Integer headcount) {
 		partyMemberService.createMember(party, user, headcount);
@@ -170,6 +171,7 @@ public class PartyServiceV2 {
 			party.setStatus(SEALED);
 		} else {
 			partyMemberService.cancelReadyAllMembers(party);
+			party.setStatus(RECRUITING);
 		}
 	}
 
@@ -238,7 +240,7 @@ public class PartyServiceV2 {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		// status CHECK
-		if(!party.getStatus().equals(RECRUITING)){
+		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(Forbidden);
 		}
 		partyMemberService.ready(party);
@@ -264,7 +266,7 @@ public class PartyServiceV2 {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		// status CHECK
-		if(!party.getStatus().equals(RECRUITING)){
+		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(Forbidden);
 		}
 		partyMemberService.cancelReady(party);
@@ -283,5 +285,122 @@ public class PartyServiceV2 {
 		return partyMemberRepository.existsByPartyAndUser(party, user);
 	}
 
+	/**
+	 * 매일 0시에 파티 STATUS 업데이트
+	 */
+	@Scheduled(cron = "0 0 0 * * *")
+	public void expireParty() {
+		String today = LocalDate.now().toString();
+
+		handleExpiredRecruitingParty(today);
+		handleExpiredWaitingCourseChangeApprovalParty(today);
+		handleDayOfTravelParty(today);
+		handleFinishedParty(today);
+	}
+
+	/**
+	 * 파티원 모집 중 여행 당일이 된 파티 처리
+	 */
+	private void handleExpiredRecruitingParty(String today) {
+		partyRepository.findExpiredRecruitingParties(today).stream()
+			.forEach(party -> party.setStatus(CANCELED_BY_EXPIRATION));
+	}
+
+	/**
+	 * 코스 변경 제안 중 여행 당일이 된 파티 처리
+	 */
+	private void handleExpiredWaitingCourseChangeApprovalParty(String today) {
+		partyRepository.findExpiredWaitingCourseChangeApprovalParties(today).stream()
+			.forEach(party -> cancelCourseChangeProposalAndSeal(party));
+	}
+
+	/**
+	 * 진행중인 코스 변경 제안을 종료하고 SEALED 상태로 변경
+	 */
+	private void cancelCourseChangeProposalAndSeal(Party party) {
+		partyProposalService.expireWaitingProposalByParty(party);
+		party.setStatus(SEALED);
+	}
+
+	/**
+	 * 예약된 파티 중 여행 당일이 된 파티 처리
+	 */
+	private void handleDayOfTravelParty(String today){
+		partyRepository.findDayOfTravelParties(today).stream()
+			.forEach(party -> party.setStatus(DAY_OF_TRAVEL));
+	}
+
+	/**
+	 * 여행 완료된 파티 처리
+	 */
+	private void handleFinishedParty(String today){
+		partyRepository.findFinishedParties(today).stream()
+			.forEach(party -> party.setStatus(FINISHED));
+	}
+
+	/**
+	 * 모집 단계에서 드라이버의 파티 탈퇴
+	 */
+	public void quitPartyByDriver(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		Driver driver = driverService.getCurrentDriver();
+		// 권한 CHECK
+		if(!party.getDriver().equals(driver)){
+			throw new BaseException(NOT_PARTY_MEMBER);
+		}
+		// status CHECK
+		PartyStatus status = party.getStatus();
+		if(!(status.equals(RECRUITING) || status.equals(WAITING_JOIN_APPROVAL))){
+			throw new BaseException(Forbidden);
+		}
+		// 진행중인 가입 신청이 있을 경우, 거절 처리
+		partyProposalService.expireWaitingProposalByParty(party);
+		party.setStatus(CANCELED_BY_DRIVER_QUIT);
+	}
+
+	/**
+	 * 모집 단계에서 멤버의 파티 탈퇴
+	 */
+	public void quitPartyByMember(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		// 권한 CHECK
+		if(!isMyParty(userService.getCurrentUser(), party)){
+			throw new BaseException(NOT_PARTY_MEMBER);
+		}
+		// status CHECK
+		PartyStatus status = party.getStatus();
+		if(!(status.equals(RECRUITING) || status.equals(WAITING_JOIN_APPROVAL))){
+			throw new BaseException(Forbidden);
+		}
+		// 마지막 멤버일 경우
+		if(partyMemberService.isLastMember(party)){
+			partyProposalService.expireWaitingProposalByParty(party);
+			party.setStatus(CANCELED_BY_ALL_QUIT);
+		} else {
+			quitParty(party);
+		}
+	}
+
+	/**
+	 * 마지막 멤버가 아닐때 파티 탈퇴 처리
+	 */
+	private void quitParty(Party party){
+		PartyProposal proposal = partyProposalRepository.findByPartyAndStatus(party,
+			ProposalStatus.WAITING).orElse(null);
+		PartyMember member = partyMemberRepository.findByPartyAndUser(party,
+			userService.getCurrentUser()).orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+		if (proposal != null) {
+			// agreement 삭제 후 proposal 투표 상태 check
+			partyProposalService.deleteAgreement(proposal, member);
+			acceptProposal(proposal);
+		}
+		partyMemberService.deleteCurrentMember(party, member);
+	}
+
+	/**
+	 * 예약 취소
+	 */
 
 }

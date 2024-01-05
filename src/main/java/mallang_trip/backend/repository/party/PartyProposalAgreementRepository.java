@@ -16,4 +16,6 @@ public interface PartyProposalAgreementRepository extends JpaRepository<PartyPro
     List<PartyProposalAgreement> findByProposal(PartyProposal proposal);
 
     Optional<PartyProposalAgreement> findByMemberAndProposal(PartyMember member, PartyProposal proposal);
+
+    void deleteByProposalAndMember(PartyProposal proposal, PartyMember member);
 }

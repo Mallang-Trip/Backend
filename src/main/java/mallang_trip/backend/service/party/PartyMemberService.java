@@ -1,4 +1,4 @@
-package mallang_trip.backend.service;
+package mallang_trip.backend.service.party;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.ALREADY_PARTY_MEMBER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
@@ -12,6 +12,7 @@ import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
+import mallang_trip.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,9 +56,9 @@ public class PartyMemberService {
 	}
 
 	/**
-	 * 파티 멤버 삭제
+	 * 현재 유저 파티 멤버 삭제
 	 */
-	public void deleteMember(Party party, PartyMember member) {
+	public void deleteCurrentMember(Party party, PartyMember member) {
 		party.setHeadcount(party.getHeadcount() - member.getHeadcount());
 		partyMemberRepository.delete(member);
 	}
@@ -105,12 +106,25 @@ public class PartyMemberService {
 		return partyMemberRepository.isEveryoneReady(party.getId());
 	}
 
-	/** 파티 총 인원 수 조회 */
-	public Integer getTotalHeadcount(Party party){
+	/**
+	 * 파티 총 인원 수 조회
+	 */
+	public Integer getTotalHeadcount(Party party) {
 		int headcount = 0;
-		for(PartyMember member : getMembers(party)){
+		for (PartyMember member : getMembers(party)) {
 			headcount += member.getHeadcount();
 		}
 		return headcount;
+	}
+
+	/**
+	 * 마지막 멤버인지 확인
+	 */
+	public Boolean isLastMember(Party party) {
+		if (getMembers(party).size() == 1) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

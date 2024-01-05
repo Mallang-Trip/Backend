@@ -23,6 +23,6 @@ public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> 
 
     @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'false' ELSE 'true' END\n"
         + "FROM party_member\n"
-        + "WHERE party_id = :party_id AND ready = false", nativeQuery = true)
+        + "WHERE party_id = :party_id AND ready = false AND deleted = 'false' ", nativeQuery = true)
     Boolean isEveryoneReady(@Param(value = "party_id") Long partyId);
 }
