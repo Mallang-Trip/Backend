@@ -31,6 +31,8 @@ public enum BaseResponseStatus {
     EXCEED_PARTY_CAPACITY(20002, "모집 인원 초과입니다."),
     CANNOT_CHANGE_COURSE(403, "코스 변경이 불가능한 상태입니다."),
     EXPIRED_PROPOSAL(403, "종료된 제안입니다."),
+    CANNOT_FOUND_RESERVATION(404, "예약 정보를 찾을 수 없습니다."),
+    CANNOT_FOUND_PAYMENT(404, "결제 정보를 찾을 수 없습니다."),
 
 
     ;

@@ -3,10 +3,7 @@ package mallang_trip.backend.service.party;
 import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_ALL_QUIT;
 import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_DRIVER_QUIT;
 import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_DRIVER_REFUSED;
-import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_EXPIRATION;
 import static mallang_trip.backend.constant.PartyStatus.CANCELED_BY_PROPOSER;
-import static mallang_trip.backend.constant.PartyStatus.DAY_OF_TRAVEL;
-import static mallang_trip.backend.constant.PartyStatus.FINISHED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
@@ -25,7 +22,6 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_ME
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_CONFLICTED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
 
-import java.time.LocalDate;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.PartyStatus;
@@ -47,8 +43,8 @@ import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.DriverService;
+import mallang_trip.backend.service.ReservationService;
 import mallang_trip.backend.service.UserService;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -61,6 +57,7 @@ public class PartyService {
 	private final PartyProposalService partyProposalService;
 	private final DriverService driverService;
 	private final CourseService courseService;
+	private final ReservationService reservationService;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -343,11 +340,39 @@ public class PartyService {
 			partyProposalService.deleteAgreement(proposal, member);
 			acceptProposal(proposal);
 		}
-		partyMemberService.deleteCurrentMember(party, member);
+		partyMemberService.deleteMember(party, member);
 	}
 
 	/**
 	 * 예약 취소
 	 */
-
+	public void cancelReservation(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		PartyMember member = partyMemberRepository.findByPartyAndUser(party, userService.getCurrentUser())
+			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+		// status CHECK
+		PartyStatus status = party.getStatus();
+		if(!(status.equals(SEALED) || status.equals(WAITING_COURSE_CHANGE_APPROVAL))){
+			throw new BaseException(Forbidden);
+		}
+		// 환불 진행
+		int refundAmount = reservationService.refund(member);
+		// 진행중인 코스 변경 신청이 있을 경우 제안 종료
+		if(status.equals(WAITING_COURSE_CHANGE_APPROVAL)){
+			partyProposalService.expireWaitingProposalByParty(party);
+		}
+		// 마지막 멤버일 경우
+		if(partyMemberService.isLastMember(party)){
+			party.setStatus(CANCELED_BY_ALL_QUIT);
+		} else {
+			partyMemberService.deleteMember(party, member);
+			if(refundAmount != 0){
+				party.getCourse().discountPrice(refundAmount);
+				party.setStatus(RECRUITING);
+			} else {
+				party.setStatus(SEALED);
+			}
+		}
+	}
 }

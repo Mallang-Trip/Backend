@@ -3,6 +3,8 @@ package mallang_trip.backend.service;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
@@ -10,7 +12,6 @@ import java.time.Period;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.ReservationStatus;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.reservation.Reservation;
@@ -45,23 +46,18 @@ public class ReservationService {
 			.build());
 	}
 
-	public void refund(PartyMember member) {
+	public int refund(PartyMember member) {
 		Reservation reservation = reservationRepository.findByMember(member)
-			.orElseThrow(() -> new BaseException(Not_Found));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
 		// status CHECK
 		if (!reservation.getStatus().equals(PAYMENT_COMPLETE)) {
-
+			throw new BaseException(CANNOT_FOUND_PAYMENT);
 		}
 		// 위약금 계산
 		int refundAmount = getRefundAmount(reservation);
-		// 파티 2일 전
-		if(refundAmount == 0) {
-
-		}
 		// TODO: 환불 진행
 		reservation.setStatus(REFUND_COMPLETE);
-		// 위약금 발생 시 할인
-		reservation.getMember().getParty().getCourse().discountPrice(refundAmount);
+		return refundAmount;
 	}
 
 	/**

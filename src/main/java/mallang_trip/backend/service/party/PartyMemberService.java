@@ -58,7 +58,7 @@ public class PartyMemberService {
 	/**
 	 * 현재 유저 파티 멤버 삭제
 	 */
-	public void deleteCurrentMember(Party party, PartyMember member) {
+	public void deleteMember(Party party, PartyMember member) {
 		party.setHeadcount(party.getHeadcount() - member.getHeadcount());
 		partyMemberRepository.delete(member);
 	}
