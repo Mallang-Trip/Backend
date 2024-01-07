@@ -26,6 +26,7 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.constant.ProposalStatus;
+import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.CreatePartyRequest;
@@ -43,7 +44,6 @@ import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.DriverService;
-import mallang_trip.backend.service.ReservationService;
 import mallang_trip.backend.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -112,7 +112,7 @@ public class PartyService {
 	}
 
 	/**
-	 * (드라이버) 파티 생성 수락/거절
+	 * (드라이버) 파티 생성 수락 or 거절
 	 */
 	public void acceptCreateParty(Long partyId, Boolean accept) {
 		Party party = partyRepository.findById(partyId)
@@ -130,8 +130,9 @@ public class PartyService {
 	}
 
 	/**
-	 * 파티 가입 신청 코스 변경 없으면, 바로 가입.
+	 * 파티 가입 신청 :
 	 * 코스 변경이 있으면, PartyProposal 생성.
+	 * 코스 변경이 없으면, 바로 가입.
 	 */
 	public void requestPartyJoin(Long partyId, JoinPartyRequest request) {
 		Party party = partyRepository.findById(partyId)
@@ -141,7 +142,7 @@ public class PartyService {
 			throw new BaseException(PARTY_NOT_RECRUITING);
 		}
 		// 인원수 CHECK
-		if (request.getHeadcount() + party.getHeadcount() > party.getCapacity()) {
+		if (!party.isHeadcountAvailable(request.getHeadcount())) {
 			throw new BaseException(EXCEED_PARTY_CAPACITY);
 		}
 		// 이미 가입된 파티인지 CHECK
@@ -157,14 +158,15 @@ public class PartyService {
 	}
 
 	/**
-	 * 파티 가입 멤버 추가 후, 파티원 전원 레디 해제.
+	 * 파티 가입 (멤버 추가) :
 	 * 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정.
+	 * 최대인원 모집 미완료 시, 전원 레디 취소 처리.
 	 */
 	private void joinParty(Party party, User user, Integer headcount) {
 		partyMemberService.createMember(party, user, headcount);
 		if (party.getHeadcount() == party.getCapacity()) {
 			partyMemberService.readyAllMembers(party);
-			// TODO: 1/N원 자동결제
+			reservationService.reserveParty(party);
 			party.setStatus(SEALED);
 		} else {
 			partyMemberService.cancelReadyAllMembers(party);
@@ -201,21 +203,23 @@ public class PartyService {
 	}
 
 	/**
-	 * 제안 수락/거절
+	 * 제안 수락 or 거절 투표
+	 * 수락 시, 만장일치가 이루어졌는지 확인.
+	 * 거절 시, 제안 거절 처리.
 	 */
 	public void voteProposal(Long proposalId, Boolean accept) {
 		PartyProposal proposal = partyProposalRepository.findById(proposalId)
 			.orElseThrow(() -> new BaseException(EXPIRED_PROPOSAL));
 		partyProposalService.voteProposal(proposal, accept);
 		if (accept) {
-			acceptProposal(proposal);
+			checkUnanimityAndAcceptProposal(proposal);
 		}
 	}
 
 	/**
-	 * 제안 모두 수락했는지 확인 후 모두 수락했다면 제안 수용
+	 * 제안 모두 수락했는지 확인 후, 모두 수락했다면 제안 수용.
 	 */
-	private void acceptProposal(PartyProposal proposal) {
+	private void checkUnanimityAndAcceptProposal(PartyProposal proposal) {
 		if (!partyProposalService.isUnanimity(proposal)) {
 			return;
 		}
@@ -226,12 +230,13 @@ public class PartyService {
 			joinParty(party, proposal.getProposer(), proposal.getHeadcount());
 		}
 		if (proposal.getType().equals(COURSE_CHANGE)) {
-			proposal.getParty().setStatus(SEALED);
+			party.setStatus(SEALED);
 		}
 	}
 
 	/**
-	 * 현재 유저 파티 레디하기
+	 * 파티 레디하기.
+	 * 전원 레디 시, 예약 진행.
 	 */
 	public void ready(Long partyId) {
 		Party party = partyRepository.findById(partyId)
@@ -245,19 +250,18 @@ public class PartyService {
 	}
 
 	/**
-	 * 파티 전원 레디 시 결제 후 SEALED 처리
+	 * 파티 전원 레디 시, 자동결제 후 파티확정.
 	 */
 	public void checkEveryoneReady(Party party) {
 		if (!partyMemberService.isEveryoneReady(party)) {
 			return;
 		}
-		// TODO: 1/N원 자동결제
-
+		reservationService.reserveParty(party);
 		party.setStatus(SEALED);
 	}
 
 	/**
-	 * 현재 유저 파티 레디 취소
+	 * 파티 레디 취소
 	 */
 	public void cancelReady(Long partyId) {
 		Party party = partyRepository.findById(partyId)
@@ -283,20 +287,33 @@ public class PartyService {
 	}
 
 	/**
-	 * 모집 단계에서 드라이버의 파티 탈퇴
+	 * 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴
 	 */
-	public void quitPartyByDriver(Long partyId){
+	public void quitPartyBeforeReservation(Long partyId){
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
-		Driver driver = driverService.getCurrentDriver();
-		// 권한 CHECK
-		if(!party.getDriver().equals(driver)){
-			throw new BaseException(NOT_PARTY_MEMBER);
-		}
 		// status CHECK
 		PartyStatus status = party.getStatus();
 		if(!(status.equals(RECRUITING) || status.equals(WAITING_JOIN_APPROVAL))){
 			throw new BaseException(Forbidden);
+		}
+		// ROLE CHECK
+		Role role = userService.getCurrentUser().getRole();
+		if (role.equals(Role.ROLE_DRIVER)) {
+			quitPartyBeforeReservationByDriver(party);
+		} else if (role.equals(Role.ROLE_USER)) {
+			quitPartyBeforeReservationByMember(party);
+		}
+	}
+
+	/**
+	 * (드라이버) 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴
+	 */
+	private void quitPartyBeforeReservationByDriver(Party party){
+		Driver driver = driverService.getCurrentDriver();
+		// 권한 CHECK
+		if(!party.getDriver().equals(driver)){
+			throw new BaseException(NOT_PARTY_MEMBER);
 		}
 		// 진행중인 가입 신청이 있을 경우, 거절 처리
 		partyProposalService.expireWaitingProposalByParty(party);
@@ -304,49 +321,51 @@ public class PartyService {
 	}
 
 	/**
-	 * 모집 단계에서 멤버의 파티 탈퇴
+	 * (멤버) 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴.
 	 */
-	public void quitPartyByMember(Long partyId){
-		Party party = partyRepository.findById(partyId)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+	private void quitPartyBeforeReservationByMember(Party party){
 		// 권한 CHECK
 		if(!isMyParty(userService.getCurrentUser(), party)){
 			throw new BaseException(NOT_PARTY_MEMBER);
 		}
-		// status CHECK
-		PartyStatus status = party.getStatus();
-		if(!(status.equals(RECRUITING) || status.equals(WAITING_JOIN_APPROVAL))){
-			throw new BaseException(Forbidden);
-		}
-		// 마지막 멤버일 경우
+		// 탈퇴 진행
 		if(partyMemberService.isLastMember(party)){
-			partyProposalService.expireWaitingProposalByParty(party);
-			party.setStatus(CANCELED_BY_ALL_QUIT);
+			quitPartyBeforeReservationByLastMember(party);
 		} else {
-			quitParty(party);
+			quitPartyBeforeReservationByNotLastMember(party);
 		}
 	}
 
 	/**
-	 * 마지막 멤버가 아닐때 파티 탈퇴 처리
+	 * 예약 전 파티 탈퇴 시, 마지막 멤버일 경우.
+	 * 진행 중인 가입 신청이 있다면, 해당 proposal 만료 처리.
+	 * CANCELED 상태로 변경 후, 마지막 멤버 정보는 delete 하지 않움.
 	 */
-	private void quitParty(Party party){
+	private void quitPartyBeforeReservationByLastMember(Party party){
+		partyProposalService.expireWaitingProposalByParty(party);
+		party.setStatus(CANCELED_BY_ALL_QUIT);
+	}
+
+	/**
+	 * 예약 전 파티 탈퇴 시, 마지막 멤버가 아닐 경우.
+	 * 진행 중인 가입 신청이 있다면, 해당 party_proposal_agreement 삭제 후 만장일치 확인.
+	 */
+	private void quitPartyBeforeReservationByNotLastMember(Party party){
 		PartyProposal proposal = partyProposalRepository.findByPartyAndStatus(party,
 			ProposalStatus.WAITING).orElse(null);
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party,
 			userService.getCurrentUser()).orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 		if (proposal != null) {
-			// agreement 삭제 후 proposal 투표 상태 check
 			partyProposalService.deleteAgreement(proposal, member);
-			acceptProposal(proposal);
+			checkUnanimityAndAcceptProposal(proposal);
 		}
 		partyMemberService.deleteMember(party, member);
 	}
 
 	/**
-	 * 예약 취소
+	 * (멤버) 예약 취소
 	 */
-	public void cancelReservation(Long partyId){
+	public void cancelReservationByMember(Long partyId){
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party, userService.getCurrentUser())
@@ -356,23 +375,40 @@ public class PartyService {
 		if(!(status.equals(SEALED) || status.equals(WAITING_COURSE_CHANGE_APPROVAL))){
 			throw new BaseException(Forbidden);
 		}
-		// 환불 진행
-		int refundAmount = reservationService.refund(member);
 		// 진행중인 코스 변경 신청이 있을 경우 제안 종료
 		if(status.equals(WAITING_COURSE_CHANGE_APPROVAL)){
 			partyProposalService.expireWaitingProposalByParty(party);
 		}
-		// 마지막 멤버일 경우
+		// 환불 및 탈퇴 진행
 		if(partyMemberService.isLastMember(party)){
-			party.setStatus(CANCELED_BY_ALL_QUIT);
+			cancelReservationByLastMember(member);
 		} else {
-			partyMemberService.deleteMember(party, member);
-			if(refundAmount != 0){
-				party.getCourse().discountPrice(refundAmount);
-				party.setStatus(RECRUITING);
-			} else {
-				party.setStatus(SEALED);
-			}
+			cancelReservationByNotLastMember(member);
+		}
+	}
+
+	/**
+	 * 예약 취소 시, 마지막 멤버인 경우.
+	 */
+	private void cancelReservationByLastMember(PartyMember member){
+		reservationService.refund(member);
+		member.getParty().setStatus(CANCELED_BY_ALL_QUIT);
+	}
+
+	/**
+	 * 예약 취소 시, 마지막 멤버가 아닌 경우.
+	 * 환불 및 멤버 삭제 후, RECRUITING 상태로 돌아감.
+	 * 환불 위약금이 100%일 때는 SEALED 상태 유지.
+	 */
+	private void cancelReservationByNotLastMember(PartyMember member){
+		Party party = member.getParty();
+		int refundAmount = reservationService.refund(member);
+		partyMemberService.deleteMember(party, member);
+		if(refundAmount != 0){
+			party.getCourse().discountPrice(refundAmount);
+			party.setStatus(RECRUITING);
+		} else {
+			party.setStatus(SEALED);
 		}
 	}
 }

@@ -12,6 +12,7 @@ import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
 import mallang_trip.backend.domain.dto.party.PartyIdResponse;
 import mallang_trip.backend.domain.dto.party.PartyRequest;
 import mallang_trip.backend.domain.dto.course.CourseRequest;
+import mallang_trip.backend.service.party.PartySearchService;
 import mallang_trip.backend.service.party.PartyService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,95 +33,4 @@ public class PartyController {
 
 	private final PartyService partyService;
 
-	@PostMapping("/start")
-	@ApiOperation(value = "파티 생성")
-	@PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
-	public BaseResponse<PartyIdResponse> createParty(@RequestBody PartyRequest request)
-		throws BaseException {
-		return new BaseResponse<>(partyService.createParty(request));
-	}
-
-	@PostMapping("/accept/start/{id}")
-	@ApiOperation(value = "(드라이버) 파티 생성 수락/거절")
-	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<String> acceptCreateParty(@PathVariable Long id,
-		@RequestParam Boolean accept) throws BaseException {
-		partyService.acceptCreateParty(id, accept);
-		return new BaseResponse<>("성공");
-	}
-
-	@PostMapping("/join")
-	@ApiOperation(value = "파티 가입하기")
-	public BaseResponse<String> joinParty(@RequestBody JoinPartyRequest request)
-		throws BaseException {
-		partyService.joinParty(request);
-		return new BaseResponse<>("성공");
-	}
-
-	@PostMapping("/course/{partyId}")
-	@ApiOperation(value = "코스 변경 제안")
-	public BaseResponse<String> changeCourse(@PathVariable Long partyId,
-		@RequestBody CourseRequest request) throws BaseException {
-		partyService.proposeCourseChange(partyId, request);
-		return new BaseResponse<>("성공");
-	}
-
-	@PostMapping("/accept/{proposalId}")
-	@ApiOperation(value = "파티 가입, 코스 변경 수락/거절")
-	public BaseResponse<String> acceptProposal(@PathVariable Long proposalId,
-		@RequestParam Boolean accept) throws BaseException {
-		partyService.acceptProposal(proposalId, accept);
-		return new BaseResponse<>("성공");
-	}
-
-	@GetMapping("/list")
-	@ApiOperation(value = "모집중인 파티 조회")
-	public BaseResponse<List<PartyBriefResponse>> findParties(@RequestParam String region,
-		@RequestParam Integer headcount, @RequestParam String startDate,
-		@RequestParam String endDate, @RequestParam Integer maxPrice) throws BaseException {
-		return new BaseResponse<>(
-			partyService.findParties(region, headcount, startDate, endDate, maxPrice));
-	}
-
-	@GetMapping("/my")
-	@ApiOperation(value = "내 파티 조회")
-	public BaseResponse<List<PartyBriefResponse>> getMyParties() throws BaseException {
-		return new BaseResponse<>(partyService.getMyParties());
-	}
-
-	@GetMapping("/history")
-	@ApiOperation(value = "내가 본 파티 조회")
-	public BaseResponse<List<PartyBriefResponse>> getPartyHistories() throws BaseException {
-		return new BaseResponse<>(partyService.getHistory());
-	}
-
-	@GetMapping("/view/{partyId}")
-	@ApiOperation(value = "파티 상세 조회")
-	public BaseResponse<PartyDetailsResponse> getPartyDetails(@PathVariable Long partyId)
-		throws BaseException {
-		return new BaseResponse<>(partyService.getPartyDetails(partyId));
-	}
-
-	@PutMapping("/course/{proposalId}")
-	@ApiOperation(value = "코스변경 다시 제안하기")
-	public BaseResponse<String> reProposeCourseChange(@PathVariable Long proposalId,
-		@RequestBody CourseRequest request) throws BaseException {
-		partyService.reProposeCourseChange(proposalId, request);
-		return new BaseResponse<>("성공");
-	}
-
-	@PutMapping("/join/{proposalId}")
-	@ApiOperation(value = "파티가입 다시 제안하기")
-	public BaseResponse<String> reProposeJoinParty(@PathVariable Long proposalId,
-		@RequestBody JoinPartyRequest request) throws BaseException {
-		partyService.reProposeJoinParty(proposalId, request);
-		return new BaseResponse<>("성공");
-	}
-
-	@DeleteMapping("/proposal/{proposalId}")
-	@ApiOperation(value = "제안 취소")
-	public BaseResponse<String> cancelProposal(@PathVariable Long proposalId) throws BaseException {
-		partyService.cancelProposal(proposalId);
-		return new BaseResponse<>("성공");
-	}
 }

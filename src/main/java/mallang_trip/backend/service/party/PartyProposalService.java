@@ -7,7 +7,6 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.EXPIRED_PROP
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.AgreementStatus;
 import mallang_trip.backend.constant.PartyStatus;
@@ -29,8 +28,6 @@ import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.DriverService;
 import mallang_trip.backend.service.UserService;
-import mallang_trip.backend.service.party.PartyMemberService;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +45,7 @@ public class PartyProposalService {
 	private final PartyMemberRepository partyMemberRepository;
 
 	/**
-	 * PartyProposal (Type: JOIN_WITH_COURSE_CHANGE) 생성
+	 * PartyProposal, PartyProposalAgreement 생성 (Type: JOIN_WITH_COURSE_CHANGE)
 	 */
 	public void createJoinWithCourseChange(Party party, JoinPartyRequest request) {
 		Course course = courseService.createCourse(request.getNewCourse());
@@ -64,7 +61,7 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * PartyProposal (Type: COURSE_CHANGE) 생성
+	 * PartyProposal, PartyProposalAgreement 생성 (Type: COURSE_CHANGE)
 	 */
 	public void createCourseChange(Party party, ChangeCourseRequest request) {
 		Course course = courseService.createCourse(request.getCourse());
@@ -77,7 +74,8 @@ public class PartyProposalService {
 			.type(COURSE_CHANGE)
 			.build());
 		createPartyProposalAgreements(proposal);
-		voteProposalByMember(proposal, true);
+		// 생성자는 자동 수락
+		voteProposal(proposal, true);
 	}
 
 	/**
@@ -108,7 +106,7 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * (드라이버) Proposal 수락 or 거절 투표
+	 * (드라이버) Proposal 수락 or 거절
 	 */
 	private void voteProposalByDriver(PartyProposal proposal, Boolean accept) {
 		Driver driver = driverService.getCurrentDriver();
@@ -124,12 +122,11 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * (파티 멤버) Proposal 수락 or 거절 투표
+	 * (파티 멤버) Proposal 수락 or 거절
 	 */
 	private void voteProposalByMember(PartyProposal proposal, Boolean accept) {
 		User user = userService.getCurrentUser();
-		PartyMember member = partyMemberRepository.findByPartyAndUser(proposal.getParty(),
-				user)
+		PartyMember member = partyMemberRepository.findByPartyAndUser(proposal.getParty(), user)
 			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 		PartyProposalAgreement agreement = partyProposalAgreementRepository.findByMemberAndProposal(
 				member, proposal)
@@ -143,7 +140,9 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * 제안 한 명이라도 거절했을 경우 Proposal Status -> REFUSED Party Status -> 이전 Status
+	 * 제안 한 명이라도 거절했을 경우 :
+	 * Proposal Status -> REFUSED.
+	 * Party Status -> 이전 Status.
 	 */
 	private void refuseProposal(PartyProposal proposal) {
 		proposal.setStatus(ProposalStatus.REFUSED);
@@ -176,12 +175,11 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * 만료된 제안 처리
-	 * 응답하지 않은 agreement status -> refused
-	 * proposal status -> refused
+	 * 제안 만료 처리.
+	 * 응답하지 않은 agreement status -> refuse.
+	 * proposal status -> refused.
 	 */
-	public void handleExpiredProposal(PartyProposal proposal) {
-		// 만료된 PartyProposalAgreement 거절 처리
+	public void expireProposal(PartyProposal proposal) {
 		partyProposalAgreementRepository.findByProposal(proposal).stream()
 			.forEach(agreement -> {
 				if (agreement.getStatus().equals(AgreementStatus.WAITING)) {
@@ -195,13 +193,13 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * 진행중인 파티의 코스 변경 제안을 종료 (거절 처리)
+	 * 파티에 진행중인 파티가입신청 or 코스변경제안이 있다면, 만료 처리.
 	 */
 	public void expireWaitingProposalByParty(Party party) {
 		PartyProposal proposal = partyProposalRepository.findByPartyAndStatus(party,
 				ProposalStatus.WAITING).orElse(null);
 		if (proposal != null) {
-			handleExpiredProposal(proposal);
+			expireProposal(proposal);
 		}
 	}
 

@@ -1,11 +1,10 @@
-package mallang_trip.backend.service;
+package mallang_trip.backend.service.party;
 
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -29,13 +28,16 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 
 	/**
-	 * 파티원 1/N 결제
+	 * 파티 자동 결제
 	 */
 	public void reserveParty(Party party) {
 		partyMemberService.getMembers(party).stream()
 			.forEach(member -> pay(member));
 	}
 
+	/**
+	 * 파티원 1/N 결제
+	 */
 	private void pay(PartyMember member) {
 		// TODO: 결제 진행
 		ReservationStatus status = true ? PAYMENT_COMPLETE : PAYMENT_REQUIRED;
@@ -46,6 +48,9 @@ public class ReservationService {
 			.build());
 	}
 
+	/**
+	 * 파티원 환불
+	 */
 	public int refund(PartyMember member) {
 		Reservation reservation = reservationRepository.findByMember(member)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
@@ -61,7 +66,7 @@ public class ReservationService {
 	}
 
 	/**
-	 * 결제 금액 조회
+	 * 결제 금액 계산
 	 */
 	private int getPaymentAmount(PartyMember member) {
 		Party party = member.getParty();
@@ -71,7 +76,7 @@ public class ReservationService {
 	}
 
 	/**
-	 * 환불 금액 조회
+	 * 환불 금액 계산
 	 */
 	private int getRefundAmount(Reservation reservation) {
 		Party party = reservation.getMember().getParty();
