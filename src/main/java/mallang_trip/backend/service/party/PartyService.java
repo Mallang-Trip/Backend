@@ -97,7 +97,7 @@ public class PartyService {
 	/**
 	 * 파티 생성 신청 취소
 	 */
-	private void cancelCreateParty(Long partyId) {
+	public void cancelCreateParty(Long partyId) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		// 권한 CHECK

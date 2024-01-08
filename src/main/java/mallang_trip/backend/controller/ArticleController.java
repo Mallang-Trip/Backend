@@ -40,7 +40,7 @@ public class ArticleController {
 	@PostMapping
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<ArticleIdResponse> createArticle(
-		@RequestBody @Valid ArticleRequest request) {
+		@RequestBody @Valid ArticleRequest request) throws BaseException {
 		return new BaseResponse<>(articleService.createArticle(request));
 	}
 
@@ -48,7 +48,7 @@ public class ArticleController {
 	@PutMapping("/{article_id}")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> changeArticle(@PathVariable(value = "article_id") Long id,
-		@RequestBody @Valid ArticleRequest request) {
+		@RequestBody @Valid ArticleRequest request) throws BaseException {
 		articleService.changeArticle(id, request);
 		return new BaseResponse<>("성공");
 	}
