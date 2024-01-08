@@ -165,11 +165,11 @@ public class PartyService {
 	private void joinParty(Party party, User user, Integer headcount) {
 		partyMemberService.createMember(party, user, headcount);
 		if (party.getHeadcount() == party.getCapacity()) {
-			partyMemberService.readyAllMembers(party);
+			partyMemberService.setReadyAllMembers(party, true);
 			reservationService.reserveParty(party);
 			party.setStatus(SEALED);
 		} else {
-			partyMemberService.cancelReadyAllMembers(party);
+			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(RECRUITING);
 		}
 	}
@@ -235,18 +235,20 @@ public class PartyService {
 	}
 
 	/**
-	 * 파티 레디하기.
+	 * 파티 레디 or 레디 취소.
 	 * 전원 레디 시, 예약 진행.
 	 */
-	public void ready(Long partyId) {
+	public void setReady(Long partyId, Boolean ready) {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		// status CHECK
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(Forbidden);
 		}
-		partyMemberService.ready(party);
-		checkEveryoneReady(party);
+		partyMemberService.setReady(party, ready);
+		if(ready){
+			checkEveryoneReady(party);
+		}
 	}
 
 	/**
@@ -258,19 +260,6 @@ public class PartyService {
 		}
 		reservationService.reserveParty(party);
 		party.setStatus(SEALED);
-	}
-
-	/**
-	 * 파티 레디 취소
-	 */
-	public void cancelReady(Long partyId) {
-		Party party = partyRepository.findById(partyId)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
-		// status CHECK
-		if (!party.getStatus().equals(RECRUITING)) {
-			throw new BaseException(Forbidden);
-		}
-		partyMemberService.cancelReady(party);
 	}
 
 	/**
@@ -359,7 +348,7 @@ public class PartyService {
 			partyProposalService.deleteAgreement(proposal, member);
 			checkUnanimityAndAcceptProposal(proposal);
 		}
-		partyMemberService.deleteMember(party, member);
+		partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
 	}
 
 	/**
@@ -408,7 +397,7 @@ public class PartyService {
 	private void cancelReservationByNotLastMember(PartyMember member){
 		Party party = member.getParty();
 		int refundAmount = reservationService.refund(member);
-		partyMemberService.deleteMember(party, member);
+		partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
 		if(refundAmount != 0){
 			party.getCourse().discountPrice(refundAmount);
 			party.setStatus(RECRUITING);

@@ -97,10 +97,11 @@ public class PartyProposalService {
 	 * 제안 수락 or 거절 투표
 	 */
 	public void voteProposal(PartyProposal proposal, Boolean accept) {
-		if (userService.getCurrentUser().getRole().equals(Role.ROLE_DRIVER)) {
+		Role role = userService.getCurrentUser().getRole();
+		if (role.equals(Role.ROLE_DRIVER)) {
 			voteProposalByDriver(proposal, accept);
 		}
-		if (userService.getCurrentUser().getRole().equals(Role.ROLE_USER)) {
+		if (role.equals(Role.ROLE_USER)) {
 			voteProposalByMember(proposal, accept);
 		}
 	}

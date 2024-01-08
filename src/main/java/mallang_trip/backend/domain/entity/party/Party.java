@@ -30,66 +30,76 @@ import mallang_trip.backend.domain.entity.user.User;
 @NoArgsConstructor
 public class Party extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "driver_id", nullable = false)
-    private Driver driver;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "driver_id", nullable = false)
+	private Driver driver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "course_id", nullable = false)
+	private Course course;
 
-    @Column(nullable = false)
-    private String region;
+	@Column(nullable = false)
+	private String region;
 
-    @Column(nullable = false)
-    private Integer capacity;
+	@Column(nullable = false)
+	private Integer capacity;
 
-    @Column
-    private Integer headcount;
+	@Column
+	private Integer headcount;
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
+	@Column
+	@Builder.Default()
+	private Boolean driverReady = false;
 
-    @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate;
 
-    @Column
-    private String content;
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate;
 
-    @Enumerated(EnumType.STRING)
-    @Builder.Default()
-    private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
+	@Column
+	private String content;
 
-    public void increaseHeadcount(int headcount){
-        this.headcount += headcount;
-    }
+	@Enumerated(EnumType.STRING)
+	@Builder.Default()
+	private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
 
-    /**
-     * 인원 추가 시, 최대 인원 초과 유무 확인
-     */
-    public Boolean isHeadcountAvailable(Integer headcount) {
-        return this.capacity >= this.headcount + headcount ? true : false;
-    }
+	public void increaseHeadcount(int headcount) {
+		this.headcount += headcount;
+	}
 
-    public Boolean checkDate(String startDate, String endDate) {
-        if (startDate.equals("all") || endDate.equals("all")) {
-            return true;
-        }
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
-        if ((this.startDate.isAfter(start) || this.startDate.isEqual(start))
-            && (this.endDate.isBefore(end) || this.endDate.isEqual(end))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * 인원 추가 시, 최대 인원 초과 유무 확인
+	 */
+	public Boolean isHeadcountAvailable(Integer headcount) {
+		return this.capacity >= this.headcount + headcount ? true : false;
+	}
 
-    public Boolean checkMaxPrice(Integer maxPrice) {
-        return this.course.getTotalPrice() / capacity <= maxPrice ? true : false;
-    }
+	/**
+	 * 파티 시간이 두 날짜 사이에 있는지 확인
+	 */
+	public Boolean checkDate(String startDate, String endDate) {
+		if (startDate.equals("all") || endDate.equals("all")) {
+			return true;
+		}
+		LocalDate start = LocalDate.parse(startDate);
+		LocalDate end = LocalDate.parse(endDate);
+		if ((this.startDate.isAfter(start) || this.startDate.isEqual(start))
+			&& (this.endDate.isBefore(end) || this.endDate.isEqual(end))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * 1인 당 가격이 maxPrice를 넘지 않는 지 확인.
+	 */
+	public Boolean checkMaxPrice(Integer maxPrice) {
+		return this.course.getTotalPrice() / capacity <= maxPrice ? true : false;
+	}
 }

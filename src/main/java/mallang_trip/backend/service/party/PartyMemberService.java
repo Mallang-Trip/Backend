@@ -6,6 +6,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_ME
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.PartyMemberResponse;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -56,53 +57,63 @@ public class PartyMemberService {
     }
 
     /**
-     * 현재 유저 파티 멤버 삭제
+     * 현재 유저 파티 멤버 삭제, 파티 인원 감소
      */
-    public void deleteMember(Party party, PartyMember member) {
+    public void deleteMemberAndDecreaseHeadcount(Party party, PartyMember member) {
         party.setHeadcount(party.getHeadcount() - member.getHeadcount());
         partyMemberRepository.delete(member);
     }
 
     /**
-     * 파티 레디
+     * 파티 레디 or 취소
      */
-    public void ready(Party party) {
+    public void setReady(Party party, Boolean ready){
+        Role role = userService.getCurrentUser().getRole();
+        if (role.equals(Role.ROLE_DRIVER)) {
+            setReadyByDriver(party, ready);
+        }
+        if (role.equals(Role.ROLE_USER)) {
+            setReadyByMember(party, ready);
+        }
+    }
+
+    /**
+     * (드라이버) 파티 레디 or 취소
+     */
+    public void setReadyByDriver(Party party, Boolean ready){
+        if(!party.getDriver().getUser().equals(userService.getCurrentUser())){
+            throw new BaseException(NOT_PARTY_MEMBER);
+        }
+        party.setDriverReady(ready);
+    }
+
+    /**
+     * (멤버) 파티 레디 or 취소
+     */
+    public void setReadyByMember(Party party, Boolean ready) {
         PartyMember member = partyMemberRepository.findByPartyAndUser(party,
                 userService.getCurrentUser())
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
-        member.setReady(true);
+        member.setReady(ready);
     }
 
     /**
-     * 파티 레디 취소
+     * 파티 전원 레디 or 레디 취소 처리
      */
-    public void cancelReady(Party party) {
-        PartyMember member = partyMemberRepository.findByPartyAndUser(party,
-                userService.getCurrentUser())
-            .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
-        member.setReady(false);
-    }
-
-    /**
-     * 파티 전원 레디 처리
-     */
-    public void readyAllMembers(Party party) {
+    public void setReadyAllMembers(Party party, Boolean ready) {
         getMembers(party).stream()
-            .forEach(member -> member.setReady(true));
+            .forEach(member -> member.setReady(ready));
+        party.setDriverReady(ready);
     }
 
-    /**
-     * 파티 전원 레디 취소
-     */
-    public void cancelReadyAllMembers(Party party) {
-        getMembers(party).stream()
-            .forEach(member -> member.setReady(false));
-    }
 
     /**
-     * 파티 멤버 전원 레디 확인
+     * 파티 전원 레디 확인
      */
     public Boolean isEveryoneReady(Party party) {
+        if(!party.getDriverReady()){
+            return false;
+        }
         return partyMemberRepository.isEveryoneReady(party.getId());
     }
 
