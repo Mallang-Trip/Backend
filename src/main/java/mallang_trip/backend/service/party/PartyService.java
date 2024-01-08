@@ -363,6 +363,11 @@ public class PartyService {
 	}
 
 	/**
+	 * (드라이버) 예약 취소
+	 */
+
+
+	/**
 	 * (멤버) 예약 취소
 	 */
 	public void cancelReservationByMember(Long partyId){
