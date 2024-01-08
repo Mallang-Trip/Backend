@@ -32,6 +32,8 @@ import org.hibernate.annotations.Where;
 @Table(name = "party_proposal")
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE party_proposal SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class PartyProposal extends BaseEntity {
 
     @Id

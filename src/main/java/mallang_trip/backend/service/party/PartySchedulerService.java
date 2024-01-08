@@ -27,7 +27,7 @@ public class PartySchedulerService {
 	 */
 	@Scheduled(fixedDelay = 60000)
 	public void expireProposal() {
-		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1))
+		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1).toString())
 			.stream()
 			.forEach(proposal -> partyProposalService.expireProposal(proposal));
 	}
@@ -40,7 +40,6 @@ public class PartySchedulerService {
 		String today = LocalDate.now().toString();
 
 		handleExpiredRecruitingParty(today);
-		handleExpiredWaitingCourseChangeApprovalParty(today);
 		handleDayOfTravelParty(today);
 		handleFinishedParty(today);
 	}
@@ -50,26 +49,21 @@ public class PartySchedulerService {
 	 */
 	private void handleExpiredRecruitingParty(String today) {
 		partyRepository.findExpiredRecruitingParties(today).stream()
-			.forEach(party -> party.setStatus(CANCELED_BY_EXPIRATION));
-	}
-
-	/**
-	 * 코스 변경 제안 중 여행 당일이 된 파티 처리
-	 */
-	private void handleExpiredWaitingCourseChangeApprovalParty(String today) {
-		partyRepository.findExpiredWaitingCourseChangeApprovalParties(today).stream()
 			.forEach(party -> {
 				partyProposalService.expireWaitingProposalByParty(party);
-				party.setStatus(DAY_OF_TRAVEL);
+				party.setStatus(CANCELED_BY_EXPIRATION);
 			});
 	}
 
 	/**
 	 * 예약된 파티 중 여행 당일이 된 파티 처리
 	 */
-	private void handleDayOfTravelParty(String today){
+	private void handleDayOfTravelParty(String today) {
 		partyRepository.findDayOfTravelParties(today).stream()
-			.forEach(party -> party.setStatus(DAY_OF_TRAVEL));
+			.forEach(party -> {
+				partyProposalService.expireWaitingProposalByParty(party);
+				party.setStatus(DAY_OF_TRAVEL);
+			});
 	}
 
 	/**

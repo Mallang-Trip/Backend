@@ -17,6 +17,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.constant.AgreementStatus;
 import mallang_trip.backend.domain.entity.BaseEntity;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -25,6 +27,8 @@ import mallang_trip.backend.domain.entity.BaseEntity;
 @Table(name = "party_proposal_agreement")
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE party_proposal_agreement SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class PartyProposalAgreement extends BaseEntity {
 
     @Id

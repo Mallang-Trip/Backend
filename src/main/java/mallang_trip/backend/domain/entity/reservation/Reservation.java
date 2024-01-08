@@ -21,6 +21,8 @@ import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.user.User;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -28,6 +30,8 @@ import mallang_trip.backend.domain.entity.user.User;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE reservation SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class Reservation extends BaseEntity {
 
 	@Id

@@ -352,18 +352,15 @@ public class PartyService {
 	}
 
 	/**
-	 * (드라이버) 예약 취소
+	 * 예약 취소
 	 */
-
-
-	/**
-	 * (멤버) 예약 취소
-	 */
-	public void cancelReservationByMember(Long partyId){
+	public void cancelReservation(Long partyId){
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
-		PartyMember member = partyMemberRepository.findByPartyAndUser(party, userService.getCurrentUser())
-			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+		// 권한 CHECK
+		if(!isMyParty(userService.getCurrentUser(), party)){
+			throw new BaseException(NOT_PARTY_MEMBER);
+		}
 		// status CHECK
 		PartyStatus status = party.getStatus();
 		if(!(status.equals(SEALED) || status.equals(WAITING_COURSE_CHANGE_APPROVAL))){
@@ -373,7 +370,32 @@ public class PartyService {
 		if(status.equals(WAITING_COURSE_CHANGE_APPROVAL)){
 			partyProposalService.expireWaitingProposalByParty(party);
 		}
-		// 환불 및 탈퇴 진행
+		// ROLE CHECK
+		Role role = userService.getCurrentUser().getRole();
+		if (role.equals(Role.ROLE_DRIVER)) {
+			cancelReservationByDriver(party);
+		} else if (role.equals(Role.ROLE_USER)) {
+			cancelReservationByMember(party);
+		}
+	}
+
+	/**
+	 * (드라이버) 예약 취소
+	 */
+	public void cancelReservationByDriver(Party party){
+		reservationService.payPenaltyByDriver(party);
+		reservationService.refundAllMembers(party);
+		party.setStatus(CANCELED_BY_DRIVER_QUIT);
+	}
+
+
+
+	/**
+	 * (멤버) 예약 취소
+	 */
+	public void cancelReservationByMember(Party party){
+		PartyMember member = partyMemberRepository.findByPartyAndUser(party, userService.getCurrentUser())
+			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 		if(partyMemberService.isLastMember(party)){
 			cancelReservationByLastMember(member);
 		} else {
@@ -382,7 +404,7 @@ public class PartyService {
 	}
 
 	/**
-	 * 예약 취소 시, 마지막 멤버인 경우.
+	 * (멤버) 예약 취소 시, 마지막 멤버인 경우.
 	 */
 	private void cancelReservationByLastMember(PartyMember member){
 		reservationService.refund(member);
@@ -390,15 +412,16 @@ public class PartyService {
 	}
 
 	/**
-	 * 예약 취소 시, 마지막 멤버가 아닌 경우.
-	 * 환불 및 멤버 삭제 후, RECRUITING 상태로 돌아감.
-	 * 환불 위약금이 100%일 때는 SEALED 상태 유지.
+	 * (멤버) 예약 취소 시, 마지막 멤버가 아닌 경우.
+	 * 환불 및 멤버 삭제, 남은 멤버 전액 환불 진행 후, RECRUITING 상태로 돌아감.
+	 * 환불 위약금이 100%일 때는 SEALED 상태 유지(파티 그대로 진행).
 	 */
 	private void cancelReservationByNotLastMember(PartyMember member){
 		Party party = member.getParty();
 		int refundAmount = reservationService.refund(member);
 		partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
 		if(refundAmount != 0){
+			reservationService.refundAllMembers(party);
 			party.getCourse().discountPrice(refundAmount);
 			party.setStatus(RECRUITING);
 		} else {

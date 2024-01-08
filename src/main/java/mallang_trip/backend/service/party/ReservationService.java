@@ -5,6 +5,7 @@ import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -65,6 +66,13 @@ public class ReservationService {
 	}
 
 	/**
+	 * 모든 파티 멤버 전액 환불
+	 */
+	public void refundAllMembers(Party party){
+
+	}
+
+	/**
 	 * 결제 금액 계산
 	 */
 	private int getPaymentAmount(PartyMember member) {
@@ -97,5 +105,33 @@ public class ReservationService {
 		}
 	}
 
-
+	public void payPenaltyByDriver(Party party){
+		int penalty = getPenaltyToDriver(party);
+		//TODO: 드라이버 위약금 결제
+	}
+	public int getPenaltyToDriver(Party party){
+		int totalPrice = party.getCourse().getTotalPrice();
+		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
+		if (dDay > 7) {
+			return 0;
+		} else if (dDay == 0) {
+			return (int)(totalPrice * 0.4);
+		} else if (dDay == 1) {
+			return (int)(totalPrice * 0.35);
+		} else if (dDay == 2) {
+			return (int)(totalPrice * 0.3);
+		} else if (dDay == 3) {
+			return (int)(totalPrice * 0.25);
+		} else if (dDay == 4) {
+			return (int)(totalPrice * 0.2);
+		} else if (dDay == 5) {
+			return (int)(totalPrice * 0.15);
+		} else if (dDay == 6) {
+			return (int)(totalPrice * 0.1);
+		} else if (dDay == 7) {
+			return (int)(totalPrice * 0.05);
+		} else {
+			throw new BaseException(Forbidden);
+		}
+	}
 }
