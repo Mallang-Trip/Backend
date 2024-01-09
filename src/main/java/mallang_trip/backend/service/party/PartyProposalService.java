@@ -7,6 +7,8 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.EXPIRED_PROP
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.AgreementStatus;
 import mallang_trip.backend.constant.PartyStatus;
@@ -15,6 +17,8 @@ import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.party.PartyProposalAgreementResponse;
+import mallang_trip.backend.domain.dto.party.PartyProposalResponse;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -141,9 +145,7 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * 제안 한 명이라도 거절했을 경우 :
-	 * Proposal Status -> REFUSED.
-	 * Party Status -> 이전 Status.
+	 * 제안 한 명이라도 거절했을 경우 : Proposal Status -> REFUSED. Party Status -> 이전 Status.
 	 */
 	private void refuseProposal(PartyProposal proposal) {
 		proposal.setStatus(ProposalStatus.REFUSED);
@@ -176,9 +178,7 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * 제안 만료 처리.
-	 * 응답하지 않은 agreement status -> refuse.
-	 * proposal status -> refused.
+	 * 제안 만료 처리. 응답하지 않은 agreement status -> refuse. proposal status -> refused.
 	 */
 	public void expireProposal(PartyProposal proposal) {
 		partyProposalAgreementRepository.findByProposal(proposal).stream()
@@ -194,11 +194,18 @@ public class PartyProposalService {
 	}
 
 	/**
+	 * 파티에 진행중인 파티가입신청 or 코스변경제안 조회. 없으면 null 반환.
+	 */
+	public PartyProposal getWaitingProposalByParty(Party party) {
+		return partyProposalRepository.findByPartyAndStatus(party, ProposalStatus.WAITING)
+			.orElse(null);
+	}
+
+	/**
 	 * 파티에 진행중인 파티가입신청 or 코스변경제안이 있다면, 만료 처리.
 	 */
 	public void expireWaitingProposalByParty(Party party) {
-		PartyProposal proposal = partyProposalRepository.findByPartyAndStatus(party,
-				ProposalStatus.WAITING).orElse(null);
+		PartyProposal proposal = getWaitingProposalByParty(party);
 		if (proposal != null) {
 			expireProposal(proposal);
 		}
@@ -207,7 +214,37 @@ public class PartyProposalService {
 	/**
 	 * party_proposal_agreement 삭제
 	 */
-	public void deleteAgreement(PartyProposal proposal, PartyMember member){
+	public void deleteAgreement(PartyProposal proposal, PartyMember member) {
 		partyProposalAgreementRepository.deleteByProposalAndMember(proposal, member);
+	}
+
+	/**
+	 * PartyProposal -> PartyProposalResponse 변환
+	 */
+	public PartyProposalResponse toPartyProposalResponse(PartyProposal proposal) {
+		if (proposal == null) {
+			return null;
+		}
+		List<PartyProposalAgreementResponse> memberAgreement = partyProposalAgreementRepository.findByProposal(
+				proposal).stream()
+			.map(PartyProposalAgreementResponse::of)
+			.collect(Collectors.toList());
+		User proposer = proposal.getProposer();
+		return PartyProposalResponse.builder()
+			.proposalId(proposal.getId())
+			.proposerId(proposer.getId())
+			.proposerNickname(proposer.getNickname())
+			.proposerAgeRange(proposer.getAgeRange())
+			.proposerGender(proposer.getGender())
+			.proposerProfileImg(proposer.getProfileImage())
+			.proposerHeadcount(proposal.getHeadcount())
+			.type(proposal.getType())
+			.status(proposal.getStatus())
+			.driverAgreement(proposal.getDriverAgreement())
+			.course(courseService.getCourseDetails(proposal.getCourse()))
+			.content(proposal.getContent())
+			.memberAgreement(memberAgreement)
+			.createdAt(proposal.getCreatedAt())
+			.build();
 	}
 }

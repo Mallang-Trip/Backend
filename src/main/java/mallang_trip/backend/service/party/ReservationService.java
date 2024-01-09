@@ -6,16 +6,20 @@ import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
 import java.time.LocalDate;
 import java.time.Period;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.ReservationStatus;
 import mallang_trip.backend.controller.io.BaseException;
+import mallang_trip.backend.domain.dto.party.ReservationResponse;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.reservation.Reservation;
+import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.reservation.ReservationRepository;
+import mallang_trip.backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
 	private final PartyMemberService partyMemberService;
+	private final UserService userService;
 	private final ReservationRepository reservationRepository;
+	private final PartyMemberRepository partyMemberRepository;
 
 	/**
 	 * 파티 자동 결제
@@ -52,7 +58,7 @@ public class ReservationService {
 	 * 파티원 환불
 	 */
 	public int refund(PartyMember member) {
-		Reservation reservation = reservationRepository.findByMember(member)
+		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
 		// status CHECK
 		if (!reservation.getStatus().equals(PAYMENT_COMPLETE)) {
@@ -66,10 +72,25 @@ public class ReservationService {
 	}
 
 	/**
+	 * 무료 환불
+	 */
+	public void freeRefund(PartyMember member){
+		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
+		if (reservation.getStatus().equals(PAYMENT_COMPLETE)) {
+			// TODO: 환불 진행
+			reservation.setStatus(REFUND_COMPLETE);
+		} else if (reservation.getStatus().equals(PAYMENT_REQUIRED)){
+			reservation.setStatus(REFUND_COMPLETE);
+		}
+	}
+
+	/**
 	 * 모든 파티 멤버 전액 환불
 	 */
 	public void refundAllMembers(Party party){
-
+		partyMemberService.getMembers(party).stream()
+			.forEach(member -> freeRefund(member));
 	}
 
 	/**
@@ -133,5 +154,14 @@ public class ReservationService {
 		} else {
 			throw new BaseException(Forbidden);
 		}
+	}
+
+	public ReservationResponse getReservationResponse(Party party){
+		PartyMember member = partyMemberRepository.findByPartyAndUser(party,
+				userService.getCurrentUser())
+			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
+			.orElse(null);
+		return ReservationResponse.of(reservation);
 	}
 }

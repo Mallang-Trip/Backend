@@ -2,6 +2,7 @@ package mallang_trip.backend.repository.party;
 
 import java.util.List;
 import mallang_trip.backend.constant.PartyStatus;
+import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.Party;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,4 +41,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 	List<Party> findByStatus(PartyStatus status);
 
 	List<Party> findByRegionAndStatus(String region, PartyStatus status);
+
+	List<Party> findByDriver(Driver driver);
 }

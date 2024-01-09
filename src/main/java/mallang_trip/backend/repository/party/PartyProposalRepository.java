@@ -3,8 +3,10 @@ package mallang_trip.backend.repository.party;
 import java.util.List;
 import java.util.Optional;
 import mallang_trip.backend.constant.ProposalStatus;
+import mallang_trip.backend.constant.ProposalType;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
+import mallang_trip.backend.domain.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +30,6 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
         + "WHERE status='WAITING'\n"
         + "AND created_at < :time", nativeQuery = true)
     List<PartyProposal> findExpiredProposal(@Param(value = "time") String time);
+
+    List<PartyProposal> findByProposerAndTypeAndStatusNot(User user, ProposalType type, ProposalStatus status);
 }

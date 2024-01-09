@@ -265,7 +265,7 @@ public class PartyService {
 	/**
 	 * 유저가 속한 파티인지 아닌지 조회
 	 */
-	private Boolean isMyParty(User user, Party party) {
+	public Boolean isMyParty(User user, Party party) {
 		if (user == null) {
 			return false;
 		}
@@ -352,7 +352,7 @@ public class PartyService {
 	}
 
 	/**
-	 * 예약 취소
+	 * 예약 취소 (SEALED, WAITING_COURSE_CHANGE_APPROVAL 상태)
 	 */
 	public void cancelReservation(Long partyId){
 		Party party = partyRepository.findById(partyId)
@@ -387,8 +387,6 @@ public class PartyService {
 		reservationService.refundAllMembers(party);
 		party.setStatus(CANCELED_BY_DRIVER_QUIT);
 	}
-
-
 
 	/**
 	 * (멤버) 예약 취소

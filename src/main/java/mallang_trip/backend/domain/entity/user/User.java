@@ -85,4 +85,9 @@ public class User extends BaseEntity {
 
         return id.equals(user.getId());
     }
+
+    public Integer getAgeRange(){
+        int age = LocalDate.now().getYear() - this.birthday.getYear();
+        return (int)(age / 10) * 10;
+    }
 }

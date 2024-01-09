@@ -8,17 +8,15 @@ import mallang_trip.backend.domain.entity.user.User;
 
 @Getter
 @Builder
-public class PartyAgreementResponse {
+public class PartyProposalAgreementResponse {
 
     private Long userId;
-    private String nickname;
     private AgreementStatus status;
 
-    public static PartyAgreementResponse of(PartyProposalAgreement agreement){
+    public static PartyProposalAgreementResponse of(PartyProposalAgreement agreement){
         User user = agreement.getMember().getUser();
-        return PartyAgreementResponse.builder()
+        return PartyProposalAgreementResponse.builder()
             .userId(user.getId())
-            .nickname(user.getNickname())
             .status(agreement.getStatus())
             .build();
     }

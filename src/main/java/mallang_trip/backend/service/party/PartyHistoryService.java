@@ -27,6 +27,9 @@ public class PartyHistoryService {
 	 */
 	public void createPartyHistory(Party party) {
 		User user = userService.getCurrentUser();
+		if(user == null){
+			return;
+		}
 		PartyHistory history = partyHistoryRepository.findByPartyAndUser(party, user).orElse(null);
 		if (history == null) {
 			partyHistoryRepository.save(PartyHistory.builder()
