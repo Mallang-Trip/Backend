@@ -84,7 +84,6 @@ public class PartyService {
 			.course(course)
 			.region(driver.getRegion())
 			.capacity(driver.getVehicleCapacity())
-			.headcount(request.getHeadcount())
 			.startDate(request.getStartDate())
 			.endDate(request.getEndDate())
 			.content(request.getContent())
@@ -230,6 +229,7 @@ public class PartyService {
 			joinParty(party, proposal.getProposer(), proposal.getHeadcount());
 		}
 		if (proposal.getType().equals(COURSE_CHANGE)) {
+			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(SEALED);
 		}
 	}
@@ -293,6 +293,7 @@ public class PartyService {
 		} else if (role.equals(Role.ROLE_USER)) {
 			quitPartyBeforeReservationByMember(party);
 		}
+		partyMemberService.setReadyAllMembers(party, false);
 	}
 
 	/**
@@ -377,6 +378,7 @@ public class PartyService {
 		} else if (role.equals(Role.ROLE_USER)) {
 			cancelReservationByMember(party);
 		}
+		partyMemberService.setReadyAllMembers(party, false);
 	}
 
 	/**

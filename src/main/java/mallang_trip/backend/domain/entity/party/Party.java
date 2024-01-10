@@ -53,7 +53,8 @@ public class Party extends BaseEntity {
 	private Integer capacity;
 
 	@Column
-	private Integer headcount;
+	@Builder.Default()
+	private Integer headcount = 0;
 
 	@Column
 	@Builder.Default()

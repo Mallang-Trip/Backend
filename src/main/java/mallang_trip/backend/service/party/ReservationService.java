@@ -67,6 +67,7 @@ public class ReservationService {
 		// 위약금 계산
 		int refundAmount = getRefundAmount(reservation);
 		// TODO: 환불 진행
+		reservation.setRefundAmount(reservation.getPaymentAmount());
 		reservation.setStatus(REFUND_COMPLETE);
 		return refundAmount;
 	}
@@ -79,6 +80,7 @@ public class ReservationService {
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
 		if (reservation.getStatus().equals(PAYMENT_COMPLETE)) {
 			// TODO: 환불 진행
+			reservation.setRefundAmount(reservation.getPaymentAmount());
 			reservation.setStatus(REFUND_COMPLETE);
 		} else if (reservation.getStatus().equals(PAYMENT_REQUIRED)){
 			reservation.setStatus(REFUND_COMPLETE);
@@ -128,7 +130,7 @@ public class ReservationService {
 
 	public void payPenaltyByDriver(Party party){
 		int penalty = getPenaltyToDriver(party);
-		//TODO: 드라이버 위약금 결제
+		//TODO: 드라이버 위약금 저장
 	}
 	public int getPenaltyToDriver(Party party){
 		int totalPrice = party.getCourse().getTotalPrice();

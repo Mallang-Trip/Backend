@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,7 +46,7 @@ public class PartyController {
 	}
 
 	@ApiOperation(value = "(드라이버) 파티 생성 수락 or 거절")
-	@PostMapping("/create/{party_id}")
+	@PutMapping("/create/{party_id}")
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<String> acceptCreateParty(@PathVariable(value = "party_id") Long partyId,
 		@RequestParam Boolean accept) throws BaseException {
@@ -63,7 +64,7 @@ public class PartyController {
 	}
 
 	@ApiOperation(value = "코스 변경 제안")
-	@PostMapping("/change/{party_id}")
+	@PutMapping("/course/{party_id}")
 	@PreAuthorize("hasAnyRole('ROLE_USER','ROLE_DRIVER')") // 일반 사용자, 드라이버
 	public BaseResponse<String> changeCourse(@PathVariable(value = "party_id") Long partyId,
 		@RequestBody ChangeCourseRequest request) throws BaseException {
@@ -81,7 +82,7 @@ public class PartyController {
 	}
 
 	@ApiOperation(value = "파티가입신청 또는 코스변경제안 투표")
-	@PostMapping("/proposal/{proposal_id}")
+	@PutMapping ("/proposal/{proposal_id}")
 	@PreAuthorize("hasAnyRole('ROLE_USER','ROLE_DRIVER')") // 일반 사용자, 드라이버
 	public BaseResponse<String> voteProposal(@PathVariable(value = "proposal_id") Long proposalId,
 		@RequestParam Boolean accept) throws BaseException {
@@ -90,11 +91,11 @@ public class PartyController {
 	}
 
 	@ApiOperation(value = "파티 레디하기 또는 레디 취소")
-	@PostMapping("/ready/{party_id}")
+	@PutMapping("/ready/{party_id}")
 	@PreAuthorize("hasAnyRole('ROLE_USER','ROLE_DRIVER')") // 일반 사용자, 드라이버
 	public BaseResponse<String> ready(@PathVariable(value = "party_id") Long partyId,
-		@RequestParam Boolean accept) throws BaseException {
-		partyService.setReady(partyId, accept);
+		@RequestParam Boolean ready) throws BaseException {
+		partyService.setReady(partyId, ready);
 		return new BaseResponse<>("성공");
 	}
 

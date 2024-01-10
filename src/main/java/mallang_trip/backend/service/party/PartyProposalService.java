@@ -1,5 +1,6 @@
 package mallang_trip.backend.service.party;
 
+import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
@@ -83,7 +84,8 @@ public class PartyProposalService {
 	}
 
 	/**
-	 * PartyProposal Status -> CANCELED
+	 * PartyProposal Status -> CANCELED.
+	 * Party Status 이전 상태로 복구.
 	 */
 	public void cancelProposal(PartyProposal proposal) {
 		// 권한 CHECK
@@ -95,6 +97,11 @@ public class PartyProposalService {
 			throw new BaseException(EXPIRED_PROPOSAL);
 		}
 		proposal.setStatus(ProposalStatus.CANCELED);
+		if(proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)){
+			proposal.getParty().setStatus(RECRUITING);
+		} else if (proposal.getType().equals(COURSE_CHANGE)){
+			proposal.getParty().setStatus(SEALED);
+		}
 	}
 
 	/**
