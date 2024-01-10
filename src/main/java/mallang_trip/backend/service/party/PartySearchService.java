@@ -61,6 +61,8 @@ public class PartySearchService {
      * 대기중이거나 거절된 내 제안 상세조회
      */
 
+
+
     /**
      * (멤버) 내 파티 목록 조회
      */
