@@ -17,6 +17,7 @@ import mallang_trip.backend.domain.dto.party.ReservationResponse;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
 import mallang_trip.backend.domain.entity.reservation.Reservation;
+import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.reservation.ReservationRepository;
 import mallang_trip.backend.service.UserService;
@@ -159,8 +160,11 @@ public class ReservationService {
 	}
 
 	public ReservationResponse getReservationResponse(Party party){
-		PartyMember member = partyMemberRepository.findByPartyAndUser(party,
-				userService.getCurrentUser())
+		User user = userService.getCurrentUser();
+		if(user.equals(party.getDriver().getUser())){
+			return null;
+		}
+		PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)
 			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
 			.orElse(null);
