@@ -18,15 +18,20 @@ import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.party.PartyMemberCompanionRequest;
+import mallang_trip.backend.domain.dto.party.PartyMemberCompanionResponse;
+import mallang_trip.backend.domain.dto.party.PartyMemberResponse;
 import mallang_trip.backend.domain.dto.party.PartyProposalAgreementResponse;
 import mallang_trip.backend.domain.dto.party.PartyProposalResponse;
 import mallang_trip.backend.domain.entity.course.Course;
 import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
+import mallang_trip.backend.domain.entity.party.PartyMemberCompanion;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.domain.entity.party.PartyProposalAgreement;
 import mallang_trip.backend.domain.entity.user.User;
+import mallang_trip.backend.repository.party.PartyMemberCompanionRepository;
 import mallang_trip.backend.repository.party.PartyProposalAgreementRepository;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
@@ -48,6 +53,7 @@ public class PartyProposalService {
 	private final PartyProposalRepository partyProposalRepository;
 	private final PartyProposalAgreementRepository partyProposalAgreementRepository;
 	private final PartyMemberRepository partyMemberRepository;
+	private final PartyMemberCompanionRepository partyMemberCompanionRepository;
 
 	/**
 	 * PartyProposal, PartyProposalAgreement 생성 (Type: JOIN_WITH_COURSE_CHANGE)
@@ -62,6 +68,7 @@ public class PartyProposalService {
 			.content(request.getContent())
 			.type(JOIN_WITH_COURSE_CHANGE)
 			.build());
+		createPartyMemberCompanions(proposal, request.getCompanions());
 		createPartyProposalAgreements(proposal);
 	}
 
@@ -185,6 +192,22 @@ public class PartyProposalService {
 	}
 
 	/**
+	 * 가입 신청 시 동행자 저장
+	 */
+	private void createPartyMemberCompanions(PartyProposal proposal, List<PartyMemberCompanionRequest> requests){
+		if(requests == null){
+			return;
+		}
+		requests.stream().forEach(companionRequest -> {
+			partyMemberCompanionRepository.save(PartyMemberCompanion.builder()
+				.proposal(proposal)
+				.name(companionRequest.getName())
+				.phoneNumber(companionRequest.getPhoneNumber())
+				.build());
+		});
+	}
+
+	/**
 	 * 제안 만료 처리. 응답하지 않은 agreement status -> refuse. proposal status -> refused.
 	 */
 	public void expireProposal(PartyProposal proposal) {
@@ -232,9 +255,11 @@ public class PartyProposalService {
 		if (proposal == null) {
 			return null;
 		}
+		List<PartyMemberCompanionResponse> companions = partyMemberCompanionRepository.findByProposal(
+				proposal).stream().map(PartyMemberCompanionResponse::of)
+			.collect(Collectors.toList());
 		List<PartyProposalAgreementResponse> memberAgreement = partyProposalAgreementRepository.findByProposal(
-				proposal).stream()
-			.map(PartyProposalAgreementResponse::of)
+				proposal).stream().map(PartyProposalAgreementResponse::of)
 			.collect(Collectors.toList());
 		User proposer = proposal.getProposer();
 		return PartyProposalResponse.builder()
@@ -245,6 +270,7 @@ public class PartyProposalService {
 			.proposerGender(proposer.getGender())
 			.proposerProfileImg(proposer.getProfileImage())
 			.proposerHeadcount(proposal.getHeadcount())
+			.proposerCompanions(companions)
 			.type(proposal.getType())
 			.status(proposal.getStatus())
 			.driverAgreement(proposal.getDriverAgreement())

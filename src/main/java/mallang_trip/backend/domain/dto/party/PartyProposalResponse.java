@@ -21,6 +21,7 @@ public class PartyProposalResponse {
     private Gender proposerGender;
     private String proposerProfileImg;
     private Integer proposerHeadcount;
+    private List<PartyMemberCompanionResponse> proposerCompanions;
     private ProposalType type;
     private ProposalStatus status;
     private AgreementStatus driverAgreement;
