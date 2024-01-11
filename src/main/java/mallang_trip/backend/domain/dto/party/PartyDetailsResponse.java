@@ -14,6 +14,7 @@ public class PartyDetailsResponse {
 
     private Long partyId;
     private Boolean myParty;
+    private Boolean dibs;
     private PartyStatus partyStatus;
     private Long driverId;
     private String driverName;

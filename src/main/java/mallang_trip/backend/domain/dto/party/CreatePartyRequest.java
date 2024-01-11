@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.dto.party;
 
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import mallang_trip.backend.domain.dto.course.CourseRequest;
 public class CreatePartyRequest {
 
 	private int headcount;
+	private List<PartyMemberCompanionRequest> companions;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private Long driverId;
