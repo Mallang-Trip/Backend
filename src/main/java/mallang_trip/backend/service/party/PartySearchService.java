@@ -12,7 +12,6 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
 import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
 import mallang_trip.backend.domain.entity.party.Party;
-import mallang_trip.backend.domain.entity.party.PartyHistory;
 import mallang_trip.backend.domain.entity.party.PartyProposal;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
@@ -36,6 +35,7 @@ public class PartySearchService {
     private final DriverService driverService;
     private final ReservationService reservationService;
     private final PartyHistoryService partyHistoryService;
+    private final PartyDibsService partyDibsService;
 
     /**
      * 모집중인 파티 검색 :
@@ -52,16 +52,6 @@ public class PartySearchService {
             .map(PartyBriefResponse::of)
             .collect(Collectors.toList());
     }
-
-    /**
-     * 대기중이거나 거절된 내 제안 목록 조회
-     */
-
-    /**
-     * 대기중이거나 거절된 내 제안 상세조회
-     */
-
-
 
     /**
      * (멤버) 내 파티 목록 조회
@@ -119,6 +109,7 @@ public class PartySearchService {
         return PartyDetailsResponse.builder()
             .partyId(party.getId())
             .myParty(false)
+            .dibs(partyDibsService.checkPartyDibs(party))
             .partyStatus(party.getStatus())
             .driverId(party.getDriver().getId())
             .driverName(party.getDriver().getUser().getName())
@@ -143,6 +134,7 @@ public class PartySearchService {
         return PartyDetailsResponse.builder()
             .partyId(party.getId())
             .myParty(true)
+            .dibs(partyDibsService.checkPartyDibs(party))
             .partyStatus(party.getStatus())
             .driverId(party.getDriver().getId())
             .driverName(party.getDriver().getUser().getName())
@@ -159,4 +151,6 @@ public class PartySearchService {
             .reservation(reservationService.getReservationResponse(party))
             .build();
     }
+
+
 }
