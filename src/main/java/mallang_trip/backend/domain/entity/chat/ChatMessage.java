@@ -2,6 +2,8 @@ package mallang_trip.backend.domain.entity.chat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -39,7 +41,7 @@ public class ChatMessage extends BaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false, updatable = false)
     private ChatRoom chatRoom;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private ChatType type;
 
     @Column

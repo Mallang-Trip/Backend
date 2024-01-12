@@ -2,7 +2,7 @@ package mallang_trip.backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.dto.chat.ChatMessageRequest;
-import mallang_trip.backend.service.ChatService;
+import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;

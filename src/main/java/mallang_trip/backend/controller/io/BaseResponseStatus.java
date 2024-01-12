@@ -32,6 +32,12 @@ public enum BaseResponseStatus {
     EXCEED_PARTY_CAPACITY(403, "모집 인원 초과입니다."),
     CANNOT_CHANGE_COURSE(403, "코스 변경이 불가능한 상태입니다."),
     EXPIRED_PROPOSAL(403, "종료된 제안입니다."),
+
+    // Chat
+    CANNOT_FOUND_CHATROOM(404, "채팅방을 찾을 수 없습니다."),
+    NOT_CHATROOM_MEMBER(403, "채팅방 멤버가 아닙니다."),
+    CHATROOM_EXIT_FORBIDDEN(403, "파티 진행중에는 채팅방을 나갈 수 없습니다."),
+    CANNOT_KICK_CHAT_MEMBER(403, "채팅방 추방 권한이 없습니다."),
     ;
 
     private final int statusCode;

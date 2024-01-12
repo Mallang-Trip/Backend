@@ -9,7 +9,7 @@ import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomIdResponse;
-import mallang_trip.backend.service.ChatService;
+import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

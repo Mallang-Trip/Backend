@@ -1,6 +1,9 @@
 package mallang_trip.backend.repository.chat;
 
+import java.util.Optional;
+import mallang_trip.backend.constant.ChatRoomType;
 import mallang_trip.backend.domain.entity.chat.ChatRoom;
+import mallang_trip.backend.domain.entity.party.Party;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +17,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         + "    JOIN chat_member cm2 ON cr.id = cm2.chat_room_id\n"
         + "WHERE cr.is_group = false AND cm1.user_id = :user_id_one AND cm2.user_id = :user_id_two", nativeQuery = true)
     ChatRoom findExistedChatRoom(@Param(value = "user_id_one") Long userId1, @Param(value = "user_id_two") Long userId2);
+
+    Optional<ChatRoom> findByPartyAndType(Party party, ChatRoomType type);
 }
