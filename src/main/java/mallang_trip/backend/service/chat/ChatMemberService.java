@@ -20,6 +20,7 @@ import mallang_trip.backend.domain.entity.chat.ChatRoom;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatMemberRepository;
+import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.service.party.PartyService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatMemberService {
 
 	private final ChatMemberRepository chatMemberRepository;
-	private final PartyService partyService;
+	private final PartyMemberRepository partyMemberRepository;
 	private final ChatMessageService chatMessageService;
 	private final SimpMessagingTemplate template;
 
@@ -124,7 +125,7 @@ public class ChatMemberService {
 	public void leavePartyChatRoom(ChatRoom room, User user) {
 		Party party = room.getParty();
 		PartyStatus status = party.getStatus();
-		if (partyService.isMyParty(user, party) &&
+		if (isMyParty(user, party) &&
 			(status.equals(RECRUITING)
 				|| status.equals(WAITING_JOIN_APPROVAL)
 				|| status.equals(WAITING_COURSE_CHANGE_APPROVAL)
@@ -141,11 +142,21 @@ public class ChatMemberService {
 	 */
 	public void kickChatMember(ChatRoom room, User user, User target){
 		if(!room.getType().equals(PARTY_PUBLIC)
-			|| !partyService.isMyParty(user, room.getParty())
-			|| partyService.isMyParty(target, room.getParty())){
+			|| !isMyParty(user, room.getParty())
+			|| isMyParty(target, room.getParty())){
 			throw new BaseException(CANNOT_KICK_CHAT_MEMBER);
 		} else {
 			leaveGroupChatRoom(room, target);
 		}
+	}
+
+	public Boolean isMyParty(User user, Party party) {
+		if (user == null) {
+			return false;
+		}
+		if (user.equals(party.getDriver().getUser())) {
+			return true;
+		}
+		return partyMemberRepository.existsByPartyAndUser(party, user);
 	}
 }

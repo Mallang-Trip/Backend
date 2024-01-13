@@ -21,7 +21,7 @@ import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatMemberRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
-import mallang_trip.backend.service.party.PartyService;
+import mallang_trip.backend.repository.party.PartyMemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ChatRoomService {
 
-	private final PartyService partyService;
 	private final ChatMessageService chatMessageService;
 	private final ChatMemberService chatMemberService;
 	private final ChatRoomRepository chatRoomRepository;
@@ -63,7 +62,7 @@ public class ChatRoomService {
 	 */
 	public Boolean isMyPartyPublicChatRoom(ChatRoom room, User user) {
 		return room.getType().equals(PARTY_PUBLIC)
-			&& partyService.isMyParty(user, room.getParty());
+			&& chatMemberService.isMyParty(user, room.getParty());
 	}
 
 	/**
@@ -179,7 +178,7 @@ public class ChatRoomService {
 			.type(room.getType())
 			.publicRoomId(publicRoom == null ? null : publicRoom.getId())
 			.partyId(room.getParty().getId())
-			.myParty(partyService.isMyParty(user, room.getParty()))
+			.myParty(chatMemberService.isMyParty(user, room.getParty()))
 			.headCount(chatMemberService.countChatMembers(room))
 			.roomName(getChatRoomName(room, user))
 			.members(members)
