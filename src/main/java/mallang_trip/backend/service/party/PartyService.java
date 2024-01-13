@@ -49,6 +49,7 @@ import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.DriverService;
 import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -62,6 +63,7 @@ public class PartyService {
 	private final DriverService driverService;
 	private final CourseService courseService;
 	private final ReservationService reservationService;
+	private final ChatService chatService;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -131,7 +133,13 @@ public class PartyService {
 			throw new BaseException(Forbidden);
 		}
 		// STATUS 변경
-		party.setStatus(accept ? RECRUITING : CANCELED_BY_DRIVER_REFUSED);
+		if(accept) {
+			party.setStatus(RECRUITING);
+			chatService.startPartyChat(party);
+		} else {
+			party.setStatus(CANCELED_BY_DRIVER_REFUSED);
+		}
+
 	}
 
 	/**
@@ -175,6 +183,7 @@ public class PartyService {
 			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(RECRUITING);
 		}
+		chatService.joinParty(user, party);
 	}
 
 	/**
@@ -297,6 +306,7 @@ public class PartyService {
 		} else if (role.equals(Role.ROLE_USER)) {
 			quitPartyBeforeReservationByMember(party);
 		}
+		chatService.leaveParty(userService.getCurrentUser(), party);
 		partyMemberService.setReadyAllMembers(party, false);
 	}
 
@@ -380,6 +390,7 @@ public class PartyService {
 		} else if (role.equals(Role.ROLE_USER)) {
 			cancelReservationByMember(party);
 		}
+		chatService.leaveParty(userService.getCurrentUser(), party);
 		partyMemberService.setReadyAllMembers(party, false);
 	}
 

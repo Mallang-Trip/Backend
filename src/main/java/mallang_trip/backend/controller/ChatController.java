@@ -88,4 +88,23 @@ public class ChatController {
 		@PathVariable(value = "chat_room_id") Long chatRoomId) throws BaseException {
 		return new BaseResponse<>(chatService.getChatRoomDetails(chatRoomId));
 	}
+
+	@GetMapping("/party/{party_id}")
+	@ApiOperation(value = "파티 공용 채팅방 입장하기")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<ChatRoomIdResponse> enterPartyPublicChatRoom(
+		@PathVariable(value = "party_id") Long partyId) throws BaseException {
+		return new BaseResponse<>(chatService.enterPartyPublicChatRoom(partyId));
+	}
+
+	@DeleteMapping("/party/{chat_room_id}")
+	@ApiOperation(value = "파티 공용 채팅방 강퇴하기")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<String> kickChatMember(
+		@PathVariable(value = "chat_room_id") Long roomId,
+		@RequestParam(value = "userId") Long userId) throws BaseException {
+		chatService.kickChatMember(roomId, userId);
+		return new BaseResponse<>("성공");
+	}
+
 }

@@ -82,6 +82,8 @@ public class ChatService {
 				chatMemberService.createChatMember(publicRoom, user);
 				chatMemberService.createChatMember(publicRoom, party.getDriver().getUser());
 			});
+		chatMemberService.createChatMember(privateRoom, party.getDriver().getUser());
+		chatMemberService.createChatMember(publicRoom, party.getDriver().getUser());
 		chatMemberService.activeAllMembers(privateRoom);
 		chatMemberService.activeAllMembers(publicRoom);
 	}
@@ -241,7 +243,7 @@ public class ChatService {
 		} else if (room.getType().equals(PARTY_PUBLIC)) {
 			chatMemberService.leavePartyChatRoom(room, user);
 		} else if (room.getType().equals(PARTY_PRIVATE)) {
-			// private chat 탈퇴 시, public chat도 자동 탈퇴
+			// private chat 탈퇴 시, public chat 자동 탈퇴
 			chatMemberService.leavePartyChatRoom(room, user);
 			chatMemberService.leaveGroupChatRoom(chatRoomService.getPublicRoomByPrivateRoom(room),
 				user);
