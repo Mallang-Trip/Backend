@@ -32,7 +32,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
         "WHERE cr.id = :chat_room_id " +
         "   AND cmm.user_id = :user_id " +
         "   AND cm.created_at >= cmm.joined_at " +
-        "   AND cm.type != 2 " +
+        "   AND cm.type != 'INFO' " +
         "ORDER BY cm.created_at DESC " +
         "LIMIT 1", nativeQuery = true)
     ChatMessage getLastMessage(

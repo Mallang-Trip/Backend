@@ -101,6 +101,7 @@ public class ChatRoomService {
 		if (type.equals(COUPLE)) {
 			return chatMemberService.getOtherUserInCoupleChatRoom(room, user).getNickname();
 		} else if (type.equals(PARTY_PUBLIC) || type.equals(PARTY_PRIVATE)) {
+			System.out.println(room.getParty().getCourse().getName());
 			return room.getParty().getCourse().getName();
 		} else {
 			return room.getRoomName();
@@ -157,7 +158,7 @@ public class ChatRoomService {
 		return ChatRoomBriefResponse.builder()
 			.chatRoomId(privateRoom.getId())
 			.type(privateRoom.getType())
-			.roomName(privateRoom.getRoomName())
+			.roomName(getChatRoomName(privateRoom, user))
 			.image(getChatRoomImage(privateRoom, user))
 			.content(chatMessageService.getContentOfLastMessage(lastMessage))
 			.headCount(chatMemberService.countChatMembers(privateRoom))

@@ -82,8 +82,6 @@ public class ChatService {
 				chatMemberService.createChatMember(publicRoom, user);
 				chatMemberService.createChatMember(publicRoom, party.getDriver().getUser());
 			});
-		chatMemberService.createChatMember(privateRoom, party.getDriver().getUser());
-		chatMemberService.createChatMember(publicRoom, party.getDriver().getUser());
 		chatMemberService.activeAllMembers(privateRoom);
 		chatMemberService.activeAllMembers(publicRoom);
 	}
