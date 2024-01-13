@@ -42,7 +42,7 @@ public class SecurityConfig {
             .and()
             .authorizeRequests()
             .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs").permitAll() // swagger
-            .antMatchers("/check", "/signup", "/login", "/refresh-token", "/check-duplication", "/certification/**").permitAll() // User API
+            .antMatchers("/check", "/signup", "/login", "/refresh-token", "/check-duplication", "/certification/**", "/user/info/**").permitAll() // User API
             .antMatchers("/upload/signup").permitAll() // fileUpload API
             .antMatchers(HttpMethod.GET, "/destination/**").permitAll() // destination API
             .antMatchers(HttpMethod.GET, "/driver/**").permitAll() // driver API
