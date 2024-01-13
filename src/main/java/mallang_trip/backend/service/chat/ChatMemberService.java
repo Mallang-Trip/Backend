@@ -40,10 +40,14 @@ public class ChatMemberService {
 	 * 채팅방 멤버 생성
 	 */
 	public ChatMember createChatMember(ChatRoom room, User user){
-		return chatMemberRepository.save(ChatMember.builder()
-			.chatRoom(room)
-			.user(user)
-			.build());
+		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user).orElse(null);
+		if(member == null){
+			return chatMemberRepository.save(ChatMember.builder()
+				.chatRoom(room)
+				.user(user)
+				.build());
+		}
+		else return member;
 	}
 
 	/**

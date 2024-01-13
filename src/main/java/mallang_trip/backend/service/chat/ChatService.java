@@ -94,12 +94,16 @@ public class ChatService {
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
 		ChatRoom publicRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PUBLIC)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
+		// private room 가입
 		chatMemberService.createChatMember(privateRoom, user).setActiveTrue();
-		chatMemberService.createChatMember(publicRoom, user).setActiveTrue();
 		template.convertAndSend("/sub/room/" + privateRoom.getId(),
 			ChatMessageResponse.of(chatMessageService.createEnterMessage(user, privateRoom)));
-		template.convertAndSend("/sub/room/" + publicRoom.getId(),
-			ChatMessageResponse.of(chatMessageService.createEnterMessage(user, publicRoom)));
+		// public room 가입
+		if(!chatMemberRepository.existsByChatRoomAndUser(publicRoom, user)){
+			chatMemberService.createChatMember(publicRoom, user).setActiveTrue();
+			template.convertAndSend("/sub/room/" + publicRoom.getId(),
+				ChatMessageResponse.of(chatMessageService.createEnterMessage(user, publicRoom)));
+		}
 	}
 
 	/**
