@@ -186,9 +186,4 @@ public class ChatRoomService {
             .build();
     }
 
-    public Long getPartyRoomId(Party party, ChatRoomType type){
-        ChatRoom room = chatRoomRepository.findByPartyAndType(party, type)
-            .orElse(null);
-        return room == null ? null : room.getId();
-    }
 }

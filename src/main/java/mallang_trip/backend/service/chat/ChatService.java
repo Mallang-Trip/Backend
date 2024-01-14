@@ -4,14 +4,7 @@ import static mallang_trip.backend.constant.ChatRoomType.COUPLE;
 import static mallang_trip.backend.constant.ChatRoomType.GROUP;
 import static mallang_trip.backend.constant.ChatRoomType.PARTY_PRIVATE;
 import static mallang_trip.backend.constant.ChatRoomType.PARTY_PUBLIC;
-import static mallang_trip.backend.constant.ChatType.IMAGE;
-import static mallang_trip.backend.constant.ChatType.INFO;
-import static mallang_trip.backend.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
-import static mallang_trip.backend.constant.PartyStatus.SEALED;
-import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
-import static mallang_trip.backend.constant.PartyStatus.WAITING_JOIN_APPROVAL;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_CHATROOM;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
@@ -19,16 +12,12 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_CHATROOM_MEMBER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.constant.ChatRoomType;
-import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.user.UserBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatMessageRequest;
 import mallang_trip.backend.domain.dto.chat.ChatMessageResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
@@ -46,7 +35,6 @@ import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.repository.user.UserRepository;
 import mallang_trip.backend.service.UserService;
 import mallang_trip.backend.service.party.PartyMemberService;
-import mallang_trip.backend.service.party.PartyService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
@@ -116,19 +104,40 @@ public class ChatService {
 	}
 
 	/**
-	 * 파티 공용 채팅방 가입하기
+	 * 파티 채팅방 입장하기
 	 */
-	public ChatRoomIdResponse enterPartyPublicChatRoom(Long partyId) {
+	public ChatRoomIdResponse enterPartyChatRoom(Long partyId) {
 		User user = userService.getCurrentUser();
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		if(chatMemberService.isMyParty(user, party)){
+			return enterPartyPrivateChatRoom(party);
+		} else {
+			return enterPartyPublicChatRoom(party, user);
+		}
+	}
+
+
+	/**
+	 * PARTY_PRIVATE 채팅방 조회
+	 */
+	private ChatRoomIdResponse enterPartyPrivateChatRoom(Party party){
+		ChatRoom chatRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
+		return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
+	}
+
+	/**
+	 * PARTY_PUBLIC 채팅방 입장 및 조회.
+	 */
+	private ChatRoomIdResponse enterPartyPublicChatRoom(Party party, User user){
 		// 파티 status CHECK
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(PARTY_NOT_RECRUITING);
 		}
 		ChatRoom chatRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PUBLIC)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		// 이미 가입되어 있는지 CHECK
+		// 가입되어 있지 않은 경우
 		if (!chatMemberRepository.existsByChatRoomAndUser(chatRoom, user)) {
 			chatMemberService.createChatMember(chatRoom, user).setActiveTrue();
 			template.convertAndSend("/sub/room/" + chatRoom.getId(),
