@@ -19,6 +19,8 @@ public class PartyDetailsResponse {
     private Long driverId;
     private String driverName;
     private Boolean driverReady;
+    private Long privateRoomId;
+    private Long publicRoomId;
     private Integer capacity;
     private Integer headcount;
     private String region;

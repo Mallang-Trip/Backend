@@ -1,5 +1,7 @@
 package mallang_trip.backend.service.party;
 
+import static mallang_trip.backend.constant.ChatRoomType.PARTY_PRIVATE;
+import static mallang_trip.backend.constant.ChatRoomType.PARTY_PUBLIC;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.constant.ChatRoomType;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
 import mallang_trip.backend.domain.dto.party.PartyDetailsResponse;
@@ -18,6 +21,7 @@ import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.DriverService;
 import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.chat.ChatRoomService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,6 +40,7 @@ public class PartySearchService {
     private final ReservationService reservationService;
     private final PartyHistoryService partyHistoryService;
     private final PartyDibsService partyDibsService;
+    private final ChatRoomService chatRoomService;
 
     /**
      * 모집중인 파티 검색 :
@@ -114,6 +119,7 @@ public class PartySearchService {
             .driverId(party.getDriver().getId())
             .driverName(party.getDriver().getUser().getName())
             .driverReady(party.getDriverReady())
+            .publicRoomId(chatRoomService.getPartyRoomId(party, PARTY_PUBLIC))
             .capacity(party.getCapacity())
             .headcount(party.getHeadcount())
             .region(party.getRegion())
@@ -140,6 +146,7 @@ public class PartySearchService {
             .driverId(party.getDriver().getId())
             .driverName(party.getDriver().getUser().getName())
             .driverReady(party.getDriverReady())
+            .privateRoomId(chatRoomService.getPartyRoomId(party, PARTY_PRIVATE))
             .capacity(party.getCapacity())
             .headcount(party.getHeadcount())
             .region(party.getRegion())
