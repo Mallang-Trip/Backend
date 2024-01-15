@@ -90,11 +90,11 @@ public class ChatController {
 	}
 
 	@GetMapping("/party/{party_id}")
-	@ApiOperation(value = "파티 공용 채팅방 입장하기")
+	@ApiOperation(value = "파티 채팅방 입장하기")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<ChatRoomIdResponse> enterPartyPublicChatRoom(
+	public BaseResponse<ChatRoomIdResponse> enterPartyChatRoom(
 		@PathVariable(value = "party_id") Long partyId) throws BaseException {
-		return new BaseResponse<>(chatService.enterPartyPublicChatRoom(partyId));
+		return new BaseResponse<>(chatService.enterPartyChatRoom(partyId));
 	}
 
 	@DeleteMapping("/party/{chat_room_id}")
