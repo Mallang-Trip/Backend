@@ -47,12 +47,16 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final SmsService smsService;
 
-	/** 회원가입 */
+	/**
+	 * 회원가입
+	 */
 	public void signup(SignupRequest request) {
 		userRepository.save(request.toUser(passwordEncoder));
 	}
 
-	/** 로그인 */
+	/**
+	 * 로그인
+	 */
 	public TokensDto login(LoginRequest request) {
 		UsernamePasswordAuthenticationToken token = request.toAuthentication();
 		Authentication authentication = managerBuilder.getObject().authenticate(token);
@@ -60,18 +64,24 @@ public class UserService {
 		return tokenProvider.createToken(authentication);
 	}
 
-	/** Auth (내 정보 조회) */
+	/**
+	 * Auth (내 정보 조회)
+	 */
 	public AuthResponse auth() {
 		User user = getCurrentUser();
 		return AuthResponse.of(user);
 	}
 
-	/** Access Token 재발급 */
+	/**
+	 * Access Token 재발급
+	 */
 	public TokensDto refreshToken() {
 		return tokenProvider.doRefresh();
 	}
 
-	/** 가입 정보 중복 확인 */
+	/**
+	 * 가입 정보 중복 확인
+	 */
 	public void checkDuplication(String type, String value) {
 		boolean isDuplicate;
 		switch (type) {
@@ -95,7 +105,9 @@ public class UserService {
 		}
 	}
 
-	/** 현재 유저 조회 */
+	/**
+	 * 현재 유저 조회
+	 */
 	public User getCurrentUser() {
 		final Authentication authentication = SecurityContextHolder.getContext()
 			.getAuthentication();
@@ -108,9 +120,11 @@ public class UserService {
 		return user;
 	}
 
-	/** STOMP header 기반 현재 유저 조회 */
-	public User getCurrentUser(String accessToken){
-		if(accessToken == null){
+	/**
+	 * STOMP header 기반 현재 유저 조회
+	 */
+	public User getCurrentUser(String accessToken) {
+		if (accessToken == null) {
 			throw new BaseException(EMPTY_JWT);
 		}
 		String token = accessToken.substring(7);
@@ -120,7 +134,9 @@ public class UserService {
 		return user;
 	}
 
-	/** 인증 코드 보내기 (아이디 찾기, 비밀번호 찾기 공통) */
+	/**
+	 * 인증 코드 보내기 (아이디 찾기, 비밀번호 찾기 공통)
+	 */
 	public void sendSmsCertification(String phoneNumber)
 		throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
 		if (!userRepository.existsByPhoneNumber(phoneNumber)) {
@@ -129,7 +145,9 @@ public class UserService {
 		smsService.sendSmsCertification(phoneNumber);
 	}
 
-	/** 아이디 찾기 (인증코드 확인) */
+	/**
+	 * 아이디 찾기 (인증코드 확인)
+	 */
 	public LoginIdResponse findId(String phoneNumber, String code) {
 		if (!userRepository.existsByPhoneNumber(phoneNumber)) {
 			throw new BaseException(CANNOT_FOUND_USER);
@@ -145,7 +163,9 @@ public class UserService {
 		}
 	}
 
-	/** 비밀번호 찾기 (인증코드 확인) */
+	/**
+	 * 비밀번호 찾기 (인증코드 확인)
+	 */
 	public String findPassword(String phoneNumber, String code) {
 		if (!smsService.verifyAndExtendCode(phoneNumber, code)) {
 			throw new BaseException(Unauthorized);
@@ -154,7 +174,9 @@ public class UserService {
 		}
 	}
 
-	/** 비밀번호 초기화 (인증코드 확인 성공 시) */
+	/**
+	 * 비밀번호 초기화 (인증코드 확인 성공 시)
+	 */
 	public void resetPassword(ResetPasswordRequest request) {
 		if (!smsService.verifyAndDeleteCode(request.getPhoneNumber(), request.getCode())) {
 			throw new BaseException(Unauthorized);
@@ -165,7 +187,9 @@ public class UserService {
 		}
 	}
 
-	/** 비밀번호 변경 */
+	/**
+	 * 비밀번호 변경
+	 */
 	public void changePassword(ChangePasswordRequest request) {
 		User user = getCurrentUser();
 		if (!passwordEncoder.matches(request.getBefore(), user.getPassword())) {
@@ -174,7 +198,9 @@ public class UserService {
 		user.setPassword(passwordEncoder.encode(request.getAfter()));
 	}
 
-	/** 프로필 변경 */
+	/**
+	 * 프로필 변경
+	 */
 	public void changeProfile(ChangeProfileRequest request) {
 		User user = getCurrentUser();
 		String newNickname = request.getNickname();
@@ -192,15 +218,19 @@ public class UserService {
 		user.setIntroduction(request.getIntroduction());
 	}
 
-	/** 유저 검색 by nickname */
-	public List<UserBriefResponse> findByNickname(String nickname){
+	/**
+	 * 유저 검색 by nickname
+	 */
+	public List<UserBriefResponse> findByNickname(String nickname) {
 		return userRepository.findByNicknameContainingIgnoreCase(nickname).stream()
 			.map(UserBriefResponse::of)
 			.collect(Collectors.toList());
 	}
 
-	/** 유저 간단 프로필 조회 */
-	public UserBriefResponse getUserBriefInfo(Long userId){
+	/**
+	 * 유저 간단 프로필 조회
+	 */
+	public UserBriefResponse getUserBriefInfo(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		return UserBriefResponse.of(user);
