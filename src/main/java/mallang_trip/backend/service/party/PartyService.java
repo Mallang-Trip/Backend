@@ -98,6 +98,7 @@ public class PartyService {
 		// 자신을 멤버로 추가
 		partyMemberService.createMember(party, user, request.getHeadcount(),
 			request.getCompanions());
+		// TODO: 드라이버 파티 신청 알림
 		return PartyIdResponse.builder().partyId(party.getId()).build();
 	}
 
@@ -136,8 +137,10 @@ public class PartyService {
 		if(accept) {
 			party.setStatus(RECRUITING);
 			chatService.startPartyChat(party);
+			// TODO: 유저에게 파티 생성됨 알림
 		} else {
 			party.setStatus(CANCELED_BY_DRIVER_REFUSED);
+			// TODO: 유저에게 파티 거절됨 알림
 		}
 
 	}
@@ -179,9 +182,11 @@ public class PartyService {
 			partyMemberService.setReadyAllMembers(party, true);
 			reservationService.reserveParty(party);
 			party.setStatus(SEALED);
+			// TODO: 새 가입자, 4인 모집 완료 -> SEALED 알림
 		} else {
 			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(RECRUITING);
+			// TODO: 새 가입자 알림, 레디 해제 알림
 		}
 		chatService.joinParty(user, party);
 	}
@@ -203,6 +208,7 @@ public class PartyService {
 		}
 		partyProposalService.createCourseChange(party, request);
 		party.setStatus(WAITING_COURSE_CHANGE_APPROVAL);
+		// TODO: 파티 멤버에게 코스 변경 제안 생성 알림
 	}
 
 	/**
@@ -245,6 +251,7 @@ public class PartyService {
 		if (proposal.getType().equals(COURSE_CHANGE)) {
 			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(SEALED);
+			// TODO: 코스 변경됨 알림, 레디 해제 알림
 		}
 	}
 
@@ -273,6 +280,7 @@ public class PartyService {
 		}
 		reservationService.reserveParty(party);
 		party.setStatus(SEALED);
+		// TODO: 전원 레디, 자동결제 알림
 	}
 
 	/**
@@ -322,6 +330,7 @@ public class PartyService {
 		// 진행중인 가입 신청이 있을 경우, 거절 처리
 		partyProposalService.expireWaitingProposalByParty(party);
 		party.setStatus(CANCELED_BY_DRIVER_QUIT);
+		// TODO: 드라이버 탈퇴로 인한 파티 취소 알림
 	}
 
 	/**
@@ -341,12 +350,14 @@ public class PartyService {
 	}
 
 	/**
-	 * 예약 전 파티 탈퇴 시, 마지막 멤버일 경우. 진행 중인 가입 신청이 있다면, 해당 proposal 만료 처리. CANCELED 상태로 변경 후, 마지막 멤버 정보는
-	 * delete 하지 않움.
+	 * 예약 전 파티 탈퇴 시, 마지막 멤버일 경우.
+	 * 진행 중인 가입 신청이 있다면, 해당 proposal 만료 처리.
+	 * CANCELED 상태로 변경 후, 마지막 멤버 정보는 delete 하지 않움.
 	 */
 	private void quitPartyBeforeReservationByLastMember(Party party) {
 		partyProposalService.expireWaitingProposalByParty(party);
 		party.setStatus(CANCELED_BY_ALL_QUIT);
+		// TODO: 드라이버 전원 탈퇴로 인한 파티 취소 알림
 	}
 
 	/**
@@ -362,6 +373,7 @@ public class PartyService {
 			checkUnanimityAndAcceptProposal(proposal);
 		}
 		partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
+		// TODO: 파티원 탈퇴 알림
 	}
 
 	/**
@@ -401,6 +413,7 @@ public class PartyService {
 		reservationService.payPenaltyByDriver(party);
 		reservationService.refundAllMembers(party);
 		party.setStatus(CANCELED_BY_DRIVER_QUIT);
+		// TODO: 드라이버 예약 취소로 인한 파티 취소 알림
 	}
 
 	/**
@@ -423,6 +436,7 @@ public class PartyService {
 	private void cancelReservationByLastMember(PartyMember member) {
 		reservationService.refund(member);
 		member.getParty().setStatus(CANCELED_BY_ALL_QUIT);
+		// TODO: 파티원 예약 취소로 인한 파티 취소 알림
 	}
 
 	/**
@@ -437,8 +451,10 @@ public class PartyService {
 			reservationService.refundAllMembers(party);
 			party.getCourse().discountPrice(refundAmount);
 			party.setStatus(RECRUITING);
+			// TODO: 파티원 예약 취소로 인한 재모집 상태 복귀 알림, 가격 인하 알림
 		} else {
 			party.setStatus(SEALED);
+			// TODO: 파티원 예약 취소 알림
 		}
 	}
 }
