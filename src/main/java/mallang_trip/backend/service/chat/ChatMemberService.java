@@ -1,5 +1,6 @@
 package mallang_trip.backend.service.chat;
 
+import static mallang_trip.backend.constant.ChatRoomType.COUPLE;
 import static mallang_trip.backend.constant.ChatRoomType.PARTY_PUBLIC;
 import static mallang_trip.backend.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
@@ -10,6 +11,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_KICK_
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CHATROOM_EXIT_FORBIDDEN;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_CHATROOM_MEMBER;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.PartyStatus;
@@ -21,7 +23,6 @@ import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatMemberRepository;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
-import mallang_trip.backend.service.party.PartyService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,40 +35,42 @@ public class ChatMemberService {
 	private final ChatMemberRepository chatMemberRepository;
 	private final PartyMemberRepository partyMemberRepository;
 	private final ChatMessageService chatMessageService;
+	private final ChatBlockService chatBlockService;
 	private final SimpMessagingTemplate template;
 
 	/**
 	 * 채팅방 멤버 생성
 	 */
-	public ChatMember createChatMember(ChatRoom room, User user){
+	public ChatMember createChatMember(ChatRoom room, User user) {
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user).orElse(null);
-		if(member == null){
+		if (member == null) {
 			return chatMemberRepository.save(ChatMember.builder()
 				.chatRoom(room)
 				.user(user)
 				.build());
+		} else {
+			return member;
 		}
-		else return member;
 	}
 
 	/**
 	 * 채팅방 멤버 조회
 	 */
-	public List<ChatMember> getChatMembers(ChatRoom room){
+	public List<ChatMember> getChatMembers(ChatRoom room) {
 		return chatMemberRepository.findByChatRoom(room);
 	}
 
 	/**
 	 * 채팅방 멤버 수 COUNT
 	 */
-	public int countChatMembers(ChatRoom room){
+	public int countChatMembers(ChatRoom room) {
 		return chatMemberRepository.countByChatRoom(room);
 	}
 
 	/**
 	 * COUPLE ChatRoom에서 상대방 유저 조회
 	 */
-	public User getOtherUserInCoupleChatRoom(ChatRoom room, User user){
+	public User getOtherUserInCoupleChatRoom(ChatRoom room, User user) {
 		return chatMemberRepository.findByChatRoom(room).stream()
 			.map(ChatMember::getUser)
 			.filter(memberUser -> !memberUser.equals(user))
@@ -76,17 +79,34 @@ public class ChatMemberService {
 	}
 
 	/**
+	 * COUPLE 채팅방에서 상대방을 차단했을 때, 활성화 하지 않음.
+	 */
+	private boolean shouldSkipActivation(ChatMember member) {
+		ChatRoom chatRoom = member.getChatRoom();
+		User currentUser = member.getUser();
+		if (chatRoom.getType().equals(COUPLE) &&
+			chatBlockService.isBlocked(currentUser, getOtherUserInCoupleChatRoom(chatRoom, currentUser))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * 채팅방 모든 멤버 활성화
 	 */
-	public void activeAllMembers(ChatRoom room){
+	public void activeAllMembers(ChatRoom room) {
 		chatMemberRepository.findByChatRoom(room)
-			.stream().forEach(member -> member.setActiveTrue());
+			.stream().forEach(member -> {
+				if (!shouldSkipActivation(member)) {
+					member.setActiveTrue();
+				}
+			});
 	}
 
 	/**
 	 * 유저를 제외한 채팅방 모든 멤버 unread++
 	 */
-	public void increaseAllMembersUnreadCount(ChatRoom room, User user){
+	public void increaseAllMembersUnreadCount(ChatRoom room, User user) {
 		chatMemberRepository.findByChatRoom(room).stream()
 			.filter(member -> !member.getUser().equals(user))
 			.forEach(member -> member.increaseUnreadCount());
@@ -95,7 +115,7 @@ public class ChatMemberService {
 	/**
 	 * unreadCount 조회
 	 */
-	public int getUnreadCount(ChatRoom room, User user){
+	public int getUnreadCount(ChatRoom room, User user) {
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
 			.orElseThrow(() -> new BaseException(NOT_CHATROOM_MEMBER));
 		return member.getUnreadCount();
@@ -104,7 +124,7 @@ public class ChatMemberService {
 	/**
 	 * COUPLE ChatRoom 나가기
 	 */
-	public void leaveCoupleChatRoom(ChatRoom room, User user){
+	public void leaveCoupleChatRoom(ChatRoom room, User user) {
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
 			.orElseThrow(() -> new BaseException(NOT_CHATROOM_MEMBER));
 		member.setActive(false);
@@ -123,8 +143,7 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * PARTY_PUBLIC ChatRoom 나가기.
-	 * 내가 속한 파티이고, 파티가 진행중이면 나가기 불가.
+	 * PARTY_PUBLIC ChatRoom 나가기. 내가 속한 파티이고, 파티가 진행중이면 나가기 불가.
 	 */
 	public void leavePartyChatRoom(ChatRoom room, User user) {
 		Party party = room.getParty();
@@ -144,10 +163,10 @@ public class ChatMemberService {
 	/**
 	 * 채팅방 강퇴
 	 */
-	public void kickChatMember(ChatRoom room, User user, User target){
-		if(!room.getType().equals(PARTY_PUBLIC)
+	public void kickChatMember(ChatRoom room, User user, User target) {
+		if (!room.getType().equals(PARTY_PUBLIC)
 			|| !isMyParty(user, room.getParty())
-			|| isMyParty(target, room.getParty())){
+			|| isMyParty(target, room.getParty())) {
 			throw new BaseException(CANNOT_KICK_CHAT_MEMBER);
 		} else {
 			leaveGroupChatRoom(room, target);

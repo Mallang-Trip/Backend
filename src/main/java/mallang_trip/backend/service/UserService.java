@@ -26,8 +26,11 @@ import mallang_trip.backend.domain.dto.user.LoginRequest;
 import mallang_trip.backend.domain.dto.user.ResetPasswordRequest;
 import mallang_trip.backend.domain.dto.user.SignupRequest;
 import mallang_trip.backend.domain.dto.user.UserBriefResponse;
+import mallang_trip.backend.domain.entity.chat.ChatBlock;
 import mallang_trip.backend.domain.entity.user.User;
+import mallang_trip.backend.repository.chat.ChatBlockRepository;
 import mallang_trip.backend.repository.user.UserRepository;
+import mallang_trip.backend.service.chat.ChatBlockService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -46,6 +49,7 @@ public class UserService {
 	private final TokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
 	private final SmsService smsService;
+	private final ChatBlockRepository chatBlockRepository;
 
 	/**
 	 * 회원가입
@@ -223,8 +227,17 @@ public class UserService {
 	 */
 	public List<UserBriefResponse> findByNickname(String nickname) {
 		return userRepository.findByNicknameContainingIgnoreCase(nickname).stream()
+			.filter(user -> !user.equals(getCurrentUser()))
+			.filter(user -> !isBlocked(user, getCurrentUser()))
 			.map(UserBriefResponse::of)
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 차단 유무 확인
+	 */
+	public boolean isBlocked(User user, User targetUser){
+		return chatBlockRepository.existsByUserAndTargetUser(user, targetUser);
 	}
 
 	/**

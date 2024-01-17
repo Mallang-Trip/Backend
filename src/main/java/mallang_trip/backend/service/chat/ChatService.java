@@ -49,6 +49,7 @@ public class ChatService {
 	private final ChatRoomService chatRoomService;
 	private final ChatMemberService chatMemberService;
 	private final ChatMessageService chatMessageService;
+	private final ChatBlockService chatBlockService;
 	private final UserRepository userRepository;
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatRoomRepository chatRoomRepository;
@@ -163,16 +164,18 @@ public class ChatService {
 	 */
 	public ChatRoomIdResponse startGroupChat(List<Long> userIds, String roomName) {
 		ChatRoom room = chatRoomService.createChatRoom(GROUP, roomName, null);
-		chatMemberService.createChatMember(room, userService.getCurrentUser()).setActiveTrue();
+		User currentUser = userService.getCurrentUser();
+		chatMemberService.createChatMember(room, currentUser).setActiveTrue();
 		// 멤버 초대
 		List<User> users = userIds.stream()
 			.map(userId -> userRepository.findById(userId)
 				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER)))
-			.filter(user -> !userService.getCurrentUser().equals(user))
+			.filter(user -> !currentUser.equals(user))
+			.filter(user -> !chatBlockService.isBlocked(user, currentUser))
 			.collect(Collectors.toList());
 		users.stream().forEach(user -> chatMemberService.createChatMember(room, user));
 		// 초대 메시지 생성
-		chatMessageService.createInviteMessage(userService.getCurrentUser(), users, room);
+		chatMessageService.createInviteMessage(currentUser, users, room);
 		return ChatRoomIdResponse.builder().chatRoomId(room.getId()).build();
 	}
 
@@ -193,7 +196,7 @@ public class ChatService {
 		List<User> users = userIds.stream()
 			.map(userId -> userRepository.findById(userId)
 				.orElseThrow(() -> new BaseException(Not_Found)))
-			// 이미 채팅방에 있는 경우 필터링
+			.filter(user -> !chatBlockService.isBlocked(user, userService.getCurrentUser()))
 			.filter(user -> !chatMemberRepository.existsByChatRoomAndUser(room, user))
 			.collect(Collectors.toList());
 		// chatMember 추가

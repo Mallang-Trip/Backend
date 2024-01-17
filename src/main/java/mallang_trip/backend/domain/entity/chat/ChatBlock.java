@@ -1,7 +1,5 @@
 package mallang_trip.backend.domain.entity.chat;
 
-import java.time.LocalDateTime;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,18 +13,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mallang_trip.backend.constant.ChatRoomType;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
 
 @Entity
-@Table(name = "chat_member")
+@Table(name = "chat_block")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatMember extends BaseEntity {
+public class ChatBlock extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,29 +34,6 @@ public class ChatMember extends BaseEntity {
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "chat_room_id", nullable = false, updatable = false)
-	private ChatRoom chatRoom;
-
-	@Column(name = "unread_count")
-	@Builder.Default()
-	private Integer unreadCount = 0;
-
-	@Column(name = "is_active")
-	@Builder.Default()
-	private Boolean active = false;
-
-	@Column(name = "joined_at")
-	@Builder.Default()
-	private LocalDateTime joinedAt = LocalDateTime.now();
-
-	public void increaseUnreadCount() {
-		this.unreadCount++;
-	}
-
-	public void setActiveTrue() {
-		if (this.active == false) {
-			this.setActive(true);
-			this.joinedAt = LocalDateTime.now();
-		}
-	}
+	@JoinColumn(name = "target_user_id", nullable = false, updatable = false)
+	private User targetUser;
 }

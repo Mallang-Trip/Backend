@@ -9,6 +9,8 @@ import mallang_trip.backend.controller.io.BaseResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomIdResponse;
+import mallang_trip.backend.domain.dto.user.UserBriefResponse;
+import mallang_trip.backend.service.chat.ChatBlockService;
 import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChatController {
 
 	private final ChatService chatService;
+	private final ChatBlockService chatBlockService;
 
 	@GetMapping("/groupChat")
 	@ApiOperation(value = "그룹 채팅방 만들기")
@@ -107,4 +110,28 @@ public class ChatController {
 		return new BaseResponse<>("성공");
 	}
 
+	@PostMapping("/block/{user_id}")
+	@ApiOperation(value = "차단하기")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<String> blockUser(@PathVariable(value = "user_id") Long userId)
+		throws BaseException {
+		chatBlockService.save(userId);
+		return new BaseResponse<>("성공");
+	}
+
+	@DeleteMapping("/block/{user_id}")
+	@ApiOperation(value = "차단취소")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<String> cancelBlock(@PathVariable(value = "user_id") Long userId)
+		throws BaseException {
+		chatBlockService.delete(userId);
+		return new BaseResponse<>("성공");
+	}
+
+	@GetMapping("/block")
+	@ApiOperation(value = "차단한 유저 조회")
+	@PreAuthorize("isAuthenticated()") // 로그인 사용자
+	public BaseResponse<List<UserBriefResponse>> getBlockingUser() throws BaseException {
+		return new BaseResponse<>(chatBlockService.getBlockList());
+	}
 }
