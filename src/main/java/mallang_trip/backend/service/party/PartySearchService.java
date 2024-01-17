@@ -56,6 +56,9 @@ public class PartySearchService {
 			.filter(party -> party.isHeadcountAvailable(headcount))
 			.filter(party -> party.checkDate(startDate, endDate))
 			.filter(party -> party.checkMaxPrice(maxPrice))
+			.sorted(Comparator
+				.comparing(Party::getHeadcount).reversed()
+				.thenComparing(Party::getStartDate))
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
 	}
