@@ -235,4 +235,12 @@ public class UserService {
 			.orElseThrow(() -> new BaseException(Not_Found));
 		return UserBriefResponse.of(user);
 	}
+
+	/**
+	 * 회원탈퇴 조건 만족 유무
+	 */
+	/*public Boolean isWithdrawalPossible(User user){
+
+		return true;
+	}*/
 }

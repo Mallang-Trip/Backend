@@ -165,7 +165,7 @@ public class ReservationService {
 			return null;
 		}
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)
-			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+			.orElse(null);
 		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
 			.orElse(null);
 		return ReservationResponse.of(reservation);

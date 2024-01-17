@@ -43,4 +43,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 	List<Party> findByRegionAndStatus(String region, PartyStatus status);
 
 	List<Party> findByDriver(Driver driver);
+
+/*	@Query(value = "", nativeQuery = true)
+	Boolean isOngoingPartyExists(Long userId);*/
 }

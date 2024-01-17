@@ -134,7 +134,7 @@ public class PartyService {
 			throw new BaseException(Forbidden);
 		}
 		// STATUS 변경
-		if(accept) {
+		if (accept) {
 			party.setStatus(RECRUITING);
 			chatService.startPartyChat(party);
 			// TODO: 유저에게 파티 생성됨 알림
@@ -350,9 +350,8 @@ public class PartyService {
 	}
 
 	/**
-	 * 예약 전 파티 탈퇴 시, 마지막 멤버일 경우.
-	 * 진행 중인 가입 신청이 있다면, 해당 proposal 만료 처리.
-	 * CANCELED 상태로 변경 후, 마지막 멤버 정보는 delete 하지 않움.
+	 * 예약 전 파티 탈퇴 시, 마지막 멤버일 경우. 진행 중인 가입 신청이 있다면, 해당 proposal 만료 처리. CANCELED 상태로 변경 후, 마지막 멤버 정보는
+	 * delete 하지 않움.
 	 */
 	private void quitPartyBeforeReservationByLastMember(Party party) {
 		partyProposalService.expireWaitingProposalByParty(party);
