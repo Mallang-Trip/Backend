@@ -70,9 +70,9 @@ public class User extends BaseEntity {
     @Column(name = "profile_image")
     private String profileImage;
 
-    @Column(columnDefinition = "TINYINT", length = 1)
+/*    @Column(columnDefinition = "TINYINT", length = 1)
     @Builder.Default()
-    private Boolean suspended= false;
+    private Boolean suspended= false;*/
 
     @Override
     public boolean equals(Object o) {
