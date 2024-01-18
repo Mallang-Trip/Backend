@@ -26,7 +26,7 @@ public class AuthResponse {
     private String role;
     private String introduction;
     private String profileImg;
-    private Boolean suspended;
+    //private Boolean suspended;
     private Boolean deleted;
 
     public static AuthResponse of(User user){
@@ -43,7 +43,7 @@ public class AuthResponse {
             .role(user.getRole().toString())
             .introduction(user.getIntroduction())
             .profileImg(user.getProfileImage())
-            .suspended(user.getSuspended())
+            //.suspended(user.getSuspended())
             .deleted(user.getDeleted())
             .build();
     }
