@@ -1,4 +1,4 @@
-package mallang_trip.backend.service;
+package mallang_trip.backend.service.user;
 
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
@@ -26,11 +26,10 @@ import mallang_trip.backend.domain.dto.user.LoginRequest;
 import mallang_trip.backend.domain.dto.user.ResetPasswordRequest;
 import mallang_trip.backend.domain.dto.user.SignupRequest;
 import mallang_trip.backend.domain.dto.user.UserBriefResponse;
-import mallang_trip.backend.domain.entity.chat.ChatBlock;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatBlockRepository;
 import mallang_trip.backend.repository.user.UserRepository;
-import mallang_trip.backend.service.chat.ChatBlockService;
+import mallang_trip.backend.service.SmsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -55,6 +54,9 @@ public class UserService {
 	 * 회원가입
 	 */
 	public void signup(SignupRequest request) {
+		if(isDuplicate(request)){
+			throw new BaseException(Conflict);
+		}
 		userRepository.save(request.toUser(passwordEncoder));
 	}
 
@@ -106,6 +108,21 @@ public class UserService {
 		}
 		if (isDuplicate) {
 			throw new BaseException(Conflict);
+		}
+	}
+
+	/**
+	 * User table unique check
+	 */
+	private Boolean isDuplicate(SignupRequest request){
+		if(userRepository.existsByLoginId(request.getId())
+		|| userRepository.existsByEmail(request.getEmail())
+		|| userRepository.existsByNickname(request.getNickname())
+		|| userRepository.existsByPhoneNumber(request.getPhoneNumber())){
+			return true;
+		}
+		else{
+			return false;
 		}
 	}
 
@@ -226,7 +243,7 @@ public class UserService {
 	 * 유저 검색 by nickname
 	 */
 	public List<UserBriefResponse> findByNickname(String nickname) {
-		return userRepository.findByNicknameContainingIgnoreCase(nickname).stream()
+		return userRepository.findByNicknameContainingIgnoreCaseAndDeleted(nickname, false).stream()
 			.filter(user -> !user.equals(getCurrentUser()))
 			.filter(user -> !isBlocked(user, getCurrentUser()))
 			.map(UserBriefResponse::of)
@@ -236,7 +253,7 @@ public class UserService {
 	/**
 	 * 차단 유무 확인
 	 */
-	public boolean isBlocked(User user, User targetUser){
+	public boolean isBlocked(User user, User targetUser) {
 		return chatBlockRepository.existsByUserAndTargetUser(user, targetUser);
 	}
 
@@ -249,11 +266,4 @@ public class UserService {
 		return UserBriefResponse.of(user);
 	}
 
-	/**
-	 * 회원탈퇴 조건 만족 유무
-	 */
-	/*public Boolean isWithdrawalPossible(User user){
-
-		return true;
-	}*/
 }

@@ -17,7 +17,7 @@ import mallang_trip.backend.domain.entity.party.PartyMemberCompanion;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberCompanionRepository;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

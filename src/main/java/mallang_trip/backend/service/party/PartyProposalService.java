@@ -20,7 +20,6 @@ import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
 import mallang_trip.backend.domain.dto.party.PartyMemberCompanionRequest;
 import mallang_trip.backend.domain.dto.party.PartyMemberCompanionResponse;
-import mallang_trip.backend.domain.dto.party.PartyMemberResponse;
 import mallang_trip.backend.domain.dto.party.PartyProposalAgreementResponse;
 import mallang_trip.backend.domain.dto.party.PartyProposalResponse;
 import mallang_trip.backend.domain.entity.course.Course;
@@ -37,7 +36,7 @@ import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.DriverService;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

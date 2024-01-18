@@ -31,16 +31,16 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "login_id", nullable = false, unique = true)
+    @Column(name = "login_id", nullable = false)
     private String loginId;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
@@ -52,10 +52,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String nickname;
 
-    @Column(name = "phone_number", nullable = false, unique = true, updatable = false)
+    @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
@@ -64,6 +64,7 @@ public class User extends BaseEntity {
     @Column(name = "refresh_token")
     private String refreshToken;
 
+    @Column
     private String introduction;
 
     @Column(name = "profile_image")

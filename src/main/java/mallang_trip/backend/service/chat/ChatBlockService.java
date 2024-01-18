@@ -10,7 +10,7 @@ import mallang_trip.backend.domain.entity.chat.ChatBlock;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatBlockRepository;
 import mallang_trip.backend.repository.user.UserRepository;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

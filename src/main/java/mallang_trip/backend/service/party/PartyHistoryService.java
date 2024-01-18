@@ -9,8 +9,7 @@ import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyHistory;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyHistoryRepository;
-import mallang_trip.backend.repository.party.PartyRepository;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

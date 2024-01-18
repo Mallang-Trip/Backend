@@ -30,6 +30,7 @@ import mallang_trip.backend.repository.community.ArticleRepository;
 import mallang_trip.backend.repository.community.CommentRepository;
 import mallang_trip.backend.repository.community.ReplyRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

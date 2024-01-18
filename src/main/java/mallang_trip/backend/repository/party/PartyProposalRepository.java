@@ -34,6 +34,10 @@ public interface PartyProposalRepository extends JpaRepository<PartyProposal, Lo
 	List<PartyProposal> findByProposerAndTypeAndStatus(User user, ProposalType type,
 		ProposalStatus status);
 
+	Boolean existsByProposerAndTypeAndStatus(User user, ProposalType type,
+		ProposalStatus status);
+
 	Boolean existsByPartyAndProposerAndTypeAndStatus(Party party, User user, ProposalType type,
 		ProposalStatus status);
+
 }

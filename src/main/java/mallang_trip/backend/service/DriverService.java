@@ -34,6 +34,7 @@ import mallang_trip.backend.repository.driver.DriverPriceRepository;
 import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.driver.DriverReviewRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 
 @Service

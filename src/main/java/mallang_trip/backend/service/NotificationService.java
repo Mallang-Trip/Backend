@@ -12,6 +12,7 @@ import mallang_trip.backend.domain.dto.notification.NotificationResponse;
 import mallang_trip.backend.domain.entity.notification.Notification;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.notification.NotificationRepository;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

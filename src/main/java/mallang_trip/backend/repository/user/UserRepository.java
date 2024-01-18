@@ -19,5 +19,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPhoneNumber(String phoneNumber);
 
-    List<User> findByNicknameContainingIgnoreCase(String nickname);
+    List<User> findByNicknameContainingIgnoreCaseAndDeleted(String nickname, Boolean deleted);
 }

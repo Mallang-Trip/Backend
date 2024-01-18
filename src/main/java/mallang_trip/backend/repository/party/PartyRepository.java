@@ -44,6 +44,15 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	List<Party> findByDriver(Driver driver);
 
-/*	@Query(value = "", nativeQuery = true)
-	Boolean isOngoingPartyExists(Long userId);*/
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END\n"
+		+ "FROM party p JOIN party_member m\n"
+		+ "ON p.id = m.party_id\n"
+		+ "WHERE m.user_id = :user_id\n"
+		+ "	 AND m.deleted = 'false'\n"
+		+ "  AND (p.status = 'RECRUITING'\n"
+		+ "   OR p.status = 'WAITING_JOIN_APPROVAL'\n"
+		+ "   OR p.status = 'SEALED'\n"
+		+ "   OR p.status = 'WAITING_COURSE_CHANGE_APPROVAL'\n"
+		+ "   OR p.status = 'DAY_OF_TRAVEL')", nativeQuery = true)
+	Boolean isOngoingPartyExists(@Param(value = "user_id") Long userId);
 }

@@ -32,6 +32,7 @@ public enum BaseResponseStatus {
     EXCEED_PARTY_CAPACITY(403, "모집 인원 초과입니다."),
     CANNOT_CHANGE_COURSE(403, "코스 변경이 불가능한 상태입니다."),
     EXPIRED_PROPOSAL(403, "종료된 제안입니다."),
+    ONGOING_PARTY_EXISTS(403, "진행중인 여행이 있습니다."),
 
     // Chat
     CANNOT_FOUND_CHATROOM(404, "채팅방을 찾을 수 없습니다."),

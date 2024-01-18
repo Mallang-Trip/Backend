@@ -1,18 +1,12 @@
 package mallang_trip.backend.config.stomp;
 
-import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.EMPTY_JWT;
-
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.config.security.TokenProvider;
-import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.entity.chat.ChatMember;
 import mallang_trip.backend.domain.entity.chat.ChatRoom;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatMemberRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
 import mallang_trip.backend.repository.user.UserRepository;
-import mallang_trip.backend.service.UserService;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.messaging.Message;

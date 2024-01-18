@@ -26,6 +26,7 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.destination.DestinationDibsRepository;
 import mallang_trip.backend.repository.destination.DestinationRepository;
 import mallang_trip.backend.repository.destination.DestinationReviewRepository;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 
 @Service

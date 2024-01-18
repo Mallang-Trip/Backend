@@ -12,7 +12,7 @@ import mallang_trip.backend.domain.entity.party.PartyDibs;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyDibsRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

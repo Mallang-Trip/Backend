@@ -25,7 +25,9 @@ import mallang_trip.backend.domain.dto.user.LoginRequest;
 import mallang_trip.backend.domain.dto.user.ResetPasswordRequest;
 import mallang_trip.backend.domain.dto.user.SignupRequest;
 import mallang_trip.backend.domain.dto.user.UserBriefResponse;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
+import mallang_trip.backend.service.user.UserWithdrawalService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
 	private final UserService userService;
+	private final UserWithdrawalService userWithdrawalService;
 
 	@PostMapping("/signup")
 	@ApiOperation(value = "회원가입")
@@ -63,7 +66,7 @@ public class UserController {
 	}
 
 	@GetMapping("/refresh-token")
-	@ApiOperation(value = "Resfresh Token", notes = "access token 만료 시, refresh token 으로 재발급 받기")
+	@ApiOperation(value = "Refresh Token", notes = "access token 만료 시, refresh token 으로 재발급 받기")
 	public BaseResponse<TokensDto> refreshToken() throws BaseException {
 		return new BaseResponse<>(userService.refreshToken());
 	}
@@ -142,5 +145,12 @@ public class UserController {
 	public BaseResponse<UserBriefResponse> getUserInfo(@PathVariable(value = "userId") Long userId)
 		throws BaseException {
 		return new BaseResponse<>(userService.getUserBriefInfo(userId));
+	}
+
+	@DeleteMapping("/user/withdrawal")
+	@ApiOperation(value = "회원탈퇴")
+	public BaseResponse<String> withdrawal() throws BaseException {
+		userWithdrawalService.withdrawal();
+		return new BaseResponse<>("성공");
 	}
 }

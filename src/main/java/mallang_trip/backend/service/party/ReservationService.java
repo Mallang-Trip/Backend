@@ -6,7 +6,6 @@ import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -20,7 +19,7 @@ import mallang_trip.backend.domain.entity.reservation.Reservation;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.reservation.ReservationRepository;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

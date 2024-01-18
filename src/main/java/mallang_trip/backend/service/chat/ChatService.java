@@ -33,7 +33,7 @@ import mallang_trip.backend.repository.chat.ChatMessageRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.repository.user.UserRepository;
-import mallang_trip.backend.service.UserService;
+import mallang_trip.backend.service.user.UserService;
 import mallang_trip.backend.service.party.PartyMemberService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -244,12 +244,27 @@ public class ChatService {
 	}
 
 	/**
-	 * 채팅방 나가기
+	 * 채팅방 나가기 By chat_room_id
 	 */
-	public void leaveChat(Long chatRoomId) {
+	public void leaveChat(Long chatRoomId){
 		User user = userService.getCurrentUser();
 		ChatRoom room = chatRoomRepository.findById(chatRoomId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
+		leaveChat(room, user);
+	}
+
+	/**
+	 * (회원탈퇴) 채팅방 모두 나가기
+	 */
+	public void leaveAllChat(User user){
+		chatRoomService.getChatRooms(user).stream()
+			.forEach(room -> leaveChat(room, user));
+	}
+
+	/**
+	 * 채팅방 나가기
+	 */
+	private void leaveChat(ChatRoom room, User user) {
 		if (room.getType().equals(COUPLE)) {
 			chatMemberService.leaveCoupleChatRoom(room, user);
 		} else if (room.getType().equals(GROUP)) {
