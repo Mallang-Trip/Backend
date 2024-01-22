@@ -1,4 +1,4 @@
-package mallang_trip.backend.service.party;
+package mallang_trip.backend.service;
 
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
@@ -19,6 +19,7 @@ import mallang_trip.backend.domain.entity.reservation.Reservation;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.reservation.ReservationRepository;
+import mallang_trip.backend.service.party.PartyMemberService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
