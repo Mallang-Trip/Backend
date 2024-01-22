@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity.community;
+package mallang_trip.backend.domain.entity.article;
 
 import java.util.List;
 import javax.persistence.Column;
@@ -24,7 +24,6 @@ import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.user.User;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 @Entity
 @Table

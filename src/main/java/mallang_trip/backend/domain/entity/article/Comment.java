@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.entity.community;
+package mallang_trip.backend.domain.entity.article;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

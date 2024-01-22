@@ -1,7 +1,7 @@
-package mallang_trip.backend.repository.community;
+package mallang_trip.backend.repository.article;
 
-import mallang_trip.backend.domain.entity.community.Article;
-import mallang_trip.backend.domain.entity.community.ArticleDibs;
+import mallang_trip.backend.domain.entity.article.Article;
+import mallang_trip.backend.domain.entity.article.ArticleDibs;
 import mallang_trip.backend.domain.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

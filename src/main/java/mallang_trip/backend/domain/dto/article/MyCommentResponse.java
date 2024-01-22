@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.community.Article;
+import mallang_trip.backend.domain.entity.article.Article;
 import mallang_trip.backend.domain.entity.user.User;
 
 @Getter

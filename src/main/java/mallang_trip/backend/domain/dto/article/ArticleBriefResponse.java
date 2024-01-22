@@ -3,7 +3,7 @@ package mallang_trip.backend.domain.dto.article;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.entity.community.Article;
+import mallang_trip.backend.domain.entity.article.Article;
 
 @Getter
 @Builder
