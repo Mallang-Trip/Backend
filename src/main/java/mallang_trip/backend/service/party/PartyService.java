@@ -65,6 +65,7 @@ public class PartyService {
 	private final CourseService courseService;
 	private final ReservationService reservationService;
 	private final ChatService chatService;
+	private final PartyNotificationService partyNotificationService;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -99,7 +100,8 @@ public class PartyService {
 		// 자신을 멤버로 추가
 		partyMemberService.createMember(party, user, request.getHeadcount(),
 			request.getCompanions());
-		// TODO: 드라이버 파티 신청 알림
+		// 드라이버 파티 신청 알림
+		partyNotificationService.newParty(driver.getUser(), party);
 		return PartyIdResponse.builder().partyId(party.getId()).build();
 	}
 
@@ -134,14 +136,14 @@ public class PartyService {
 		if (!party.getStatus().equals(WAITING_DRIVER_APPROVAL)) {
 			throw new BaseException(Forbidden);
 		}
-		// STATUS 변경
+		// STATUS 변경 및 신청자에게 알림
 		if (accept) {
 			party.setStatus(RECRUITING);
 			chatService.startPartyChat(party);
-			// TODO: 유저에게 파티 생성됨 알림
+			partyNotificationService.creationAccepted(party);
 		} else {
 			party.setStatus(CANCELED_BY_DRIVER_REFUSED);
-			// TODO: 유저에게 파티 거절됨 알림
+			partyNotificationService.creationRefused(party);
 		}
 
 	}
@@ -167,6 +169,7 @@ public class PartyService {
 		if (request.getChangeCourse()) {
 			partyProposalService.createJoinWithCourseChange(party, request);
 			party.setStatus(WAITING_JOIN_APPROVAL);
+			partyNotificationService.newJoinRequest(party);
 		} else {
 			joinParty(party, userService.getCurrentUser(), request.getHeadcount(),
 				request.getCompanions());
@@ -178,16 +181,17 @@ public class PartyService {
 	 */
 	private void joinParty(Party party, User user, Integer headcount,
 		List<PartyMemberCompanionRequest> requests) {
+		partyNotificationService.newMember(user, party);
 		partyMemberService.createMember(party, user, headcount, requests);
 		if (party.getHeadcount() == party.getCapacity()) {
 			partyMemberService.setReadyAllMembers(party, true);
 			reservationService.reserveParty(party);
 			party.setStatus(SEALED);
-			// TODO: 새 가입자, 4인 모집 완료 -> SEALED 알림
+			partyNotificationService.newMember(user, party);
+			partyNotificationService.partyFulled(party);
 		} else {
 			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(RECRUITING);
-			// TODO: 새 가입자 알림, 레디 해제 알림
 		}
 		chatService.joinParty(user, party);
 	}
@@ -207,9 +211,9 @@ public class PartyService {
 		if (!isMyParty(user, party)) {
 			throw new BaseException(NOT_PARTY_MEMBER);
 		}
-		partyProposalService.createCourseChange(party, request);
+		PartyProposal proposal = partyProposalService.createCourseChange(party, request);
 		party.setStatus(WAITING_COURSE_CHANGE_APPROVAL);
-		// TODO: 파티 멤버에게 코스 변경 제안 생성 알림
+		partyNotificationService.newCourseChange(proposal);
 	}
 
 	/**
@@ -243,16 +247,17 @@ public class PartyService {
 		proposal.setStatus(ProposalStatus.ACCEPTED);
 		Party party = proposal.getParty();
 		party.setCourse(proposal.getCourse());
+		partyNotificationService.courseChangeAccepted(party);
 		if (proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)) {
 			List<PartyMemberCompanionRequest> companionRequests = partyMemberCompanionRepository.findByProposal(
 					proposal).stream().map(PartyMemberCompanionRequest::of)
 				.collect(Collectors.toList());
 			joinParty(party, proposal.getProposer(), proposal.getHeadcount(), companionRequests);
+			partyNotificationService.joinAccepted(proposal.getProposer(), party);
 		}
 		if (proposal.getType().equals(COURSE_CHANGE)) {
 			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(SEALED);
-			// TODO: 코스 변경됨 알림, 레디 해제 알림
 		}
 	}
 
@@ -281,7 +286,7 @@ public class PartyService {
 		}
 		reservationService.reserveParty(party);
 		party.setStatus(SEALED);
-		// TODO: 전원 레디, 자동결제 알림
+		partyNotificationService.allReady(party);
 	}
 
 	/**
@@ -331,17 +336,21 @@ public class PartyService {
 		// 진행중인 가입 신청이 있을 경우, 거절 처리
 		partyProposalService.expireWaitingProposalByParty(party);
 		party.setStatus(CANCELED_BY_DRIVER_QUIT);
-		// TODO: 드라이버 탈퇴로 인한 파티 취소 알림
+		// 드라이버 탈퇴로 인한 파티 취소 알림
+		partyNotificationService.cancelByDriverQuit(party);
 	}
 
 	/**
 	 * (멤버) 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴.
 	 */
 	private void quitPartyBeforeReservationByMember(Party party) {
+		User user = userService.getCurrentUser();
 		// 권한 CHECK
-		if (!isMyParty(userService.getCurrentUser(), party)) {
+		if (!isMyParty(user, party)) {
 			throw new BaseException(NOT_PARTY_MEMBER);
 		}
+		// 탈퇴 알림
+		partyNotificationService.memberQuit(user, party);
 		// 탈퇴 진행
 		if (partyMemberService.isLastMember(party)) {
 			quitPartyBeforeReservationByLastMember(party);
@@ -357,7 +366,7 @@ public class PartyService {
 	private void quitPartyBeforeReservationByLastMember(Party party) {
 		partyProposalService.expireWaitingProposalByParty(party);
 		party.setStatus(CANCELED_BY_ALL_QUIT);
-		// TODO: 드라이버 전원 탈퇴로 인한 파티 취소 알림
+		partyNotificationService.cancelByAllQuit(party);
 	}
 
 	/**
@@ -373,7 +382,6 @@ public class PartyService {
 			checkUnanimityAndAcceptProposal(proposal);
 		}
 		partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
-		// TODO: 파티원 탈퇴 알림
 	}
 
 	/**
@@ -413,7 +421,8 @@ public class PartyService {
 		reservationService.payPenaltyByDriver(party);
 		reservationService.refundAllMembers(party);
 		party.setStatus(CANCELED_BY_DRIVER_QUIT);
-		// TODO: 드라이버 예약 취소로 인한 파티 취소 알림
+		// 드라이버 탈퇴로 인한 파티 취소 알림
+		partyNotificationService.cancelByDriverQuit(party);
 	}
 
 	/**
@@ -436,7 +445,7 @@ public class PartyService {
 	private void cancelReservationByLastMember(PartyMember member) {
 		reservationService.refund(member);
 		member.getParty().setStatus(CANCELED_BY_ALL_QUIT);
-		// TODO: 파티원 예약 취소로 인한 파티 취소 알림
+		partyNotificationService.cancelByAllQuit(member.getParty());
 	}
 
 	/**

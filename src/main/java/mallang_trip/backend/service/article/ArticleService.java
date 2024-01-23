@@ -48,7 +48,7 @@ public class ArticleService {
     private final ArticleDibsRepository articleDibsRepository;
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
-
+    private final ArticleNotificationService articleNotificationService;
     /** 게시글 작성 */
     public ArticleIdResponse createArticle(ArticleRequest request) {
         Party party = request.getPartyId() == null ? null
@@ -226,6 +226,7 @@ public class ArticleService {
             .content(content)
             .build();
         commentRepository.save(comment);
+        articleNotificationService.newComment(article);
     }
 
     /** 대댓글 작성 */
@@ -238,6 +239,7 @@ public class ArticleService {
             .content(content)
             .build();
         replyRepository.save(reply);
+        articleNotificationService.newReply(reply);
     }
 
     /** 댓글 삭제 */

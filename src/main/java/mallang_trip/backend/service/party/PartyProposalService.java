@@ -49,6 +49,7 @@ public class PartyProposalService {
 	private final DriverService driverService;
 	private final CourseService courseService;
 	private final PartyMemberService partyMemberService;
+	private final PartyNotificationService partyNotificationService;
 	private final PartyProposalRepository partyProposalRepository;
 	private final PartyProposalAgreementRepository partyProposalAgreementRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -74,7 +75,7 @@ public class PartyProposalService {
 	/**
 	 * PartyProposal, PartyProposalAgreement 생성 (Type: COURSE_CHANGE)
 	 */
-	public void createCourseChange(Party party, ChangeCourseRequest request) {
+	public PartyProposal createCourseChange(Party party, ChangeCourseRequest request) {
 		Course course = courseService.createCourse(request.getCourse());
 		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
@@ -87,6 +88,7 @@ public class PartyProposalService {
 		createPartyProposalAgreements(proposal);
 		// 생성자는 자동 수락
 		voteProposal(proposal, true);
+		return proposal;
 	}
 
 	/**
@@ -164,9 +166,11 @@ public class PartyProposalService {
 		proposal.setStatus(ProposalStatus.REFUSED);
 		if (proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)) {
 			proposal.getParty().setStatus(PartyStatus.RECRUITING);
+			partyNotificationService.joinRefused(proposal.getProposer(), proposal.getParty());
 		}
 		if (proposal.getType().equals(COURSE_CHANGE)) {
 			proposal.getParty().setStatus(SEALED);
+			partyNotificationService.courseChangeRefused(proposal.getProposer(), proposal.getParty());
 		}
 	}
 

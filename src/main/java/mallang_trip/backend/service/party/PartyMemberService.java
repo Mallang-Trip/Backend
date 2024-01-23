@@ -58,6 +58,17 @@ public class PartyMemberService {
 	}
 
 	/**
+	 * 드라이버, 파티 멤버 조회
+	 */
+	public List<User> getMembersAndDriver(Party party){
+		List<User> users = getMembers(party).stream()
+			.map(PartyMember::getUser)
+			.collect(Collectors.toList());
+		users.add(party.getDriver().getUser());
+		return users;
+	}
+
+	/**
 	 * 파티 멤버 추가 및 파티 headcount 증가
 	 */
 	public PartyMember createMember(Party party, User user, Integer headcount,
