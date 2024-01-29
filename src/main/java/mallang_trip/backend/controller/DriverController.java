@@ -131,7 +131,7 @@ public class DriverController {
 
     @DeleteMapping("/review/{review_id}")
     @ApiOperation(value = "드라이버 리뷰 삭제")
-    @PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<String> deleteDriverReview(@PathVariable(value = "review_id") Long id)
         throws BaseException {
         driverService.deleteDriverReview(id);

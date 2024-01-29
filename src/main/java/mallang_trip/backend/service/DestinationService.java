@@ -2,7 +2,9 @@ package mallang_trip.backend.service;
 
 import static mallang_trip.backend.constant.DestinationType.BY_ADMIN;
 import static mallang_trip.backend.constant.DestinationType.BY_USER;
+import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
@@ -141,7 +143,7 @@ public class DestinationService {
 			.orElseThrow(() -> new BaseException(Not_Found));
 		// 작성자가 아닐 경우
 		if (!userService.getCurrentUser().equals(review.getUser())) {
-			throw new BaseException(Unauthorized);
+			throw new BaseException(Forbidden);
 		}
 		review.setRate(request.getRate());
 		review.setContent(request.getContent());
@@ -153,8 +155,9 @@ public class DestinationService {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		// 작성자가 아닐 경우
-		if (!userService.getCurrentUser().equals(review.getUser())) {
-			throw new BaseException(Unauthorized);
+		User user = userService.getCurrentUser();
+		if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(review.getUser())) {
+			throw new BaseException(Forbidden);
 		}
 		destinationReviewRepository.delete(review);
 	}

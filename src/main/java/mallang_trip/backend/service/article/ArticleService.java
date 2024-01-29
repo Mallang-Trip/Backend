@@ -1,5 +1,7 @@
 package mallang_trip.backend.service.article;
 
+import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
@@ -91,7 +93,8 @@ public class ArticleService {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if (!userService.getCurrentUser().equals(article.getUser())) {
+        User user = userService.getCurrentUser();
+        if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(article.getUser())) {
             throw new BaseException(BaseResponseStatus.Forbidden);
         }
         article.setDeleted(true);
@@ -247,8 +250,9 @@ public class ArticleService {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if (!userService.getCurrentUser().equals(comment.getUser())) {
-            throw new BaseException(Unauthorized);
+        User user = userService.getCurrentUser();
+        if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(comment.getUser())) {
+            throw new BaseException(Forbidden);
         }
         commentRepository.delete(comment);
     }
@@ -258,8 +262,9 @@ public class ArticleService {
         Reply reply = replyRepository.findById(replyId)
             .orElseThrow(() -> new BaseException(Not_Found));
         // 권한 CHECK
-        if (!userService.getCurrentUser().equals(reply.getUser())) {
-            throw new BaseException(Unauthorized);
+        User user = userService.getCurrentUser();
+        if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(reply.getUser())) {
+            throw new BaseException(Forbidden);
         }
         replyRepository.delete(reply);
     }
