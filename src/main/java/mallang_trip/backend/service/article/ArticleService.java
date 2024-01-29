@@ -239,7 +239,7 @@ public class ArticleService {
             .content(content)
             .build();
         replyRepository.save(reply);
-        articleNotificationService.newReply(reply);
+        articleNotificationService.newReply(comment);
     }
 
     /** 댓글 삭제 */

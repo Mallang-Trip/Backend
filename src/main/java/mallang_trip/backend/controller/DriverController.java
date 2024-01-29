@@ -14,7 +14,7 @@ import mallang_trip.backend.domain.dto.driver.DriverRegistrationRequest;
 import mallang_trip.backend.domain.dto.driver.DriverRegistrationResponse;
 import mallang_trip.backend.domain.dto.driver.DriverReviewRequest;
 import mallang_trip.backend.domain.dto.driver.MyDriverProfileResponse;
-import mallang_trip.backend.service.DriverService;
+import mallang_trip.backend.service.driver.DriverService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

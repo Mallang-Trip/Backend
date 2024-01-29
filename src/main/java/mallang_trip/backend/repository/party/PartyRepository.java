@@ -36,7 +36,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	@Query(value = "SELECT * FROM party\n"
 		+ "WHERE start_date < :today AND status = 'DAY_OF_TRAVEL' ", nativeQuery = true)
-	List<Party> findFinishedParties(@Param(value = "today") String today);
+	List<Party> findFinishingParties(@Param(value = "today") String today);
+
+	@Query(value = "SELECT * FROM party\n"
+		+ "WHERE start_date = :yesterday AND status = 'FINISHED' ", nativeQuery = true)
+	List<Party> findFinishedParties(@Param(value = "yesterday") String yesterday);
 
 	List<Party> findByStatus(PartyStatus status);
 

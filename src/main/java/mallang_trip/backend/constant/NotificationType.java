@@ -4,5 +4,7 @@ public enum NotificationType {
 
 	PARTY,
 	ARTICLE,
+	FEEDBACK,
+	DRIVER,
 	;
 }

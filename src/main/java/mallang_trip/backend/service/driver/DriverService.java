@@ -1,4 +1,4 @@
-package mallang_trip.backend.service;
+package mallang_trip.backend.service.driver;
 
 import static mallang_trip.backend.constant.DriverStatus.ACCEPTED;
 import static mallang_trip.backend.constant.DriverStatus.REFUSED_OR_CANCELED;
@@ -34,6 +34,7 @@ import mallang_trip.backend.repository.driver.DriverPriceRepository;
 import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.driver.DriverReviewRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class DriverService {
 
 	private final UserService userService;
 	private final CourseService courseService;
+	private final DriverNotificationService driverNotificationService;
 	private final DriverRepository driverRepository;
 	private final DriverPriceRepository driverPriceRepository;
 	private final DriverReviewRepository driverReviewRepository;
@@ -231,13 +233,14 @@ public class DriverService {
 		if (driverReviewRepository.existsByDriverAndUser(driver, user)) {
 			throw new BaseException(Conflict);
 		}
-		driverReviewRepository.save(DriverReview.builder()
+		DriverReview review = driverReviewRepository.save(DriverReview.builder()
 			.driver(driver)
 			.user(user)
 			.rate(request.getRate())
 			.content(request.getContent())
 			.images(request.getImages())
 			.build());
+		driverNotificationService.newReview(review);
 	}
 
 	/** 드라이버 리뷰 수정 */

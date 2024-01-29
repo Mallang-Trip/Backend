@@ -12,6 +12,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     List<Reply> findByComment(Comment comment);
 
+    List<Reply> findByCommentAndDeleted(Comment comment, Boolean deleted);
+
     Integer countByComment(Comment comment);
 
     List<Reply> findByDeletedAndUser(Boolean deleted, User user);

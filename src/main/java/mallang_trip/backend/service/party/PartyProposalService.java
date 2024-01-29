@@ -35,7 +35,7 @@ import mallang_trip.backend.repository.party.PartyProposalAgreementRepository;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.service.CourseService;
-import mallang_trip.backend.service.DriverService;
+import mallang_trip.backend.service.driver.DriverService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -166,11 +166,11 @@ public class PartyProposalService {
 		proposal.setStatus(ProposalStatus.REFUSED);
 		if (proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)) {
 			proposal.getParty().setStatus(PartyStatus.RECRUITING);
-			partyNotificationService.joinRefused(proposal.getProposer(), proposal.getParty());
+			partyNotificationService.joinRefused(proposal);
 		}
 		if (proposal.getType().equals(COURSE_CHANGE)) {
 			proposal.getParty().setStatus(SEALED);
-			partyNotificationService.courseChangeRefused(proposal.getProposer(), proposal.getParty());
+			partyNotificationService.courseChangeRefused(proposal);
 		}
 	}
 
@@ -224,6 +224,11 @@ public class PartyProposalService {
 			proposal.setDriverAgreement(AgreementStatus.REFUSE);
 		}
 		proposal.setStatus(ProposalStatus.REFUSED);
+		if(proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)){
+			partyNotificationService.joinRefused(proposal);
+		} else if (proposal.getType().equals(COURSE_CHANGE)){
+			partyNotificationService.courseChangeRefused(proposal);
+		}
 	}
 
 	/**
