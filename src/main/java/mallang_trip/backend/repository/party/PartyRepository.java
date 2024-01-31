@@ -44,6 +44,9 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	List<Party> findByStatus(PartyStatus status);
 
+	@Query(value = "SELECT * FROM party WHERE status LIKE 'CANCELED_%'", nativeQuery = true)
+	List<Party> findByStatusStartWithCanceled();
+
 	List<Party> findByRegionAndStatus(String region, PartyStatus status);
 
 	List<Party> findByDriver(Driver driver);

@@ -3,6 +3,8 @@ package mallang_trip.backend.service;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
+import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
+import static mallang_trip.backend.constant.Role.ROLE_DRIVER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.ReservationStatus;
+import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ReservationResponse;
 import mallang_trip.backend.domain.entity.party.Party;
@@ -161,7 +164,8 @@ public class ReservationService {
 
 	public ReservationResponse getReservationResponse(Party party){
 		User user = userService.getCurrentUser();
-		if(user.equals(party.getDriver().getUser())){
+		Role role = user.getRole();
+		if(role.equals(ROLE_ADMIN) || role.equals(ROLE_DRIVER)){
 			return null;
 		}
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)

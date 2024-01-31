@@ -33,6 +33,7 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.CreatePartyRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
+import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
 import mallang_trip.backend.domain.dto.party.PartyIdResponse;
 import mallang_trip.backend.domain.dto.party.PartyMemberCompanionRequest;
 import mallang_trip.backend.domain.entity.course.Course;

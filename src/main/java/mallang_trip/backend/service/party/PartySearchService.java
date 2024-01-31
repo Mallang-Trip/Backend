@@ -1,7 +1,14 @@
 package mallang_trip.backend.service.party;
 
+import static mallang_trip.backend.constant.PartyStatus.DAY_OF_TRAVEL;
+import static mallang_trip.backend.constant.PartyStatus.FINISHED;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
+import static mallang_trip.backend.constant.PartyStatus.SEALED;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
+import static mallang_trip.backend.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 
@@ -119,7 +126,7 @@ public class PartySearchService {
 	 * 내가 속한 파티 상세 조회
 	 */
 	private PartyDetailsResponse getPartyDetails(Party party) {
-		return MyPartyToPartyDetailsResponse(party);
+		return myPartyToPartyDetailsResponse(party);
 	}
 
 	/**
@@ -130,6 +137,81 @@ public class PartySearchService {
 				ProposalStatus.WAITING).stream()
 			.map(proposal -> proposal.getParty())
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * (관리자) Status 별 파티 조회
+	 */
+	public List<PartyBriefResponse> getPartiesByAdmin(String status) {
+		switch (status){
+			case "CANCELED":
+				return getCanceledParties();
+			case "BEFORE_RESERVATION":
+				return getBeforeReservationParties();
+			case "AFTER_RESERVATION":
+				return getReservedParties();
+			case "FINISHED":
+				return getFinishedParties();
+			default:
+				throw new BaseException(Bad_Request);
+		}
+	}
+
+	/**
+	 * 취소된 (CANCELED_%) 파티 조회
+	 */
+	private List<PartyBriefResponse> getCanceledParties() {
+		return partyRepository.findByStatusStartWithCanceled().stream()
+			.map(PartyBriefResponse::of)
+			.sorted(Comparator.comparing(PartyBriefResponse::getUpdatedAt).reversed())
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 예약 전 (WAITING_DRIVER_APPROVAL, RECRUITING, WAITING_JOIN_APPROVAL) 파티 조회
+	 */
+	private List<PartyBriefResponse> getBeforeReservationParties() {
+		return Stream.of(
+				partyRepository.findByStatus(WAITING_DRIVER_APPROVAL),
+				partyRepository.findByStatus(RECRUITING),
+				partyRepository.findByStatus(WAITING_JOIN_APPROVAL))
+			.flatMap(x -> x.stream())
+			.map(PartyBriefResponse::of)
+			.sorted(Comparator.comparing(PartyBriefResponse::getUpdatedAt).reversed())
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 예약 된 (SEALED, WAITING_COURSE_CHANGE_APPROVAL, DAY_OF_TRAVEL) 파티 조회
+	 */
+	private List<PartyBriefResponse> getReservedParties() {
+		return Stream.of(
+				partyRepository.findByStatus(SEALED),
+				partyRepository.findByStatus(WAITING_COURSE_CHANGE_APPROVAL),
+				partyRepository.findByStatus(DAY_OF_TRAVEL))
+			.flatMap(x -> x.stream())
+			.map(PartyBriefResponse::of)
+			.sorted(Comparator.comparing(PartyBriefResponse::getUpdatedAt).reversed())
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 완료된 (FINISHED) 파티 조회
+	 */
+	private List<PartyBriefResponse> getFinishedParties() {
+		return partyRepository.findByStatus(FINISHED).stream()
+			.map(PartyBriefResponse::of)
+			.sorted(Comparator.comparing(PartyBriefResponse::getUpdatedAt).reversed())
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * (관리자) 파티 상세 조회
+	 */
+	public PartyDetailsResponse viewPartyForAdmin(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		return myPartyToPartyDetailsResponse(party);
 	}
 
 	/**
@@ -164,10 +246,11 @@ public class PartySearchService {
 	}
 
 	/**
-	 * 내가 속한 Party -> PartyDetailsResponse 변환. Party에 진행중인 제안이 있을 경우, 제안 정보 추가. 진행한 결제가 있을 경우, 결제 정보
-	 * 추가.
+	 * 내가 속한 Party -> PartyDetailsResponse 변환.
+	 * 진행중인 제안이 있을 경우, 제안 정보 추가.
+	 * 진행한 결제가 있을 경우, 결제 정보 추가.
 	 */
-	private PartyDetailsResponse MyPartyToPartyDetailsResponse(Party party) {
+	private PartyDetailsResponse myPartyToPartyDetailsResponse(Party party) {
 		PartyProposal proposal = partyProposalService.getWaitingProposalByParty(party);
 		return PartyDetailsResponse.builder()
 			.partyId(party.getId())
