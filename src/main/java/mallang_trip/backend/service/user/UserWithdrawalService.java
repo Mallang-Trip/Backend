@@ -1,7 +1,10 @@
 package mallang_trip.backend.service.user;
 
+import static mallang_trip.backend.constant.NotificationType.SUSPEND;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.ONGOING_PARTY_EXISTS;
 
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.ProposalStatus;
 import mallang_trip.backend.constant.ProposalType;
@@ -9,6 +12,8 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import mallang_trip.backend.repository.user.UserRepository;
+import mallang_trip.backend.service.NotificationService;
 import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,4 +69,5 @@ public class UserWithdrawalService {
 		user.setRefreshToken(null);
 		user.setDeleted(true);
 	}
+
 }

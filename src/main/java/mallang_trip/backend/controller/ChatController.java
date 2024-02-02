@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
+import mallang_trip.backend.domain.dto.chat.ChatMessageResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomBriefResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.dto.chat.ChatRoomIdResponse;
@@ -133,5 +134,13 @@ public class ChatController {
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<List<UserBriefResponse>> getBlockingUser() throws BaseException {
 		return new BaseResponse<>(chatBlockService.getBlockList());
+	}
+
+	@GetMapping("/messages/{chat_room_id}")
+	@ApiOperation(value = "(관리자) 모든 채팅 내역 조회")
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<List<ChatMessageResponse>> getEntireMessages(
+		@PathVariable(value = "chat_room_id") Long roomId) throws BaseException {
+		return new BaseResponse<>(chatService.getEntireMessages(roomId));
 	}
 }

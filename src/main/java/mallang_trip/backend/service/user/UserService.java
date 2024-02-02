@@ -29,6 +29,7 @@ import mallang_trip.backend.domain.dto.user.UserBriefResponse;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.chat.ChatBlockRepository;
 import mallang_trip.backend.repository.user.UserRepository;
+import mallang_trip.backend.service.NotificationService;
 import mallang_trip.backend.service.SmsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -265,5 +266,4 @@ public class UserService {
 			.orElseThrow(() -> new BaseException(Not_Found));
 		return UserBriefResponse.of(user);
 	}
-
 }

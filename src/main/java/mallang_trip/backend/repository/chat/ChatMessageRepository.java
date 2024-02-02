@@ -39,4 +39,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
         @Param("chat_room_id") Long chatRoomId,
         @Param("user_id") Long userId
     );
+
+    List<ChatMessage> findByChatRoom(ChatRoom room);
 }

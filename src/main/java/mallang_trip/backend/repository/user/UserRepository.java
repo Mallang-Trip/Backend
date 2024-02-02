@@ -1,5 +1,6 @@
 package mallang_trip.backend.repository.user;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import mallang_trip.backend.domain.entity.user.User;
@@ -20,4 +21,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByPhoneNumber(String phoneNumber);
 
     List<User> findByNicknameContainingIgnoreCaseAndDeleted(String nickname, Boolean deleted);
+
 }

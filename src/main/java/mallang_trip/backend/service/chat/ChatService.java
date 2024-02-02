@@ -363,4 +363,13 @@ public class ChatService {
 				getChatRooms(user)));
 	}
 
+	/**
+	 * (관리자) 채팅방의 모든 채팅 내역 조회
+	 */
+	public List<ChatMessageResponse> getEntireMessages(Long roomId){
+		return chatRoomService.getEntireMessages(roomId).stream()
+			.map(ChatMessageResponse::of)
+			.collect(Collectors.toList());
+	}
+
 }

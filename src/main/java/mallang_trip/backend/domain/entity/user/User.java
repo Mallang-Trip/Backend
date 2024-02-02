@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.entity.user;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -69,10 +70,6 @@ public class User extends BaseEntity {
 
     @Column(name = "profile_image")
     private String profileImage;
-
-/*    @Column(columnDefinition = "TINYINT", length = 1)
-    @Builder.Default()
-    private Boolean suspended= false;*/
 
     @Override
     public boolean equals(Object o) {

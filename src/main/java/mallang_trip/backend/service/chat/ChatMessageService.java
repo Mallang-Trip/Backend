@@ -110,4 +110,11 @@ public class ChatMessageService {
 			.content(message)
 			.build());
 	}
+
+	/**
+	 * 전체 메시지 조회
+	 */
+	public List<ChatMessage> getEntireMessages(ChatRoom room){
+		return chatMessageRepository.findByChatRoom(room);
+	}
 }
