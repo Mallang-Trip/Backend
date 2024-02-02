@@ -12,6 +12,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_CHATROOM_MEMBER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import mallang_trip.backend.repository.chat.ChatMessageRepository;
 import mallang_trip.backend.repository.chat.ChatRoomRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.repository.user.UserRepository;
+import mallang_trip.backend.service.admin.SuspensionService;
 import mallang_trip.backend.service.user.UserService;
 import mallang_trip.backend.service.party.PartyMemberService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -50,6 +52,7 @@ public class ChatService {
 	private final ChatMemberService chatMemberService;
 	private final ChatMessageService chatMessageService;
 	private final ChatBlockService chatBlockService;
+	private final SuspensionService suspensionService;
 	private final UserRepository userRepository;
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatRoomRepository chatRoomRepository;
@@ -132,6 +135,9 @@ public class ChatService {
 	 * PARTY_PUBLIC 채팅방 입장 및 조회.
 	 */
 	private ChatRoomIdResponse enterPartyPublicChatRoom(Party party, User user){
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 파티 status CHECK
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(PARTY_NOT_RECRUITING);
@@ -165,6 +171,9 @@ public class ChatService {
 	public ChatRoomIdResponse startGroupChat(List<Long> userIds, String roomName) {
 		ChatRoom room = chatRoomService.createChatRoom(GROUP, roomName, null);
 		User currentUser = userService.getCurrentUser();
+		if(suspensionService.isSuspending(currentUser)){
+			throw new BaseException(SUSPENDING);
+		}
 		chatMemberService.createChatMember(room, currentUser).setActiveTrue();
 		// 멤버 초대
 		List<User> users = userIds.stream()
@@ -215,6 +224,9 @@ public class ChatService {
 		User user = userService.getCurrentUser();
 		User receiver = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 자신을 초대하는 경우
 		if (user.equals(receiver)) {
 			throw new BaseException(Forbidden);
@@ -258,6 +270,14 @@ public class ChatService {
 	 */
 	public void leaveAllChat(User user){
 		chatRoomService.getChatRooms(user).stream()
+			.forEach(room -> leaveChat(room, user));
+	}
+
+	/**
+	 * (회원정지) 내 파티를 제외한 모든 채팅방 나가기
+	 */
+	public void leaveAllChatExceptMyParty(User user){
+		chatRoomService.getChatRoomsExceptMyParty(user).stream()
 			.forEach(room -> leaveChat(room, user));
 	}
 

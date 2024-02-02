@@ -31,6 +31,7 @@ import mallang_trip.backend.repository.chat.ChatBlockRepository;
 import mallang_trip.backend.repository.user.UserRepository;
 import mallang_trip.backend.service.NotificationService;
 import mallang_trip.backend.service.SmsService;
+import mallang_trip.backend.service.admin.SuspensionService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -49,6 +50,7 @@ public class UserService {
 	private final TokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
 	private final SmsService smsService;
+	private final SuspensionService suspensionService;
 	private final ChatBlockRepository chatBlockRepository;
 
 	/**
@@ -247,6 +249,7 @@ public class UserService {
 		return userRepository.findByNicknameContainingIgnoreCaseAndDeleted(nickname, false).stream()
 			.filter(user -> !user.equals(getCurrentUser()))
 			.filter(user -> !isBlocked(user, getCurrentUser()))
+			.filter(user -> !suspensionService.isSuspending(user))
 			.map(UserBriefResponse::of)
 			.collect(Collectors.toList());
 	}
