@@ -21,6 +21,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.NOT_PARTY_MEMBER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_CONFLICTED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +49,7 @@ import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
+import mallang_trip.backend.service.admin.SuspensionService;
 import mallang_trip.backend.service.driver.DriverService;
 import mallang_trip.backend.service.ReservationService;
 import mallang_trip.backend.service.user.UserService;
@@ -66,6 +68,7 @@ public class PartyService {
 	private final CourseService courseService;
 	private final ReservationService reservationService;
 	private final ChatService chatService;
+	private final SuspensionService suspensionService;
 	private final PartyNotificationService partyNotificationService;
 	private final DriverRepository driverRepository;
 	private final PartyRepository partyRepository;
@@ -80,6 +83,9 @@ public class PartyService {
 		Driver driver = driverRepository.findById(request.getDriverId())
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
 		User user = userService.getCurrentUser();
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 드라이버가 가능한 시간인지 + 사용자가 당일 잡힌 파티가 있는지 CHECK
 		String startDate = request.getStartDate().toString();
 		if (!driverService.isDatePossible(driver, startDate)
@@ -156,6 +162,9 @@ public class PartyService {
 		User user = userService.getCurrentUser();
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// STATUS CHECK
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(PARTY_NOT_RECRUITING);

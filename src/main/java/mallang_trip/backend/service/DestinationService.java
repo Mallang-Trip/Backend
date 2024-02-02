@@ -6,6 +6,7 @@ import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.List;
@@ -28,6 +29,7 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.destination.DestinationDibsRepository;
 import mallang_trip.backend.repository.destination.DestinationRepository;
 import mallang_trip.backend.repository.destination.DestinationReviewRepository;
+import mallang_trip.backend.service.admin.SuspensionService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,7 @@ public class DestinationService {
 	private final DestinationReviewRepository destinationReviewRepository;
 	private final DestinationDibsRepository destinationDibsRepository;
 	private final UserService userService;
+	private final SuspensionService suspensionService;
 
 	/** 여행지 추가 */
 	public DestinationIdResponse createDestination(DestinationRequest request,
@@ -124,6 +127,9 @@ public class DestinationService {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		User user = userService.getCurrentUser();
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 1인 1리뷰 CHECK
 		if (destinationReviewRepository.existsByDestinationAndUser(destination, user)) {
 			throw new BaseException(Conflict);
@@ -141,8 +147,12 @@ public class DestinationService {
 	public void changeDestinationReview(Long reviewId, DestinationReviewRequest request) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+		User user = userService.getCurrentUser();
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 작성자가 아닐 경우
-		if (!userService.getCurrentUser().equals(review.getUser())) {
+		if (!user.equals(review.getUser())) {
 			throw new BaseException(Forbidden);
 		}
 		review.setRate(request.getRate());

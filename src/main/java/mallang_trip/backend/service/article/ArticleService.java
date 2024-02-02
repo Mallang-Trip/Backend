@@ -3,6 +3,7 @@ package mallang_trip.backend.service.article;
 import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import mallang_trip.backend.repository.article.ArticleRepository;
 import mallang_trip.backend.repository.article.CommentRepository;
 import mallang_trip.backend.repository.article.ReplyRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
+import mallang_trip.backend.service.admin.SuspensionService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -51,13 +53,19 @@ public class ArticleService {
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
     private final ArticleNotificationService articleNotificationService;
+    private final SuspensionService suspensionService;
+
     /** 게시글 작성 */
     public ArticleIdResponse createArticle(ArticleRequest request) {
+        User user = userService.getCurrentUser();
+        if(suspensionService.isSuspending(user)){
+            throw new BaseException(SUSPENDING);
+        }
         Party party = request.getPartyId() == null ? null
             : partyRepository.findById(request.getPartyId())
                 .orElseThrow(() -> new BaseException(Not_Found));
         Article article = Article.builder()
-            .user(userService.getCurrentUser())
+            .user(user)
             .type(ArticleType.from(request.getType()))
             .title(request.getTitle())
             .content(request.getContent())
@@ -73,8 +81,12 @@ public class ArticleService {
     public void changeArticle(Long articleId, ArticleRequest request) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        User user = userService.getCurrentUser();
         // 권한 CHECK
-        if (!userService.getCurrentUser().equals(article.getUser())) {
+        if(suspensionService.isSuspending(user)){
+            throw new BaseException(SUSPENDING);
+        }
+        if (!user.equals(article.getUser())) {
             throw new BaseException(BaseResponseStatus.Forbidden);
         }
         // 수정
@@ -223,9 +235,13 @@ public class ArticleService {
     public void createComment(Long articleId, String content) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        User user = userService.getCurrentUser();
+        if(suspensionService.isSuspending(user)){
+            throw new BaseException(SUSPENDING);
+        }
         Comment comment = Comment.builder()
             .article(article)
-            .user(userService.getCurrentUser())
+            .user(user)
             .content(content)
             .build();
         commentRepository.save(comment);
@@ -236,9 +252,13 @@ public class ArticleService {
     public void createReply(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(Not_Found));
+        User user = userService.getCurrentUser();
+        if(suspensionService.isSuspending(user)){
+            throw new BaseException(SUSPENDING);
+        }
         Reply reply = Reply.builder()
             .comment(comment)
-            .user(userService.getCurrentUser())
+            .user(user)
             .content(content)
             .build();
         replyRepository.save(reply);

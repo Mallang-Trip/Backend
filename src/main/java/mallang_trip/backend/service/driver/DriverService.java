@@ -8,6 +8,7 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Unauthorized;
 
 import java.time.DayOfWeek;
@@ -37,6 +38,7 @@ import mallang_trip.backend.repository.driver.DriverRepository;
 import mallang_trip.backend.repository.driver.DriverReviewRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
+import mallang_trip.backend.service.admin.SuspensionService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +50,7 @@ public class DriverService {
 	private final UserService userService;
 	private final CourseService courseService;
 	private final DriverNotificationService driverNotificationService;
+	private final SuspensionService suspensionService;
 	private final DriverRepository driverRepository;
 	private final DriverPriceRepository driverPriceRepository;
 	private final DriverReviewRepository driverReviewRepository;
@@ -231,6 +234,9 @@ public class DriverService {
 		Driver driver = driverRepository.findByIdAndDeletedAndStatus(driverId, false, ACCEPTED)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		User user = userService.getCurrentUser();
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 1인 1리뷰 CHECK
 		if (driverReviewRepository.existsByDriverAndUser(driver, user)) {
 			throw new BaseException(Conflict);
@@ -249,8 +255,12 @@ public class DriverService {
 	public void changeDriverReview(Long reviewId, DriverReviewRequest request) {
 		DriverReview review = driverReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+		User user = userService.getCurrentUser();
+		if(suspensionService.isSuspending(user)){
+			throw new BaseException(SUSPENDING);
+		}
 		// 작성자가 아닐 경우
-		if (!userService.getCurrentUser().equals(review.getUser())) {
+		if (user.equals(review.getUser())) {
 			throw new BaseException(Unauthorized);
 		}
 		review.setRate(request.getRate());
