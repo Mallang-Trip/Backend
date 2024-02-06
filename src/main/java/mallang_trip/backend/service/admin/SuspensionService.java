@@ -73,7 +73,7 @@ public class SuspensionService {
 	private void notifySuspend(User user, Integer duration) {
 		String content = new StringBuilder()
 			.append("신고자로부터 제보를 받아 귀하께서는 ")
-			.append(duration > 0 ? duration + "일" : "영구")
+			.append(duration == -1 ? duration + "일" : "영구")
 			.append(" 사용 제재되었습니다. 이에 대해 궁금한 사항은 말랑트립 고객센터를 방문해주세요. ")
 			//.append("14일 전까지 이의제기가 가능하며 이의 제기를 원하시면 여기를 눌러주세요.")
 			.toString();
@@ -108,6 +108,9 @@ public class SuspensionService {
 	 * 정지 기간이 지났는지 확인
 	 */
 	public boolean isSuspensionExpired(Suspension suspension){
+		if(suspension.getDuration() == -1){
+			return false;
+		}
 		LocalDate currentDate = LocalDate.now();
 		LocalDate expirationDate = LocalDate.from(
 			suspension.getCreatedAt().plusDays(suspension.getDuration()));
