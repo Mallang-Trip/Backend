@@ -12,6 +12,8 @@ public class UserBriefResponse {
     private String nickname;
     private String profileImg;
     private String introduction;
+    private Boolean deleted;
+    //private Boolean suspended;
 
     public static UserBriefResponse of(User user){
         return UserBriefResponse.builder()
@@ -19,6 +21,7 @@ public class UserBriefResponse {
             .nickname(user.getNickname())
             .profileImg(user.getProfileImage())
             .introduction(user.getIntroduction())
+            .deleted(user.getDeleted())
             .build();
     }
 }

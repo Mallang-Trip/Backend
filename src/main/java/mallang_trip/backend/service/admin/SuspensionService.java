@@ -19,7 +19,6 @@ import mallang_trip.backend.repository.admin.SuspensionRepository;
 import mallang_trip.backend.repository.user.UserRepository;
 import mallang_trip.backend.service.NotificationService;
 import mallang_trip.backend.service.chat.ChatRoomService;
-import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +39,9 @@ public class SuspensionService {
 	public void suspend(Long userId, SuspensionRequest request) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+		if(isSuspending(user)){
+			cancelSuspension(user);
+		}
 		suspensionRepository.save(Suspension.builder()
 			.user(user)
 			.content(request.getContent())
@@ -84,6 +86,10 @@ public class SuspensionService {
 	public void cancelSuspension(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+		cancelSuspension(user);
+	}
+
+	private void cancelSuspension(User user){
 		suspensionRepository.findByUserAndStatus(user, SUSPENDING)
 			.ifPresent(suspension -> suspension.setStatus(CANCELED));
 	}

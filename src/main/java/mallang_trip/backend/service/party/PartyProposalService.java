@@ -225,8 +225,10 @@ public class PartyProposalService {
 		}
 		proposal.setStatus(ProposalStatus.REFUSED);
 		if(proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)){
+			proposal.getParty().setStatus(RECRUITING);
 			partyNotificationService.joinRefused(proposal);
 		} else if (proposal.getType().equals(COURSE_CHANGE)){
+			proposal.getParty().setStatus(SEALED);
 			partyNotificationService.courseChangeRefused(proposal);
 		}
 	}
