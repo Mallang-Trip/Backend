@@ -28,6 +28,7 @@ public class AuthResponse {
     private String profileImg;
     //private Boolean suspended;
     private Boolean deleted;
+    private String customerKey;
 
     public static AuthResponse of(User user){
         return AuthResponse.builder()
@@ -45,6 +46,7 @@ public class AuthResponse {
             .profileImg(user.getProfileImage())
             //.suspended(user.getSuspended())
             .deleted(user.getDeleted())
+            .customerKey(user.getCustomerKey())
             .build();
     }
 }
