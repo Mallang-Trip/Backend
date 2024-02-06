@@ -18,6 +18,7 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.admin.SuspensionRepository;
 import mallang_trip.backend.repository.user.UserRepository;
 import mallang_trip.backend.service.NotificationService;
+import mallang_trip.backend.service.chat.ChatRoomService;
 import mallang_trip.backend.service.chat.ChatService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class SuspensionService {
 	private final UserRepository userRepository;
 	private final SuspensionRepository suspensionRepository;
 	private final NotificationService notificationService;
-	private final ChatService chatService;
+	private final ChatRoomService chatRoomService;
 
 	/**
 	 * 유저 정지
@@ -44,7 +45,7 @@ public class SuspensionService {
 			.content(request.getContent())
 			.duration(request.getDuration())
 			.build());
-		chatService.leaveAllChatExceptMyParty(user);
+		chatRoomService.leaveAllChatExceptMyParty(user);
 		notifySuspend(user, request.getDuration());
 	}
 

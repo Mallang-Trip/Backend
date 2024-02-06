@@ -50,8 +50,6 @@ public class UserService {
 	private final TokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
 	private final SmsService smsService;
-	private final SuspensionService suspensionService;
-	private final ChatBlockRepository chatBlockRepository;
 
 	/**
 	 * 회원가입
@@ -240,33 +238,5 @@ public class UserService {
 		}
 		user.setProfileImage(request.getProfileImg());
 		user.setIntroduction(request.getIntroduction());
-	}
-
-	/**
-	 * 유저 검색 by nickname
-	 */
-	public List<UserBriefResponse> findByNickname(String nickname) {
-		return userRepository.findByNicknameContainingIgnoreCaseAndDeleted(nickname, false).stream()
-			.filter(user -> !user.equals(getCurrentUser()))
-			.filter(user -> !isBlocked(user, getCurrentUser()))
-			.filter(user -> !suspensionService.isSuspending(user))
-			.map(UserBriefResponse::of)
-			.collect(Collectors.toList());
-	}
-
-	/**
-	 * 차단 유무 확인
-	 */
-	public boolean isBlocked(User user, User targetUser) {
-		return chatBlockRepository.existsByUserAndTargetUser(user, targetUser);
-	}
-
-	/**
-	 * 유저 간단 프로필 조회
-	 */
-	public UserBriefResponse getUserBriefInfo(Long userId) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BaseException(Not_Found));
-		return UserBriefResponse.of(user);
 	}
 }

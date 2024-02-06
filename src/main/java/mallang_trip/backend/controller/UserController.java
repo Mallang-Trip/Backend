@@ -25,6 +25,7 @@ import mallang_trip.backend.domain.dto.user.LoginRequest;
 import mallang_trip.backend.domain.dto.user.ResetPasswordRequest;
 import mallang_trip.backend.domain.dto.user.SignupRequest;
 import mallang_trip.backend.domain.dto.user.UserBriefResponse;
+import mallang_trip.backend.service.user.UserSearchService;
 import mallang_trip.backend.service.user.UserService;
 import mallang_trip.backend.service.user.UserWithdrawalService;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
 	private final UserService userService;
+	private final UserSearchService userSearchService;
 	private final UserWithdrawalService userWithdrawalService;
 
 	@PostMapping("/signup")
@@ -137,14 +139,14 @@ public class UserController {
 	@ApiOperation(value = "유저 검색 by 닉네임")
 	public BaseResponse<List<UserBriefResponse>> searchUserByNickname(@RequestParam String nickname)
 		throws BaseException {
-		return new BaseResponse<>(userService.findByNickname(nickname));
+		return new BaseResponse<>(userSearchService.findByNickname(nickname));
 	}
 
 	@GetMapping("/user/info/{userId}")
 	@ApiOperation(value = "유저 정보 보기")
 	public BaseResponse<UserBriefResponse> getUserInfo(@PathVariable(value = "userId") Long userId)
 		throws BaseException {
-		return new BaseResponse<>(userService.getUserBriefInfo(userId));
+		return new BaseResponse<>(userSearchService.getUserBriefInfo(userId));
 	}
 
 	@DeleteMapping("/user/withdrawal")

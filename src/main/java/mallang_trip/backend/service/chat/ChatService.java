@@ -262,7 +262,7 @@ public class ChatService {
 		User user = userService.getCurrentUser();
 		ChatRoom room = chatRoomRepository.findById(chatRoomId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		leaveChat(room, user);
+		chatRoomService.leaveChat(room, user);
 	}
 
 	/**
@@ -270,33 +270,7 @@ public class ChatService {
 	 */
 	public void leaveAllChat(User user){
 		chatRoomService.getChatRooms(user).stream()
-			.forEach(room -> leaveChat(room, user));
-	}
-
-	/**
-	 * (회원정지) 내 파티를 제외한 모든 채팅방 나가기
-	 */
-	public void leaveAllChatExceptMyParty(User user){
-		chatRoomService.getChatRoomsExceptMyParty(user).stream()
-			.forEach(room -> leaveChat(room, user));
-	}
-
-	/**
-	 * 채팅방 나가기
-	 */
-	private void leaveChat(ChatRoom room, User user) {
-		if (room.getType().equals(COUPLE)) {
-			chatMemberService.leaveCoupleChatRoom(room, user);
-		} else if (room.getType().equals(GROUP)) {
-			chatMemberService.leaveGroupChatRoom(room, user);
-		} else if (room.getType().equals(PARTY_PUBLIC)) {
-			chatMemberService.leavePartyChatRoom(room, user);
-		} else if (room.getType().equals(PARTY_PRIVATE)) {
-			// private chat 탈퇴 시, public chat 자동 탈퇴
-			chatMemberService.leavePartyChatRoom(room, user);
-			chatMemberService.leaveGroupChatRoom(chatRoomService.getPublicRoomByPrivateRoom(room),
-				user);
-		}
+			.forEach(room -> chatRoomService.leaveChat(room, user));
 	}
 
 	/**

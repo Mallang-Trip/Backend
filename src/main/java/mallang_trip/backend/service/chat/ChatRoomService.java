@@ -58,16 +58,6 @@ public class ChatRoomService {
 	}
 
 	/**
-	 * 내가 속한 파티를 제외한 모든 채팅방 조회
-	 */
-	public List<ChatRoom> getChatRoomsExceptMyParty(User user){
-		return chatMemberRepository.findByUserAndActive(user, true).stream()
-			.map(member -> member.getChatRoom())
-			.filter(room -> !chatMemberService.isMyParty(user, room.getParty()))
-			.collect(Collectors.toList());
-	}
-
-	/**
 	 * 내가 속한 파티의 공용 채팅방인지 확인
 	 */
 	public Boolean isMyPartyPublicChatRoom(ChatRoom room, User user) {
@@ -127,6 +117,33 @@ public class ChatRoomService {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * 채팅방 나가기
+	 */
+	public void leaveChat(ChatRoom room, User user) {
+		if (room.getType().equals(COUPLE)) {
+			chatMemberService.leaveCoupleChatRoom(room, user);
+		} else if (room.getType().equals(GROUP)) {
+			chatMemberService.leaveGroupChatRoom(room, user);
+		} else if (room.getType().equals(PARTY_PUBLIC)) {
+			chatMemberService.leavePartyChatRoom(room, user);
+		} else if (room.getType().equals(PARTY_PRIVATE)) {
+			// private chat 탈퇴 시, public chat 자동 탈퇴
+			chatMemberService.leavePartyChatRoom(room, user);
+			chatMemberService.leaveGroupChatRoom(getPublicRoomByPrivateRoom(room), user);
+		}
+	}
+
+	/**
+	 * 내가 속한 파티를 제외한 모든 채팅방 나가기
+	 */
+	public void leaveAllChatExceptMyParty(User user){
+		chatMemberRepository.findByUserAndActive(user, true).stream()
+			.map(member -> member.getChatRoom())
+			.filter(room -> !chatMemberService.isMyParty(user, room.getParty()))
+			.forEach(room -> leaveChat(room, user));
 	}
 
 	/**

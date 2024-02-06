@@ -1,6 +1,8 @@
 package mallang_trip.backend.service.chat;
 
 import static mallang_trip.backend.constant.ChatRoomType.COUPLE;
+import static mallang_trip.backend.constant.ChatRoomType.GROUP;
+import static mallang_trip.backend.constant.ChatRoomType.PARTY_PRIVATE;
 import static mallang_trip.backend.constant.ChatRoomType.PARTY_PUBLIC;
 import static mallang_trip.backend.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.constant.PartyStatus.RECRUITING;
