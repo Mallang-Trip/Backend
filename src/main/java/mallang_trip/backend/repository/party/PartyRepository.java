@@ -62,4 +62,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 		+ "   OR p.status = 'WAITING_COURSE_CHANGE_APPROVAL'\n"
 		+ "   OR p.status = 'DAY_OF_TRAVEL')", nativeQuery = true)
 	Boolean isOngoingPartyExists(@Param(value = "user_id") Long userId);
+
+	Integer countByDriverAndStatus(Driver driver, PartyStatus status);
 }

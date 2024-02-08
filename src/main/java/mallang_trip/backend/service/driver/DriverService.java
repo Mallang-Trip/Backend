@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.DriverStatus;
+import mallang_trip.backend.constant.PartyStatus;
 import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.driver.ChangeDriverProfileRequest;
@@ -28,7 +29,6 @@ import mallang_trip.backend.domain.entity.driver.Driver;
 import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.driver.DriverPriceRepository;
 import mallang_trip.backend.repository.driver.DriverRepository;
-import mallang_trip.backend.repository.driver.DriverReviewRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.user.UserService;
@@ -181,7 +181,6 @@ public class DriverService {
 	/**
 	 * 드라이버 프로필 조회
 	 */
-	// TODO: reservation count 설정
 	public DriverDetailsResponse getDriverDetails(Long driverId) {
 		Driver driver = driverRepository.findByIdAndStatus(driverId, ACCEPTED)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
@@ -190,7 +189,7 @@ public class DriverService {
 			.driverId(driver.getId())
 			.name(user.getName())
 			.profileImg(user.getProfileImage())
-			.reservationCount(0)
+			.reservationCount(getReservationCount(driver))
 			.avgRate(driverReviewService.getAvgRate(driver))
 			.introduction(driver.getIntroduction())
 			.region(driver.getRegion())
@@ -241,5 +240,12 @@ public class DriverService {
 		return driverPriceRepository.findAllByDriver((driver)).stream()
 			.map(DriverPriceResponse::of)
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 드라이버의 FINISHED PARTY 개수 조회
+	 */
+	private Integer getReservationCount(Driver driver){
+		return partyRepository.countByDriverAndStatus(driver, PartyStatus.FINISHED);
 	}
 }
