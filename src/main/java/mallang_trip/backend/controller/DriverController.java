@@ -14,6 +14,7 @@ import mallang_trip.backend.domain.dto.driver.DriverRegistrationRequest;
 import mallang_trip.backend.domain.dto.driver.DriverRegistrationResponse;
 import mallang_trip.backend.domain.dto.driver.DriverReviewRequest;
 import mallang_trip.backend.domain.dto.driver.MyDriverProfileResponse;
+import mallang_trip.backend.service.driver.DriverReviewService;
 import mallang_trip.backend.service.driver.DriverService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DriverController {
 
     private final DriverService driverService;
+    private final DriverReviewService driverReviewService;
 
     @PostMapping("/apply")
     @ApiOperation(value = "드라이버 신청")
@@ -114,7 +116,7 @@ public class DriverController {
         @RequestBody @Valid
             DriverReviewRequest request)
         throws BaseException {
-        driverService.createDriverReview(id, request);
+        driverReviewService.create(id, request);
         return new BaseResponse<>("성공");
     }
 
@@ -125,7 +127,7 @@ public class DriverController {
         @RequestBody @Valid
             DriverReviewRequest request)
         throws BaseException {
-        driverService.changeDriverReview(id, request);
+        driverReviewService.change(id, request);
         return new BaseResponse<>("성공");
     }
 
@@ -134,7 +136,7 @@ public class DriverController {
     @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<String> deleteDriverReview(@PathVariable(value = "review_id") Long id)
         throws BaseException {
-        driverService.deleteDriverReview(id);
+        driverReviewService.delete(id);
         return new BaseResponse<>("성공");
     }
 

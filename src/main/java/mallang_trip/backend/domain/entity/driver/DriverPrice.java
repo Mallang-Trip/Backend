@@ -17,7 +17,6 @@ import mallang_trip.backend.domain.entity.BaseEntity;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

@@ -13,8 +13,11 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     List<Driver> findAllByStatus(DriverStatus status);
 
-    List<Driver> findAllByRegionAndDeletedAndStatus(String region, Boolean deleted,
-        DriverStatus status);
+    List<Driver> findAllByRegionAndStatus(String region, DriverStatus status);
 
-    Optional<Driver> findByIdAndDeletedAndStatus(Long id, Boolean deleted, DriverStatus status);
+    Optional<Driver> findByIdAndStatus(Long id, DriverStatus status);
+
+    Boolean existsByUser(User user);
+
+    Optional<Driver> findByUser(User user);
 }

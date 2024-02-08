@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
+import mallang_trip.backend.controller.io.BaseResponseStatus;
 import mallang_trip.backend.domain.dto.admin.SuspendingUserResponse;
 import mallang_trip.backend.domain.dto.admin.SuspensionRequest;
 import mallang_trip.backend.domain.entity.admin.Suspension;
@@ -124,5 +125,14 @@ public class SuspensionService {
 		return suspensionRepository.findByStatus(SUSPENDING).stream()
 			.map(SuspendingUserResponse::of)
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 현재 유저가 정지된 사용자일 때 exception throw
+	 */
+	public void checkSuspension(User user){
+		if(isSuspending(user)){
+			throw new BaseException(BaseResponseStatus.SUSPENDING);
+		}
 	}
 }

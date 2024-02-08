@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
 import org.hibernate.annotations.SQLDelete;
@@ -23,7 +22,6 @@ import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @Table(name = "driver_review")
 @AllArgsConstructor
@@ -52,4 +50,10 @@ public class DriverReview extends BaseEntity {
 
     @ElementCollection
     private List<String> images;
+
+    public void change(Double rate, String content, List<String> images){
+        this.rate = rate;
+        this.content = content;
+        this.images = images;
+    }
 }
