@@ -16,7 +16,9 @@ import mallang_trip.backend.domain.dto.destination.DestinationIdResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationMarkerResponse;
 import mallang_trip.backend.domain.dto.destination.DestinationRequest;
 import mallang_trip.backend.domain.dto.destination.DestinationReviewRequest;
-import mallang_trip.backend.service.DestinationService;
+import mallang_trip.backend.service.destination.DestinationDibsService;
+import mallang_trip.backend.service.destination.DestinationReviewService;
+import mallang_trip.backend.service.destination.DestinationService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +38,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class DestinationController {
 
 	private final DestinationService destinationService;
+	private final DestinationReviewService destinationReviewService;
+	private final DestinationDibsService destinationDibsService;
 
 	@PostMapping
 	@ApiOperation(value = "여행지 추가(관리자)")
@@ -43,7 +47,7 @@ public class DestinationController {
 	public BaseResponse<DestinationIdResponse> createDestinationByAdmin(
 		@RequestBody @Valid DestinationRequest request)
 		throws BaseException {
-		return new BaseResponse<>(destinationService.createDestination(request, BY_ADMIN));
+		return new BaseResponse<>(destinationService.create(request, BY_ADMIN));
 	}
 
 	@PostMapping("/by-user")
@@ -52,7 +56,7 @@ public class DestinationController {
 	public BaseResponse<DestinationIdResponse> createDestinationByUser(
 		@RequestBody @Valid DestinationRequest request)
 		throws BaseException {
-		return new BaseResponse<>(destinationService.createDestination(request, BY_USER));
+		return new BaseResponse<>(destinationService.create(request, BY_USER));
 	}
 
 	@DeleteMapping("/{destination_id}")
@@ -60,7 +64,7 @@ public class DestinationController {
 	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
 	public BaseResponse<String> deleteDestination(@PathVariable(value = "destination_id") Long id)
 		throws BaseException {
-		destinationService.deleteDestination(id);
+		destinationService.delete(id);
 		return new BaseResponse<>("성공");
 	}
 
@@ -70,7 +74,7 @@ public class DestinationController {
 	public BaseResponse<List<DestinationBriefResponse>> searchDestinationsByKeyword(
 		@RequestParam String keyword)
 		throws BaseException {
-		return new BaseResponse<>(destinationService.searchDestination(keyword));
+		return new BaseResponse<>(destinationService.search(keyword));
 	}
 
 	@GetMapping("/map")
@@ -78,7 +82,7 @@ public class DestinationController {
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<List<DestinationMarkerResponse>> getDestinationMarkers()
 		throws BaseException {
-		return new BaseResponse<>(destinationService.getDestinationMarkers());
+		return new BaseResponse<>(destinationService.getMarkers());
 	}
 
 	@PutMapping("/{destination_id}")
@@ -87,7 +91,7 @@ public class DestinationController {
 	public BaseResponse<String> changeDestination(@PathVariable(value = "destination_id") Long id,
 		@RequestBody @Valid DestinationRequest request)
 		throws BaseException {
-		destinationService.changeDestination(id, request);
+		destinationService.change(id, request);
 		return new BaseResponse<>("성공");
 	}
 
@@ -97,7 +101,7 @@ public class DestinationController {
 	public BaseResponse<DestinationDetailsResponse> getDestinationDetails(
 		@PathVariable(value = "destination_id") Long id)
 		throws BaseException {
-		return new BaseResponse<>(destinationService.getDestinationDetails(id));
+		return new BaseResponse<>(destinationService.view(id));
 	}
 
 	@PostMapping("/review/{destination_id}")
@@ -107,7 +111,7 @@ public class DestinationController {
 		@PathVariable(value = "destination_id") Long id,
 		@RequestBody @Valid DestinationReviewRequest request)
 		throws BaseException {
-		destinationService.createDestinationReview(id, request);
+		destinationReviewService.create(id, request);
 		return new BaseResponse<>("성공");
 	}
 
@@ -117,7 +121,7 @@ public class DestinationController {
 	public BaseResponse<String> changeDestinationReview(@PathVariable(value = "review_id") Long id,
 		@RequestBody @Valid DestinationReviewRequest request)
 		throws BaseException {
-		destinationService.changeDestinationReview(id, request);
+		destinationReviewService.change(id, request);
 		return new BaseResponse<>("성공");
 	}
 
@@ -126,7 +130,7 @@ public class DestinationController {
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> deleteDestinationReview(@PathVariable(value = "review_id") Long id)
 		throws BaseException {
-		destinationService.deleteDestinationReview(id);
+		destinationReviewService.delete(id);
 		return new BaseResponse<>("성공");
 	}
 
@@ -134,9 +138,8 @@ public class DestinationController {
 	@ApiOperation(value = "여행지 찜하기")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> createDestinationDibs(
-		@PathVariable(value = "destination_id") Long id)
-		throws BaseException {
-		destinationService.createDestinationDibs(id);
+		@PathVariable(value = "destination_id") Long id) throws BaseException {
+		destinationDibsService.create(id);
 		return new BaseResponse<>("성공");
 	}
 
@@ -144,9 +147,8 @@ public class DestinationController {
 	@ApiOperation(value = "여행지 찜하기 취소")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> deleteDestinationDibs(
-		@PathVariable(value = "destination_id") Long id)
-		throws BaseException {
-		destinationService.deleteDestinationDibs(id);
+		@PathVariable(value = "destination_id") Long id) throws BaseException {
+		destinationDibsService.delete(id);
 		return new BaseResponse<>("성공");
 	}
 
@@ -155,6 +157,6 @@ public class DestinationController {
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<List<DestinationBriefResponse>> getMyDestinationDibs()
 		throws BaseException {
-		return new BaseResponse<>(destinationService.getMyDestinationDibs());
+		return new BaseResponse<>(destinationDibsService.getDestinations());
 	}
 }

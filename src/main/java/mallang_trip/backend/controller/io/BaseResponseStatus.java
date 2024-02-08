@@ -22,6 +22,9 @@ public enum BaseResponseStatus {
     CANNOT_FOUND_DRIVER(404, "드라이버를 찾을 수 없습니다."),
     SUSPENDING(403, "정지된 사용자입니다."),
 
+    // Destination
+    CANNOT_FOUND_DESTINATION(404, "여행지를 찾을 수 없습니다."),
+
     // Party
     CANNOT_FOUND_RESERVATION(404, "예약 정보를 찾을 수 없습니다."),
     CANNOT_FOUND_PAYMENT(404, "결제 정보를 찾을 수 없습니다."),

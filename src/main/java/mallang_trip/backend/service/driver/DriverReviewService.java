@@ -3,7 +3,6 @@ package mallang_trip.backend.service.driver;
 import static mallang_trip.backend.constant.DriverStatus.ACCEPTED;
 import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_DRIVER;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;

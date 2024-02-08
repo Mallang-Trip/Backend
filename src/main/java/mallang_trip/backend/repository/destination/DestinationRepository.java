@@ -27,4 +27,6 @@ public interface DestinationRepository extends JpaRepository<Destination, Long> 
 	List<Destination> findByTypeAndDeleted(DestinationType type, Boolean deleted);
 
 	Optional<Destination> findByIdAndDeleted(Long id, Boolean deleted);
+
+	Optional<Destination> findByIdAndTypeAndDeleted(Long id, DestinationType type, Boolean deleted);
 }

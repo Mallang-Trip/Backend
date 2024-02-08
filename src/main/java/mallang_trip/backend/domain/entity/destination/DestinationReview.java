@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import mallang_trip.backend.domain.dto.destination.DestinationReviewRequest;
 import mallang_trip.backend.domain.entity.BaseEntity;
 import mallang_trip.backend.domain.entity.user.User;
 import org.hibernate.annotations.SQLDelete;
@@ -24,7 +24,6 @@ import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @Table(name = "destination_review")
 @AllArgsConstructor
@@ -54,4 +53,10 @@ public class DestinationReview extends BaseEntity {
     @ElementCollection
     @OrderColumn
     private List<String> images;
+
+    public void change(DestinationReviewRequest request){
+        this.rate = request.getRate();
+        this.content = request.getContent();
+        this.images = request.getImages();
+    }
 }

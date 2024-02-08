@@ -5,6 +5,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
+import mallang_trip.backend.constant.DestinationType;
 import mallang_trip.backend.domain.entity.destination.Destination;
 
 @Getter
@@ -22,7 +23,7 @@ public class DestinationRequest {
     private String content;
     private List<String> images;
 
-    public Destination toDestination(){
+    public Destination toDestination(DestinationType type){
         return Destination.builder()
             .name(name)
             .address(address)
@@ -30,6 +31,7 @@ public class DestinationRequest {
             .lat(lat)
             .content(content)
             .images(images)
+            .type(type)
             .build();
     }
 }
