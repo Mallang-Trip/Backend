@@ -72,7 +72,7 @@ public class User extends BaseEntity {
     @Column(name = "profile_image")
     private String profileImage;
 
-    @Column(name = "customer_key")
+    @Column(name = "customer_key", nullable = false, updatable = false, unique = true)
     @Builder.Default()
     private String customerKey = UUID.randomUUID().toString();
 
