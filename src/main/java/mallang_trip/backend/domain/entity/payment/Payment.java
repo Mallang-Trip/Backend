@@ -37,5 +37,8 @@ public class Payment extends BaseEntity {
     private User user;
 
     @Column
-    private String code;
+    private String accessToken;
+
+    @Column
+    private String refreshToken;
 }
