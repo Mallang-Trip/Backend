@@ -41,4 +41,9 @@ public class Payment extends BaseEntity {
 
     @Column
     private String refreshToken;
+
+    public void modifyTokens(String accessToken, String refreshToken){
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
 }

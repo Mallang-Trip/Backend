@@ -10,4 +10,5 @@ public class AccessTokenRequest {
     private String grantType;
     private String customerKey;
     private String code;
+    private String refreshToken;
 }

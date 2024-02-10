@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
-import mallang_trip.backend.service.payment.PaymentService;
+import mallang_trip.backend.service.payment.TossBrandPayService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/payment")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final TossBrandPayService tossBrandPayService;
 
     @ApiOperation(value = "약관동의 redirection")
     @GetMapping
     @PreAuthorize("permitAll()") // anyone
     public BaseResponse<String> save(@RequestParam String code, @RequestParam String customerKey)
         throws BaseException, URISyntaxException, JsonProcessingException {
-        paymentService.save(code, customerKey);
+        tossBrandPayService.modify(code, customerKey);
         return new BaseResponse<>("성공");
     }
 }

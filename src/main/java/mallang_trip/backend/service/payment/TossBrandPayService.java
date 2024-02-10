@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PaymentService {
+public class TossBrandPayService {
 
     @Value("${toss-payment.secretKey}")
     private String secretKey;
@@ -37,42 +37,64 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
 
-    public void save(String code, String customerKey)
+    public void modify(String code, String customerKey)
         throws URISyntaxException, JsonProcessingException {
         User user = userRepository.findByCustomerKey(customerKey)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-        AccessTokenResponse response = getAccessToken(code, customerKey);
-        paymentRepository.save(Payment.builder()
-            .user(user)
-            .accessToken(response.getAccessToken())
-            .refreshToken(response.getRefreshToken())
-            .build());
+        AccessTokenResponse response = authorizationCode(code, customerKey);
+        String accessToken = response.getAccessToken();
+        String refreshToken = response.getRefreshToken();
+
+        paymentRepository.findByUser(user)
+            .ifPresentOrElse(
+                payment -> payment.modifyTokens(accessToken, refreshToken),
+                () -> paymentRepository.save(Payment.builder()
+                    .user(user)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build()));
     }
 
-    public AccessTokenResponse getAccessToken(String code, String customerKey)
+    private AccessTokenResponse getAccessToken(String grantType, String customerKey, String code, String refreshToken)
         throws JsonProcessingException, URISyntaxException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Basic " + encodeSecretKey());
-
         AccessTokenRequest request = AccessTokenRequest.builder()
             .customerKey(customerKey)
-            .grantType("AuthorizationCode")
+            .grantType(grantType)
             .code(code)
+            .refreshToken(refreshToken)
             .build();
 
+        HttpHeaders headers = setHeaders();
         ObjectMapper objectMapper = new ObjectMapper();
         String body = objectMapper.writeValueAsString(request);
         HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
-        AccessTokenResponse response = restTemplate.postForObject(new URI(url), httpBody, AccessTokenResponse.class);
+        AccessTokenResponse response = restTemplate.postForObject(new URI(url), httpBody,
+            AccessTokenResponse.class);
 
         return response;
     }
 
-    private String encodeSecretKey(){
+    private AccessTokenResponse authorizationCode(String code, String customerKey)
+        throws URISyntaxException, JsonProcessingException {
+        return getAccessToken("AuthorizationCode", customerKey, code, null);
+    }
+
+    private AccessTokenResponse refreshToken(String refreshToken, String customerKey)
+        throws URISyntaxException, JsonProcessingException {
+        return getAccessToken("RefreshToken", customerKey, null, refreshToken);
+    }
+
+    private HttpHeaders setHeaders(){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Basic " + encodeSecretKey());
+        return headers;
+    }
+
+    private String encodeSecretKey() {
         String key = secretKey + ":";
         String encodedKey = Base64.getEncoder().encodeToString(key.getBytes());
         return encodedKey;
