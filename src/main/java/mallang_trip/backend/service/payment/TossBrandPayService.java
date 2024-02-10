@@ -55,6 +55,12 @@ public class TossBrandPayService {
                     .build()));
     }
 
+    public void refreshPayment(Payment payment)
+        throws URISyntaxException, JsonProcessingException {
+        AccessTokenResponse response = refreshToken(payment.getRefreshToken(), payment.getUser().getCustomerKey());
+        payment.modifyTokens(response.getAccessToken(), response.getRefreshToken());
+    }
+
     private AccessTokenResponse getAccessToken(String grantType, String customerKey, String code, String refreshToken)
         throws JsonProcessingException, URISyntaxException {
         AccessTokenRequest request = AccessTokenRequest.builder()
@@ -64,7 +70,7 @@ public class TossBrandPayService {
             .refreshToken(refreshToken)
             .build();
 
-        HttpHeaders headers = setHeaders();
+        HttpHeaders headers = setBasicHeaders();
         ObjectMapper objectMapper = new ObjectMapper();
         String body = objectMapper.writeValueAsString(request);
         HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
@@ -87,10 +93,16 @@ public class TossBrandPayService {
         return getAccessToken("RefreshToken", customerKey, null, refreshToken);
     }
 
-    private HttpHeaders setHeaders(){
+    private HttpHeaders setBasicHeaders(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Basic " + encodeSecretKey());
+        return headers;
+    }
+
+    private HttpHeaders setBearerHeaders(String accessToken){
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
         return headers;
     }
 
@@ -99,4 +111,13 @@ public class TossBrandPayService {
         String encodedKey = Base64.getEncoder().encodeToString(key.getBytes());
         return encodedKey;
     }
+//
+//    private void getPayMethods(User user){
+//        Payment payment = paymentRepository.findByUser(user)
+//            .orElseThrow();
+//        HttpHeaders headers = setBearerHeaders(payment.getAccessToken());
+//
+//        RestTemplate restTemplate = new RestTemplate();
+//        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+//    }
 }

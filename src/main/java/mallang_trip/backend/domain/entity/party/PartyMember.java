@@ -48,4 +48,7 @@ public class PartyMember extends BaseEntity {
     @Column
     @Builder.Default()
     private Boolean ready = false;
+
+    @Column(name = "card_id")
+    private String cardId;
 }

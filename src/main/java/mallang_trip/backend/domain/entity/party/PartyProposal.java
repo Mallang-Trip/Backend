@@ -58,6 +58,9 @@ public class PartyProposal extends BaseEntity {
     @Column
     private String content;
 
+    @Column(name = "card_id")
+    private String cardId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "driver_agreement")
     @Builder.Default()

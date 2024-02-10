@@ -21,4 +21,5 @@ public class CreatePartyRequest {
 	private Long driverId;
 	private String content;
 	private CourseRequest course;
+	private String cardId;
 }
