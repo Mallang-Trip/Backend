@@ -1,7 +1,9 @@
 package mallang_trip.backend.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
@@ -10,6 +12,7 @@ import mallang_trip.backend.domain.dto.party.CreatePartyRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
 import mallang_trip.backend.domain.dto.party.PartyIdResponse;
 import mallang_trip.backend.service.party.PartyService;
+import org.json.JSONException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,7 +61,8 @@ public class PartyController {
 	@PostMapping("/join/{party_id}")
 	@PreAuthorize("hasRole('ROLE_USER')") // 일반 사용자
 	public BaseResponse<String> joinParty(@PathVariable(value = "party_id") Long partyId,
-		@RequestBody JoinPartyRequest request) throws BaseException {
+		@RequestBody JoinPartyRequest request)
+		throws BaseException, JSONException, URISyntaxException, JsonProcessingException {
 		partyService.requestPartyJoin(partyId, request);
 		return new BaseResponse<>("성공");
 	}
@@ -85,7 +89,8 @@ public class PartyController {
 	@PutMapping ("/proposal/{proposal_id}")
 	@PreAuthorize("hasAnyRole('ROLE_USER','ROLE_DRIVER')") // 일반 사용자, 드라이버
 	public BaseResponse<String> voteProposal(@PathVariable(value = "proposal_id") Long proposalId,
-		@RequestParam Boolean accept) throws BaseException {
+		@RequestParam Boolean accept)
+		throws BaseException, JSONException, URISyntaxException, JsonProcessingException {
 		partyService.voteProposal(proposalId, accept);
 		return new BaseResponse<>("성공");
 	}
@@ -94,7 +99,8 @@ public class PartyController {
 	@PutMapping("/ready/{party_id}")
 	@PreAuthorize("hasAnyRole('ROLE_USER','ROLE_DRIVER')") // 일반 사용자, 드라이버
 	public BaseResponse<String> ready(@PathVariable(value = "party_id") Long partyId,
-		@RequestParam Boolean ready) throws BaseException {
+		@RequestParam Boolean ready)
+		throws BaseException, JSONException, URISyntaxException, JsonProcessingException {
 		partyService.setReady(partyId, ready);
 		return new BaseResponse<>("성공");
 	}
@@ -103,7 +109,7 @@ public class PartyController {
 	@DeleteMapping("/quit/{party_id}")
 	@PreAuthorize("hasAnyRole('ROLE_USER','ROLE_DRIVER')") // 일반 사용자, 드라이버
 	public BaseResponse<String> quit(@PathVariable(value = "party_id") Long partyId)
-		throws BaseException {
+		throws BaseException, JSONException, URISyntaxException, JsonProcessingException {
 		partyService.quitPartyBeforeReservation(partyId);
 		return new BaseResponse<>("성공");
 	}

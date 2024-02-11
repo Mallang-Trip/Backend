@@ -9,10 +9,11 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.Period;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.constant.ReservationStatus;
 import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ReservationResponse;
@@ -23,7 +24,9 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.reservation.ReservationRepository;
 import mallang_trip.backend.service.party.PartyMemberService;
+import mallang_trip.backend.service.payment.TossBrandPayService;
 import mallang_trip.backend.service.user.UserService;
+import org.json.JSONException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
 	private final PartyMemberService partyMemberService;
+	private final TossBrandPayService tossBrandPayService;
 	private final UserService userService;
 	private final ReservationRepository reservationRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -40,22 +44,23 @@ public class ReservationService {
 	/**
 	 * 파티 자동 결제
 	 */
-	public void reserveParty(Party party) {
-		partyMemberService.getMembers(party).stream()
-			.forEach(member -> pay(member));
+	public void reserveParty(Party party)
+		throws JSONException, URISyntaxException, JsonProcessingException {
+		for (PartyMember partyMember : partyMemberService.getMembers(party)) {
+			pay(partyMember);
+		}
 	}
 
 	/**
 	 * 파티원 1/N 결제
 	 */
-	private void pay(PartyMember member) {
-		// TODO: 결제 진행
-		ReservationStatus status = true ? PAYMENT_COMPLETE : PAYMENT_REQUIRED;
-		reservationRepository.save(Reservation.builder()
+	private void pay(PartyMember member)
+		throws JSONException, URISyntaxException, JsonProcessingException {
+		Reservation reservation = reservationRepository.save(Reservation.builder()
 			.member(member)
-			.paymentAmount(getPaymentAmount(member))
-			.status(status)
+			.paymentAmount(calculatePaymentAmount(member))
 			.build());
+		tossBrandPayService.pay(reservation);
 	}
 
 	/**
@@ -72,7 +77,7 @@ public class ReservationService {
 		int refundAmount = getRefundAmount(reservation);
 		// TODO: 환불 진행
 		reservation.setRefundAmount(reservation.getPaymentAmount());
-		reservation.setStatus(REFUND_COMPLETE);
+		reservation.changeStatus(REFUND_COMPLETE);
 		return refundAmount;
 	}
 
@@ -85,9 +90,9 @@ public class ReservationService {
 		if (reservation.getStatus().equals(PAYMENT_COMPLETE)) {
 			// TODO: 환불 진행
 			reservation.setRefundAmount(reservation.getPaymentAmount());
-			reservation.setStatus(REFUND_COMPLETE);
+			reservation.changeStatus(REFUND_COMPLETE);
 		} else if (reservation.getStatus().equals(PAYMENT_REQUIRED)){
-			reservation.setStatus(REFUND_COMPLETE);
+			reservation.changeStatus(REFUND_COMPLETE);
 		}
 	}
 
@@ -102,7 +107,7 @@ public class ReservationService {
 	/**
 	 * 결제 금액 계산
 	 */
-	private int getPaymentAmount(PartyMember member) {
+	private int calculatePaymentAmount(PartyMember member) {
 		Party party = member.getParty();
 		int totalPrice = party.getCourse().getTotalPrice();
 		int totalHeadcount = partyMemberService.getTotalHeadcount(party);

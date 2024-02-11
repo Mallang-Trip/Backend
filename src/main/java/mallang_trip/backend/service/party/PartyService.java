@@ -23,6 +23,8 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_CONFLI
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -54,6 +56,7 @@ import mallang_trip.backend.service.driver.DriverService;
 import mallang_trip.backend.service.ReservationService;
 import mallang_trip.backend.service.user.UserService;
 import mallang_trip.backend.service.chat.ChatService;
+import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -158,7 +161,8 @@ public class PartyService {
     /**
      * 파티 가입 신청 : 코스 변경이 있으면, PartyProposal 생성. 코스 변경이 없으면, 바로 가입.
      */
-    public void requestPartyJoin(Long partyId, JoinPartyRequest request) {
+    public void requestPartyJoin(Long partyId, JoinPartyRequest request)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         User user = userService.getCurrentUser();
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
@@ -192,7 +196,8 @@ public class PartyService {
      * 파티 가입 (멤버 추가) : 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정. 최대인원 모집 미완료 시, 전원 레디 취소 처리.
      */
     private void joinParty(Party party, User user, Integer headcount, String cardId,
-        List<PartyMemberCompanionRequest> requests) {
+        List<PartyMemberCompanionRequest> requests)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         partyMemberService.createMember(party, user, headcount, cardId, requests);
         if (party.getHeadcount() == party.getCapacity()) {
             partyMemberService.setReadyAllMembers(party, true);
@@ -238,7 +243,8 @@ public class PartyService {
     /**
      * 제안 수락 or 거절 투표 수락 시, 만장일치가 이루어졌는지 확인. 거절 시, 제안 거절 처리.
      */
-    public void voteProposal(Long proposalId, Boolean accept) {
+    public void voteProposal(Long proposalId, Boolean accept)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         PartyProposal proposal = partyProposalRepository.findById(proposalId)
             .orElseThrow(() -> new BaseException(EXPIRED_PROPOSAL));
         partyProposalService.voteProposal(proposal, accept);
@@ -250,7 +256,8 @@ public class PartyService {
     /**
      * 제안 모두 수락했는지 확인 후, 모두 수락했다면 제안 수용.
      */
-    private void checkUnanimityAndAcceptProposal(PartyProposal proposal) {
+    private void checkUnanimityAndAcceptProposal(PartyProposal proposal)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         if (!partyProposalService.isUnanimity(proposal)) {
             return;
         }
@@ -277,7 +284,8 @@ public class PartyService {
     /**
      * 파티 레디 or 레디 취소. 전원 레디 시, 예약 진행.
      */
-    public void setReady(Long partyId, Boolean ready) {
+    public void setReady(Long partyId, Boolean ready)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
         // status CHECK
@@ -293,7 +301,8 @@ public class PartyService {
     /**
      * 파티 전원 레디 시, 자동결제 후 파티확정.
      */
-    public void checkEveryoneReady(Party party) {
+    public void checkEveryoneReady(Party party)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         if (!partyMemberService.isEveryoneReady(party)) {
             return;
         }
@@ -318,7 +327,8 @@ public class PartyService {
     /**
      * 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴
      */
-    public void quitPartyBeforeReservation(Long partyId) {
+    public void quitPartyBeforeReservation(Long partyId)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
         // status CHECK
@@ -356,7 +366,8 @@ public class PartyService {
     /**
      * (멤버) 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴.
      */
-    private void quitPartyBeforeReservationByMember(Party party) {
+    private void quitPartyBeforeReservationByMember(Party party)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         User user = userService.getCurrentUser();
         // 권한 CHECK
         if (!isMyParty(user, party)) {
@@ -384,7 +395,8 @@ public class PartyService {
     /**
      * 예약 전 파티 탈퇴 시, 마지막 멤버가 아닐 경우. 진행 중인 가입 신청이 있다면, 해당 party_proposal_agreement 삭제 후 만장일치 확인.
      */
-    private void quitPartyBeforeReservationByNotLastMember(Party party) {
+    private void quitPartyBeforeReservationByNotLastMember(Party party)
+        throws JSONException, URISyntaxException, JsonProcessingException {
         User user = userService.getCurrentUser();
         PartyProposal proposal = partyProposalRepository.findByPartyAndStatus(party,
             ProposalStatus.WAITING).orElse(null);

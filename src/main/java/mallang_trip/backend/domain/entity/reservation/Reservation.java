@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.entity.reservation;
 
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -26,7 +27,6 @@ import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -47,8 +47,27 @@ public class Reservation extends BaseEntity {
 
 	@Column
 	@Builder.Default()
+	private String orderId = UUID.randomUUID().toString();
+
+	@Column
+	private String paymentKey;
+
+	@Column
+	@Builder.Default()
 	private Integer refundAmount = 0;
 
 	@Enumerated(EnumType.STRING)
 	private ReservationStatus status;
+
+	public void savePaymentKey(String paymentKey){
+		this.paymentKey = paymentKey;
+	}
+
+	public void changeStatus(ReservationStatus status){
+		this.status = status;
+	}
+
+	public void setRefundAmount(Integer refundAmount){
+		this.refundAmount = refundAmount;
+	}
 }
