@@ -11,6 +11,7 @@ public enum BaseResponseStatus {
     Forbidden(403, "잘못된 접근입니다."),
     Not_Found(404, "찾을 수 없습니다."),
     Conflict(409, "데이터 중복 발생."),
+    Internal_Server_Error(500, "알 수 없는 오류 발생."),
 
     FILE_CONVERT_ERROR(10000, "파일 변환에 실패하였습니다."),
     EMPTY_JWT(10001, "JWT가 비어있습니다."),

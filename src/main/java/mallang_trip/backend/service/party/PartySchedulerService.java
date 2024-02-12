@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.entity.course.CourseDay;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.repository.course.CourseDayRepository;
 import mallang_trip.backend.repository.party.PartyProposalRepository;

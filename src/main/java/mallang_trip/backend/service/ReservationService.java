@@ -24,7 +24,7 @@ import mallang_trip.backend.domain.entity.user.User;
 import mallang_trip.backend.repository.party.PartyMemberRepository;
 import mallang_trip.backend.repository.reservation.ReservationRepository;
 import mallang_trip.backend.service.party.PartyMemberService;
-import mallang_trip.backend.service.payment.TossBrandPayService;
+import mallang_trip.backend.service.payment.PaymentService;
 import mallang_trip.backend.service.user.UserService;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
 	private final PartyMemberService partyMemberService;
-	private final TossBrandPayService tossBrandPayService;
+	private final PaymentService paymentService;
 	private final UserService userService;
 	private final ReservationRepository reservationRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -44,8 +44,7 @@ public class ReservationService {
 	/**
 	 * 파티 자동 결제
 	 */
-	public void reserveParty(Party party)
-		throws JSONException, URISyntaxException, JsonProcessingException {
+	public void reserveParty(Party party) {
 		for (PartyMember partyMember : partyMemberService.getMembers(party)) {
 			pay(partyMember);
 		}
@@ -54,13 +53,12 @@ public class ReservationService {
 	/**
 	 * 파티원 1/N 결제
 	 */
-	private void pay(PartyMember member)
-		throws JSONException, URISyntaxException, JsonProcessingException {
+	private void pay(PartyMember member) {
 		Reservation reservation = reservationRepository.save(Reservation.builder()
 			.member(member)
 			.paymentAmount(calculatePaymentAmount(member))
 			.build());
-		tossBrandPayService.pay(reservation);
+		paymentService.pay(reservation);
 	}
 
 	/**
@@ -73,11 +71,10 @@ public class ReservationService {
 		if (!reservation.getStatus().equals(PAYMENT_COMPLETE)) {
 			throw new BaseException(CANNOT_FOUND_PAYMENT);
 		}
-		// 위약금 계산
+		// 환불 진행
 		int refundAmount = getRefundAmount(reservation);
-		// TODO: 환불 진행
-		reservation.setRefundAmount(reservation.getPaymentAmount());
-		reservation.changeStatus(REFUND_COMPLETE);
+		paymentService.cancel(reservation, refundAmount);
+
 		return refundAmount;
 	}
 
@@ -88,7 +85,7 @@ public class ReservationService {
 		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
 		if (reservation.getStatus().equals(PAYMENT_COMPLETE)) {
-			// TODO: 환불 진행
+			paymentService.cancel(reservation, reservation.getPaymentAmount());
 			reservation.setRefundAmount(reservation.getPaymentAmount());
 			reservation.changeStatus(REFUND_COMPLETE);
 		} else if (reservation.getStatus().equals(PAYMENT_REQUIRED)){

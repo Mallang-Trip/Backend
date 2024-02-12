@@ -36,7 +36,6 @@ import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ChangeCourseRequest;
 import mallang_trip.backend.domain.dto.party.CreatePartyRequest;
 import mallang_trip.backend.domain.dto.party.JoinPartyRequest;
-import mallang_trip.backend.domain.dto.party.PartyBriefResponse;
 import mallang_trip.backend.domain.dto.party.PartyIdResponse;
 import mallang_trip.backend.domain.dto.party.PartyMemberCompanionRequest;
 import mallang_trip.backend.domain.entity.course.Course;
@@ -196,8 +195,7 @@ public class PartyService {
      * 파티 가입 (멤버 추가) : 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정. 최대인원 모집 미완료 시, 전원 레디 취소 처리.
      */
     private void joinParty(Party party, User user, Integer headcount, String cardId,
-        List<PartyMemberCompanionRequest> requests)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+        List<PartyMemberCompanionRequest> requests) {
         partyMemberService.createMember(party, user, headcount, cardId, requests);
         if (party.getHeadcount() == party.getCapacity()) {
             partyMemberService.setReadyAllMembers(party, true);
@@ -256,8 +254,7 @@ public class PartyService {
     /**
      * 제안 모두 수락했는지 확인 후, 모두 수락했다면 제안 수용.
      */
-    private void checkUnanimityAndAcceptProposal(PartyProposal proposal)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    private void checkUnanimityAndAcceptProposal(PartyProposal proposal) {
         if (!partyProposalService.isUnanimity(proposal)) {
             return;
         }
@@ -301,8 +298,7 @@ public class PartyService {
     /**
      * 파티 전원 레디 시, 자동결제 후 파티확정.
      */
-    public void checkEveryoneReady(Party party)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    public void checkEveryoneReady(Party party) {
         if (!partyMemberService.isEveryoneReady(party)) {
             return;
         }
