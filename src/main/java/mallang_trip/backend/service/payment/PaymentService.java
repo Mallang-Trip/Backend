@@ -3,6 +3,7 @@ package mallang_trip.backend.service.payment;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
+import static mallang_trip.backend.constant.ReservationStatus.REFUND_FAILED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
@@ -105,11 +106,12 @@ public class PaymentService {
 	public void cancel(Reservation reservation, Integer cancelAmount) {
 		Boolean success = paymentRequestService
 			.postPaymentsCancel(reservation.getPaymentKey(), cancelAmount);
+		reservation.setRefundAmount(cancelAmount);
 		if (success) {
-			reservation.setRefundAmount(cancelAmount);
 			reservation.changeStatus(REFUND_COMPLETE);
 			paymentNotificationService.refundSuccess(reservation);
 		} else {
+			reservation.changeStatus(REFUND_FAILED);
 			paymentNotificationService.refundFail(reservation);
 		}
 	}

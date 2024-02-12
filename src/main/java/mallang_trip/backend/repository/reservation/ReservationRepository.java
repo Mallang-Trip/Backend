@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-	Optional<Reservation> findByMemberAndStatusNot(PartyMember member, ReservationStatus status);
+	Optional<Reservation> findByMemberAndStatus(PartyMember member, ReservationStatus status);
 }

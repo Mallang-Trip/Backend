@@ -391,8 +391,7 @@ public class PartyService {
     /**
      * 예약 전 파티 탈퇴 시, 마지막 멤버가 아닐 경우. 진행 중인 가입 신청이 있다면, 해당 party_proposal_agreement 삭제 후 만장일치 확인.
      */
-    private void quitPartyBeforeReservationByNotLastMember(Party party)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    private void quitPartyBeforeReservationByNotLastMember(Party party) {
         User user = userService.getCurrentUser();
         PartyProposal proposal = partyProposalRepository.findByPartyAndStatus(party,
             ProposalStatus.WAITING).orElse(null);

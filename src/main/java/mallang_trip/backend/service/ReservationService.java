@@ -3,6 +3,7 @@ package mallang_trip.backend.service;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
+import static mallang_trip.backend.constant.ReservationStatus.REFUND_FAILED;
 import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.constant.Role.ROLE_DRIVER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
@@ -62,35 +63,30 @@ public class ReservationService {
 	}
 
 	/**
-	 * 파티원 환불
+	 * 위약금을 제외한 금액 환불
 	 */
-	public int refund(PartyMember member) {
-		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
-		// status CHECK
-		if (!reservation.getStatus().equals(PAYMENT_COMPLETE)) {
-			throw new BaseException(CANNOT_FOUND_PAYMENT);
-		}
-		// 환불 진행
-		int refundAmount = getRefundAmount(reservation);
-		paymentService.cancel(reservation, refundAmount);
-
-		return refundAmount;
+	public void refund(PartyMember member) {
+		reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE)
+			.ifPresent(reservation -> {
+				int refundAmount = getRefundAmount(reservation);
+				paymentService.cancel(reservation, refundAmount);
+			});
 	}
 
 	/**
 	 * 무료 환불
 	 */
 	public void freeRefund(PartyMember member){
-		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_RESERVATION));
-		if (reservation.getStatus().equals(PAYMENT_COMPLETE)) {
-			paymentService.cancel(reservation, reservation.getPaymentAmount());
-			reservation.setRefundAmount(reservation.getPaymentAmount());
-			reservation.changeStatus(REFUND_COMPLETE);
-		} else if (reservation.getStatus().equals(PAYMENT_REQUIRED)){
-			reservation.changeStatus(REFUND_COMPLETE);
-		}
+		reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE)
+			.ifPresent(reservation -> {
+				paymentService.cancel(reservation, reservation.getPaymentAmount());
+				reservation.setRefundAmount(reservation.getPaymentAmount());
+				reservation.changeStatus(REFUND_COMPLETE);
+			});
+		reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED)
+			.ifPresent(reservation -> {
+				reservation.changeStatus(REFUND_COMPLETE);
+			});
 	}
 
 	/**

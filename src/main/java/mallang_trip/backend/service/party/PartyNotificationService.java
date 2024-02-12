@@ -384,17 +384,37 @@ public class PartyNotificationService {
 	/**
 	 * 파티 예약 취소 관련 (미구현)
 	 */
-	// 17. 파티원이 예약을 취소했을 경우
-	public void memberCancelReservation(User runner, Party party) {
-		StringBuilder content = new StringBuilder();
-		content.append(runner.getNickname());
-		content.append("님이 [")
-			.append(getPartyName(party))
-			.append("] 예약을 취소했습니다.");
-		partyMemberService.getMembersAndDriver(party).stream()
-			.filter(user -> !runner.equals(user))
-			.forEach(user ->
-				notificationService.create(user, content.toString(), PARTY, party.getId()));
+	// 1. 결제를 정상적으로 한 뒤 파티원이 예약을 취소했을 경우
+	public void memberCancelReservation(User runner, Party party){
+		memberCancelReservationToDriver(runner, party);
+		memberCancelReservationToMember(runner, party);
 	}
 
+	// 1-1. 여행자
+	private void memberCancelReservationToMember(User runner, Party party){
+		String content = new StringBuilder()
+			.append(runner.getNickname())
+			.append("님의 [")
+			.append(getPartyName(party))
+			.append("] 예약 취소로 영업일 기준 3일 내에 예약금 전액이 환불되며 파티원을 재모집합니다.")
+			.toString();
+		partyMemberService.getMembers(party).stream()
+			.map(PartyMember::getUser)
+			.filter(user -> !runner.equals(user))
+			.forEach(user ->
+				notificationService.create(user, content, PARTY, party.getId()));
+	}
+
+	// 1-2. 드라이버
+	private void memberCancelReservationToDriver(User runner, Party party){
+		String content = new StringBuilder()
+			.append(runner.getNickname())
+			.append("님의 [")
+			.append(getPartyName(party))
+			.append("] 예약 취소로 위약금이 익월 10일까지 입금될 예정입니다. 파티는 다시 여행자를 모집하고 있습니다.")
+			.toString();
+		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+	}
+
+	// 2. 결제 실패 상태에서 파티원이 예약을 취소했을 경우
 }
