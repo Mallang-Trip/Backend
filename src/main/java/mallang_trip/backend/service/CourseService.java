@@ -111,6 +111,7 @@ public class CourseService {
             .name(course.getName())
             .capacity(course.getCapacity())
             .totalPrice(course.getTotalPrice())
+            .discountPrice(course.getDiscountPrice())
             .days(courseDayResponses)
             .build();
     }

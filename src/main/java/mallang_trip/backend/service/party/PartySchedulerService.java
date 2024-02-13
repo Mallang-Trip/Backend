@@ -58,6 +58,7 @@ public class PartySchedulerService {
 				partyProposalService.expireWaitingProposalByParty(party);
 				party.setStatus(CANCELED_BY_EXPIRATION);
 				partyNotificationService.cancelByExpiration(party);
+				// TODO: discountPrice(위약금) 존재 시 드라이버에게 송금 후 알림
 			});
 	}
 

@@ -14,6 +14,7 @@ public class CourseDetailsResponse {
     private String name;
     private Integer capacity;
     private Integer totalPrice;
+    private Integer discountPrice;
     private List<CourseDayResponse> days;
 
 }

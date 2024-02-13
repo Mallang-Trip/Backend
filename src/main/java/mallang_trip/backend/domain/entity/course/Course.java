@@ -54,7 +54,8 @@ public class Course extends BaseEntity {
     @Column(name = "total_price")
     private Integer totalPrice;
 
-    public void discountPrice(int discountAmount){
-        this.totalPrice -= discountAmount;
-    }
+    @Column(name = "discount_price")
+    @Builder.Default()
+    private Integer discountPrice = 0;
+
 }

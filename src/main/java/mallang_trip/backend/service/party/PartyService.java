@@ -25,6 +25,8 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -362,8 +364,7 @@ public class PartyService {
     /**
      * (멤버) 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴.
      */
-    private void quitPartyBeforeReservationByMember(Party party)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    private void quitPartyBeforeReservationByMember(Party party) {
         User user = userService.getCurrentUser();
         // 권한 CHECK
         if (!isMyParty(user, party)) {
@@ -439,6 +440,7 @@ public class PartyService {
      * (드라이버) 예약 취소
      */
     public void cancelReservationByDriver(Party party) {
+        // TODO: 드라이버 취소로 인한 파티 취소 알림
         reservationService.payPenaltyByDriver(party);
         reservationService.refundAllMembers(party);
         party.setStatus(CANCELED_BY_DRIVER_QUIT);
@@ -462,27 +464,36 @@ public class PartyService {
      * (멤버) 예약 취소 시, 마지막 멤버인 경우.
      */
     private void cancelReservationByLastMember(PartyMember member) {
+        // TODO: 드라이버에게 파티원 전원 탈퇴로 인한 파티 취소 알림
         reservationService.refund(member);
         member.getParty().setStatus(CANCELED_BY_ALL_QUIT);
-        partyNotificationService.cancelByAllQuit(member.getParty());
     }
 
     /**
-     * (멤버) 예약 취소 시, 마지막 멤버가 아닌 경우. 환불 및 멤버 삭제, 남은 멤버 전액 환불 진행 후, RECRUITING 상태로 돌아감. 환불 위약금이 100%일
-     * 때는 SEALED 상태 유지(파티 그대로 진행).
+     * (멤버) 예약 취소 시, 마지막 멤버가 아닌 경우.
+     * 1. 위약금이 발생하지 않은 경우
+     * 2. 전액 위약금이 발생한 경우
+     * 3. 위약금이 일부 발생한 경우
      */
     private void cancelReservationByNotLastMember(PartyMember member) {
         Party party = member.getParty();
-        int refundAmount = reservationService.refund(member);
+        int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
+        // 환불 진행
+        Integer penaltyAmount = reservationService.refund(member);
+        // 멤버 삭제
         partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
-        if (refundAmount != 0) {
+        if(dDay > 7){ // 위약금이 발생하지 않은 경우
+            // TODO: 파티원 예약 취소로 인한 전액 환불, 재모집 상태 복귀 알림
             reservationService.refundAllMembers(party);
-            party.getCourse().discountPrice(refundAmount);
             party.setStatus(RECRUITING);
-            // TODO: 파티원 예약 취소로 인한 재모집 상태 복귀 알림, 가격 인하 알림
-        } else {
+        } else if(dDay < 3) { // 전액 위약금이 발생한 경우
+            // TODO: 파티원 탈퇴 알림
             party.setStatus(SEALED);
-            // TODO: 파티원 예약 취소 알림
+        } else {
+            // TODO: 파티원 예약 취소로 인한 전액 환불, 재모집 상태 복귀, 가격 인하 알림
+            reservationService.refundAllMembers(party);
+            party.setStatus(RECRUITING);
+            party.getCourse().setDiscountPrice(penaltyAmount);
         }
     }
 }

@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.Role;
 import mallang_trip.backend.controller.io.BaseException;
@@ -28,6 +29,7 @@ import mallang_trip.backend.service.party.PartyMemberService;
 import mallang_trip.backend.service.payment.PaymentService;
 import mallang_trip.backend.service.user.UserService;
 import org.json.JSONException;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,12 +45,11 @@ public class ReservationService {
 	private final PartyMemberRepository partyMemberRepository;
 
 	/**
-	 * 파티 자동 결제
+	 * 파티원 전원 자동 결제
 	 */
 	public void reserveParty(Party party) {
-		for (PartyMember partyMember : partyMemberService.getMembers(party)) {
-			pay(partyMember);
-		}
+		partyMemberService.getMembers(party).stream()
+			.forEach(this::pay);
 	}
 
 	/**
@@ -63,14 +64,28 @@ public class ReservationService {
 	}
 
 	/**
-	 * 위약금을 제외한 금액 환불
+	 * 위약금을 제외한 금액 환불 후, 위약금 값 반환
 	 */
-	public void refund(PartyMember member) {
-		reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE)
-			.ifPresent(reservation -> {
-				int refundAmount = getRefundAmount(reservation);
-				paymentService.cancel(reservation, refundAmount);
-			});
+	public Integer refund(PartyMember member) {
+		// 정상적으로 결제된 상태인 경우
+		Optional<Reservation> paymentComplete = reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE);
+		if (paymentComplete.isPresent()) {
+			Reservation reservation = paymentComplete.get();
+			Integer refundAmount = getRefundAmount(reservation);
+			paymentService.cancel(reservation, refundAmount);
+			return reservation.getPaymentAmount() - refundAmount;
+		}
+
+		// 결제 실패 상태인 경우
+		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED);
+		if(paymentRequired.isPresent()){
+			Reservation reservation = paymentComplete.get();
+			if(penaltyExists(reservation.getMember())){
+				//TODO: 위약금 지불 필요 알림 전송
+			}
+			return reservation.getPaymentAmount() - getRefundAmount(reservation);
+		}
+		return 0;
 	}
 
 	/**
@@ -98,6 +113,11 @@ public class ReservationService {
 	}
 
 	/**
+	 * 결제 카드 변경
+	 */
+
+
+	/**
 	 * 결제 금액 계산
 	 */
 	private int calculatePaymentAmount(PartyMember member) {
@@ -110,7 +130,7 @@ public class ReservationService {
 	/**
 	 * 환불 금액 계산
 	 */
-	private int getRefundAmount(Reservation reservation) {
+	public int getRefundAmount(Reservation reservation) {
 		Party party = reservation.getMember().getParty();
 		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
 		if (dDay <= 2) {
@@ -130,9 +150,18 @@ public class ReservationService {
 		}
 	}
 
+	/**
+	 * 위약금 발생 여부
+	 */
+	public Boolean penaltyExists(PartyMember partyMember){
+		Party party = partyMember.getParty();
+		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
+		return dDay < 8 ? true : false;
+	}
+
 	public void payPenaltyByDriver(Party party){
 		int penalty = getPenaltyToDriver(party);
-		//TODO: 드라이버 위약금 저장
+		//TODO: 드라이버 패널티 금액 저장
 	}
 	public int getPenaltyToDriver(Party party){
 		int totalPrice = party.getCourse().getTotalPrice();
@@ -168,8 +197,18 @@ public class ReservationService {
 		}
 		PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)
 			.orElse(null);
-		Reservation reservation = reservationRepository.findByMemberAndStatusNot(member, REFUND_COMPLETE)
-			.orElse(null);
-		return ReservationResponse.of(reservation);
+
+		Optional<Reservation> paymentComplete = reservationRepository.findByMemberAndStatus(
+			member, PAYMENT_COMPLETE);
+		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(
+			member, PAYMENT_REQUIRED);
+
+		if(paymentComplete.isPresent()){
+			return ReservationResponse.of(paymentComplete.get());
+		} else if (paymentRequired.isPresent()){
+			return ReservationResponse.of(paymentRequired.get());
+		} else {
+			return null;
+		}
 	}
 }
