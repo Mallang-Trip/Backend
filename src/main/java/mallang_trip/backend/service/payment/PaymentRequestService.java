@@ -114,6 +114,7 @@ public class PaymentRequestService {
 				throw new BaseException(Internal_Server_Error);
 			}
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
+			System.out.println(ex.getMessage());
 			throw new BaseException(Internal_Server_Error);
 		}
 	}
@@ -159,6 +160,7 @@ public class PaymentRequestService {
 			}
 
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
+			System.out.println("자동 결제 오류: " + ex.getMessage());
 			return null;
 		}
 	}
@@ -217,6 +219,7 @@ public class PaymentRequestService {
 			return responseEntity.getStatusCode() == HttpStatus.OK ? responseEntity.getBody()
 				: null;
 		} catch (RestClientResponseException | URISyntaxException ex) {
+			System.out.println("결제 수단 조회 오류: " + ex.getMessage());
 			return null;
 		}
 	}

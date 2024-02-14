@@ -1,10 +1,14 @@
 package mallang_trip.backend.domain.dto.payment;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class PaymentResponse {
     private String mId;
     private String version;
@@ -32,7 +36,8 @@ public class PaymentResponse {
 
     @Getter
     @NoArgsConstructor
-    class Card {
+    @AllArgsConstructor
+    public static class Card {
         private String issuerCode;
         private String acquirerCode;
         private String number;
@@ -49,7 +54,8 @@ public class PaymentResponse {
 
     @Getter
     @NoArgsConstructor
-    class Receipt {
+    @AllArgsConstructor
+    public static class Receipt {
         private String url;
     }
 }

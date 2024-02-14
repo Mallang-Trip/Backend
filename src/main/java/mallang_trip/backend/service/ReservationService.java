@@ -79,10 +79,11 @@ public class ReservationService {
 		// 결제 실패 상태인 경우
 		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED);
 		if(paymentRequired.isPresent()){
-			Reservation reservation = paymentComplete.get();
+			Reservation reservation = paymentRequired.get();
 			if(penaltyExists(reservation.getMember())){
 				//TODO: 위약금 지불 필요 알림 전송
 			}
+			reservation.changeStatus(REFUND_COMPLETE);
 			return reservation.getPaymentAmount() - getRefundAmount(reservation);
 		}
 		return 0;

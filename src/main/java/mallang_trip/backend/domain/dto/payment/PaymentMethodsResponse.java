@@ -1,11 +1,15 @@
 package mallang_trip.backend.domain.dto.payment;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class PaymentMethodsResponse {
 
     private List<Card> cards;
@@ -15,7 +19,8 @@ public class PaymentMethodsResponse {
 
     @Getter
     @NoArgsConstructor
-    public class Card {
+    @AllArgsConstructor
+    public static class Card {
         private String id;
         private String alias;
         private String methodKey;
@@ -37,7 +42,8 @@ public class PaymentMethodsResponse {
 
     @Getter
     @NoArgsConstructor
-    class Account {
+    @AllArgsConstructor
+    public static class Account {
         private String id;
         private String methodKey;
         private String accountName;
@@ -54,25 +60,28 @@ public class PaymentMethodsResponse {
 
     @Getter
     @NoArgsConstructor
-    class Color {
+    @AllArgsConstructor
+    public static class Color {
         private String background;
         private String text;
     }
 
     @Getter
     @NoArgsConstructor
-    class Promotion {
+    @AllArgsConstructor
+    static class Promotion {
         private String payType;
         private String type;
-        private CardDiscount cardDiscount; // You can define a class for cardDiscount if needed
+        private CardDiscount cardDiscount;
         private CardInterestFree cardInterestFree;
-        private CardPoint cardPoint; // You can define a class for cardPoint if needed
+        private CardPoint cardPoint;
         private BankDiscount bankDiscount;
     }
 
     @Getter
     @NoArgsConstructor
-    public class CardDiscount {
+    @AllArgsConstructor
+    public static class CardDiscount {
         private String issuerCode;
         private Integer discountAmount;
         private Integer minimumPaymentAmount;
@@ -85,7 +94,8 @@ public class PaymentMethodsResponse {
 
     @Getter
     @NoArgsConstructor
-    class CardInterestFree {
+    @AllArgsConstructor
+    public static class CardInterestFree {
         private String issuerCode;
         private String dueDate;
         private List<Integer> installmentFreeMonths;
@@ -95,7 +105,8 @@ public class PaymentMethodsResponse {
 
     @Getter
     @NoArgsConstructor
-    public class CardPoint {
+    @AllArgsConstructor
+    public static class CardPoint {
         private String issuerCode;
         private Integer minimumPaymentAmount;
         private String currency;
@@ -104,7 +115,8 @@ public class PaymentMethodsResponse {
 
     @Getter
     @NoArgsConstructor
-    class BankDiscount {
+    @AllArgsConstructor
+    public static class BankDiscount {
         private String bankCode;
         private String currency;
         private Integer discountAmount;
