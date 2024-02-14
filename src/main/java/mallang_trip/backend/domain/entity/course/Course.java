@@ -58,4 +58,7 @@ public class Course extends BaseEntity {
     @Builder.Default()
     private Integer discountPrice = 0;
 
+    public void increaseDiscountPrice(Integer amount){
+        this.discountPrice += amount;
+    }
 }

@@ -83,7 +83,7 @@ public class PaymentService {
 	 * 자동 결제
 	 */
 	public void pay(Reservation reservation) {
-		//refreshToken(reservation.getMember().getUser());
+		refreshToken(reservation.getMember().getUser());
 		PaymentResponse response = paymentRequestService.postPayments(reservation);
 
 		if (response == null) {
@@ -112,7 +112,6 @@ public class PaymentService {
 			paymentNotificationService.refundSuccess(reservation);
 		} else {
 			reservation.changeStatus(REFUND_FAILED);
-			paymentNotificationService.refundFail(reservation);
 		}
 	}
 }

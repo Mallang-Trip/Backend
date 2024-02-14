@@ -7,5 +7,6 @@ public enum NotificationType {
 	FEEDBACK,
 	DRIVER,
 	SUSPEND,
+	NONE,
 	;
 }

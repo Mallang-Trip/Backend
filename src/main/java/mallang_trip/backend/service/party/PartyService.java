@@ -23,8 +23,6 @@ import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_CONFLI
 import static mallang_trip.backend.controller.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.SUSPENDING;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -54,10 +52,9 @@ import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.admin.SuspensionService;
 import mallang_trip.backend.service.driver.DriverService;
-import mallang_trip.backend.service.ReservationService;
+import mallang_trip.backend.service.reservation.ReservationService;
 import mallang_trip.backend.service.user.UserService;
 import mallang_trip.backend.service.chat.ChatService;
-import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -162,8 +159,7 @@ public class PartyService {
     /**
      * 파티 가입 신청 : 코스 변경이 있으면, PartyProposal 생성. 코스 변경이 없으면, 바로 가입.
      */
-    public void requestPartyJoin(Long partyId, JoinPartyRequest request)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    public void requestPartyJoin(Long partyId, JoinPartyRequest request){
         User user = userService.getCurrentUser();
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
@@ -243,8 +239,7 @@ public class PartyService {
     /**
      * 제안 수락 or 거절 투표 수락 시, 만장일치가 이루어졌는지 확인. 거절 시, 제안 거절 처리.
      */
-    public void voteProposal(Long proposalId, Boolean accept)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    public void voteProposal(Long proposalId, Boolean accept) {
         PartyProposal proposal = partyProposalRepository.findById(proposalId)
             .orElseThrow(() -> new BaseException(EXPIRED_PROPOSAL));
         partyProposalService.voteProposal(proposal, accept);
@@ -283,8 +278,7 @@ public class PartyService {
     /**
      * 파티 레디 or 레디 취소. 전원 레디 시, 예약 진행.
      */
-    public void setReady(Long partyId, Boolean ready)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    public void setReady(Long partyId, Boolean ready) {
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
         // status CHECK
@@ -325,8 +319,7 @@ public class PartyService {
     /**
      * 예약 전(RECRUITING, WAITING_JOIN_APPROVAL) 파티 탈퇴
      */
-    public void quitPartyBeforeReservation(Long partyId)
-        throws JSONException, URISyntaxException, JsonProcessingException {
+    public void quitPartyBeforeReservation(Long partyId) {
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
         // status CHECK
@@ -440,7 +433,7 @@ public class PartyService {
      * (드라이버) 예약 취소
      */
     public void cancelReservationByDriver(Party party) {
-        // TODO: 드라이버 취소로 인한 파티 취소 알림
+        partyNotificationService.cancelReservationByDriver(party);
         reservationService.payPenaltyByDriver(party);
         reservationService.refundAllMembers(party);
         party.setStatus(CANCELED_BY_DRIVER_QUIT);
@@ -464,9 +457,11 @@ public class PartyService {
      * (멤버) 예약 취소 시, 마지막 멤버인 경우.
      */
     private void cancelReservationByLastMember(PartyMember member) {
-        // TODO: 드라이버에게 파티원 전원 탈퇴로 인한 파티 취소 알림
-        reservationService.refund(member);
+        partyNotificationService.cancelReservationByLastMember(member.getUser(), member.getParty());
+        Integer penaltyAmount = reservationService.refund(member);
+        member.getParty().getCourse().increaseDiscountPrice(penaltyAmount);
         member.getParty().setStatus(CANCELED_BY_ALL_QUIT);
+        // TODO: 위약금 드라이버에게 송금 후 알림
     }
 
     /**
@@ -478,22 +473,22 @@ public class PartyService {
     private void cancelReservationByNotLastMember(PartyMember member) {
         Party party = member.getParty();
         int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
-        // 환불 진행
+        // 취소자 환불 진행
         Integer penaltyAmount = reservationService.refund(member);
         // 멤버 삭제
         partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
         if(dDay > 7){ // 위약금이 발생하지 않은 경우
-            // TODO: 파티원 예약 취소로 인한 전액 환불, 재모집 상태 복귀 알림
+            partyNotificationService.cancelReservation(member.getUser(), party);
             reservationService.refundAllMembers(party);
             party.setStatus(RECRUITING);
         } else if(dDay < 3) { // 전액 위약금이 발생한 경우
-            // TODO: 파티원 탈퇴 알림
+            partyNotificationService.cancelReservationWithFullPenalty(member.getUser(), party);
             party.setStatus(SEALED);
-        } else {
-            // TODO: 파티원 예약 취소로 인한 전액 환불, 재모집 상태 복귀, 가격 인하 알림
+        } else { // 일부 위약금이 발생한 경우
+            partyNotificationService.cancelReservation(member.getUser(), party);
             reservationService.refundAllMembers(party);
             party.setStatus(RECRUITING);
-            party.getCourse().setDiscountPrice(penaltyAmount);
+            party.getCourse().increaseDiscountPrice(penaltyAmount);
         }
     }
 }
