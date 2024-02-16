@@ -76,6 +76,9 @@ public class User extends BaseEntity {
     @Builder.Default()
     private String customerKey = UUID.randomUUID().toString();
 
+    @Column
+    private String billingKey;
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

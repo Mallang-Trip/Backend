@@ -42,77 +42,87 @@ import org.springframework.web.client.RestTemplate;
 @Transactional
 public class PaymentService {
 
-	private final PaymentRequestService paymentRequestService;
-	private final PaymentNotificationService paymentNotificationService;
-	private final UserRepository userRepository;
-	private final PaymentRepository paymentRepository;
+    private final PaymentRequestService paymentRequestService;
+    private final PaymentNotificationService paymentNotificationService;
+    private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
 
-	/**
-	 * 토큰 발급
-	 */
-	public void modifyTokens(String code, String customerKey) {
-		User user = userRepository.findByCustomerKey(customerKey)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		AccessTokenResponse response = paymentRequestService.postAccessToken(
-			"AuthorizationCode", code, customerKey, null);
-		String accessToken = response.getAccessToken();
-		String refreshToken = response.getRefreshToken();
+    /**
+     * 카드 등록
+     */
+    public void registerCard(String customerKey, String authKey) {
+        User user = userRepository.findByCustomerKey(customerKey)
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+        String billingKey = paymentRequestService.postBillingKey(customerKey, authKey).getBillingKey();
+        user.setBillingKey(billingKey);
+    }
 
-		paymentRepository.findByUser(user)
-			.ifPresentOrElse(
-				payment -> payment.modifyTokens(accessToken, refreshToken),
-				() -> paymentRepository.save(Payment.builder()
-					.user(user)
-					.accessToken(accessToken)
-					.refreshToken(refreshToken)
-					.build()));
-	}
+    /**
+     * 토큰 발급
+     */
+    public void modifyTokens(String code, String customerKey) {
+        User user = userRepository.findByCustomerKey(customerKey)
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+        AccessTokenResponse response = paymentRequestService.postAccessToken(
+            "AuthorizationCode", code, customerKey, null);
+        String accessToken = response.getAccessToken();
+        String refreshToken = response.getRefreshToken();
 
-	/**
-	 * 토큰 재발급 (refresh token)
-	 */
-	private void refreshToken(User user) {
-		paymentRepository.findByUser(user).ifPresent(payment -> {
-			AccessTokenResponse response = paymentRequestService.postAccessToken(
-				"RefreshToken", null, user.getCustomerKey(), payment.getRefreshToken());
-			payment.modifyTokens(response.getAccessToken(), response.getRefreshToken());
-		});
-	}
+        paymentRepository.findByUser(user)
+            .ifPresentOrElse(
+                payment -> payment.modifyTokens(accessToken, refreshToken),
+                () -> paymentRepository.save(Payment.builder()
+                    .user(user)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build()));
+    }
 
-	/**
-	 * 자동 결제
-	 */
-	public void pay(Reservation reservation) {
-		//refreshToken(reservation.getMember().getUser());
-		PaymentResponse response = paymentRequestService.postPayments(reservation);
+    /**
+     * 토큰 재발급 (refresh token)
+     */
+    private void refreshToken(User user) {
+        paymentRepository.findByUser(user).ifPresent(payment -> {
+            AccessTokenResponse response = paymentRequestService.postAccessToken(
+                "RefreshToken", null, user.getCustomerKey(), payment.getRefreshToken());
+            payment.modifyTokens(response.getAccessToken(), response.getRefreshToken());
+        });
+    }
 
-		if (response == null) {
-			reservation.changeStatus(PAYMENT_REQUIRED);
-			paymentNotificationService.paymentFail(reservation);
-		} else {
-			reservation.savePaymentKey(response.getPaymentKey());
-			reservation.changeStatus(PAYMENT_COMPLETE);
-			paymentNotificationService.paymentSuccess(reservation);
-		}
-	}
+    /**
+     * 자동 결제
+     */
+    public void pay(Reservation reservation) {
+        //refreshToken(reservation.getMember().getUser());
+        PaymentResponse response = paymentRequestService.postPayments(reservation);
 
-	/**
-	 * 수동 결제
-	 */
+        if (response == null) {
+            reservation.changeStatus(PAYMENT_REQUIRED);
+            paymentNotificationService.paymentFail(reservation);
+        } else {
+            reservation.savePaymentKey(response.getPaymentKey());
+            reservation.changeStatus(PAYMENT_COMPLETE);
+            paymentNotificationService.paymentSuccess(reservation);
+        }
+    }
 
-	/**
-	 * 결제 취소
-	 */
-	public void cancel(Reservation reservation, Integer cancelAmount) {
-		Boolean success = paymentRequestService
-			.postPaymentsCancel(reservation.getPaymentKey(), cancelAmount);
-		reservation.setRefundAmount(cancelAmount);
-		if (success) {
-			reservation.changeStatus(REFUND_COMPLETE);
-			paymentNotificationService.refundSuccess(reservation);
-		} else {
-			reservation.changeStatus(REFUND_FAILED);
-			paymentNotificationService.refundFail(reservation);
-		}
-	}
+    /**
+     * 수동 결제
+     */
+
+    /**
+     * 결제 취소
+     */
+    public void cancel(Reservation reservation, Integer cancelAmount) {
+        Boolean success = paymentRequestService
+            .postPaymentsCancel(reservation.getPaymentKey(), cancelAmount);
+        reservation.setRefundAmount(cancelAmount);
+        if (success) {
+            reservation.changeStatus(REFUND_COMPLETE);
+            paymentNotificationService.refundSuccess(reservation);
+        } else {
+            reservation.changeStatus(REFUND_FAILED);
+            paymentNotificationService.refundFail(reservation);
+        }
+    }
 }

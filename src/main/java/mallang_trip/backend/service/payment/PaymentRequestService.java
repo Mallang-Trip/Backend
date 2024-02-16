@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.payment.AccessTokenRequest;
 import mallang_trip.backend.domain.dto.payment.AccessTokenResponse;
+import mallang_trip.backend.domain.dto.payment.BillingKeyRequest;
+import mallang_trip.backend.domain.dto.payment.BillingKeyResponse;
 import mallang_trip.backend.domain.dto.payment.PaymentCancelRequest;
 import mallang_trip.backend.domain.dto.payment.PaymentMethodsResponse;
 import mallang_trip.backend.domain.dto.payment.PaymentRequest;
@@ -73,6 +75,34 @@ public class PaymentRequestService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", "Bearer " + accessToken);
 		return headers;
+	}
+
+	/**
+	 * 빌링
+	 */
+	public BillingKeyResponse postBillingKey(String customerKey, String authKey){
+		BillingKeyRequest request = BillingKeyRequest.builder()
+			.customerKey(customerKey)
+			.authkey(authKey)
+			.build();
+		try{
+			HttpHeaders headers = setBasicHeaders();
+			ObjectMapper objectMapper = new ObjectMapper();
+			String body = objectMapper.writeValueAsString(request);
+			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+			ResponseEntity<BillingKeyResponse> responseEntity = restTemplate.postForEntity(
+				new URI(URL + "/billing/authorizations/issue"),
+				httpBody,
+				BillingKeyResponse.class
+			);
+			return responseEntity.getBody();
+
+		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex){
+			System.out.println(ex.getMessage());
+			throw new BaseException(Bad_Request);
+		}
 	}
 
 	/**

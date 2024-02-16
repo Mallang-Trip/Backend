@@ -1,9 +1,7 @@
 package mallang_trip.backend.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.controller.io.BaseResponse;
@@ -22,12 +20,12 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @ApiOperation(value = "약관동의 redirection")
-    @GetMapping
+    @ApiOperation(value = "카드 등록")
+    @GetMapping("/register/success")
     @PreAuthorize("permitAll()") // anyone
-    public BaseResponse<String> save(@RequestParam String code, @RequestParam String customerKey)
-        throws BaseException, URISyntaxException, JsonProcessingException {
-        paymentService.modifyTokens(code, customerKey);
+    public BaseResponse<String> save(@RequestParam String customerKey, @RequestParam String authKey)
+        throws BaseException {
+        paymentService.registerCard(customerKey, authKey);
         return new BaseResponse<>("성공");
     }
 }
