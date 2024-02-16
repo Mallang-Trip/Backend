@@ -77,7 +77,7 @@ public class PaymentService {
                     .refreshToken(refreshToken)
                     .build()));
     }
-
+    
     /**
      * 토큰 재발급 (refresh token)
      */
@@ -106,23 +106,19 @@ public class PaymentService {
         }
     }
 
-    /**
-     * 수동 결제
-     */
 
-    /**
-     * 결제 취소
-     */
-    public void cancel(Reservation reservation, Integer cancelAmount) {
-        Boolean success = paymentRequestService
-            .postPaymentsCancel(reservation.getPaymentKey(), cancelAmount);
-        reservation.setRefundAmount(cancelAmount);
-        if (success) {
-            reservation.changeStatus(REFUND_COMPLETE);
-            paymentNotificationService.refundSuccess(reservation);
-        } else {
-            reservation.changeStatus(REFUND_FAILED);
-            paymentNotificationService.refundFail(reservation);
-        }
-    }
+	/**
+	 * 결제 취소
+	 */
+	public void cancel(Reservation reservation, Integer cancelAmount) {
+		Boolean success = paymentRequestService
+			.postPaymentsCancel(reservation.getPaymentKey(), cancelAmount);
+		reservation.setRefundAmount(cancelAmount);
+		if (success) {
+			reservation.changeStatus(REFUND_COMPLETE);
+			paymentNotificationService.refundSuccess(reservation);
+		} else {
+			reservation.changeStatus(REFUND_FAILED);
+		}
+	}
 }

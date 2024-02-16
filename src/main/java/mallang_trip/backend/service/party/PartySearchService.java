@@ -31,7 +31,7 @@ import mallang_trip.backend.repository.party.PartyProposalRepository;
 import mallang_trip.backend.repository.party.PartyRepository;
 import mallang_trip.backend.service.CourseService;
 import mallang_trip.backend.service.driver.DriverService;
-import mallang_trip.backend.service.ReservationService;
+import mallang_trip.backend.service.reservation.ReservationService;
 import mallang_trip.backend.service.user.UserService;
 import org.springframework.stereotype.Service;
 

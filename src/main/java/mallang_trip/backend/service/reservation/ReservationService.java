@@ -1,4 +1,4 @@
-package mallang_trip.backend.service;
+package mallang_trip.backend.service.reservation;
 
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
@@ -41,6 +41,7 @@ public class ReservationService {
 	private final PartyMemberService partyMemberService;
 	private final PaymentService paymentService;
 	private final UserService userService;
+	private final ReservationNotificationService reservationNotificationService;
 	private final ReservationRepository reservationRepository;
 	private final PartyMemberRepository partyMemberRepository;
 
@@ -80,11 +81,12 @@ public class ReservationService {
 		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED);
 		if(paymentRequired.isPresent()){
 			Reservation reservation = paymentRequired.get();
-			if(penaltyExists(reservation.getMember())){
-				//TODO: 위약금 지불 필요 알림 전송
+			Integer penaltyAmount = reservation.getPaymentAmount() - getRefundAmount(reservation);
+			if(penaltyAmount > 0){
+				reservationNotificationService.penaltyPaymentRequired(reservation.getMember().getUser(), penaltyAmount);
 			}
 			reservation.changeStatus(REFUND_COMPLETE);
-			return reservation.getPaymentAmount() - getRefundAmount(reservation);
+			return penaltyAmount;
 		}
 		return 0;
 	}
@@ -97,7 +99,6 @@ public class ReservationService {
 			.ifPresent(reservation -> {
 				paymentService.cancel(reservation, reservation.getPaymentAmount());
 				reservation.setRefundAmount(reservation.getPaymentAmount());
-				reservation.changeStatus(REFUND_COMPLETE);
 			});
 		reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED)
 			.ifPresent(reservation -> {
@@ -112,11 +113,6 @@ public class ReservationService {
 		partyMemberService.getMembers(party).stream()
 			.forEach(member -> freeRefund(member));
 	}
-
-	/**
-	 * 결제 카드 변경
-	 */
-
 
 	/**
 	 * 결제 금액 계산
@@ -149,15 +145,6 @@ public class ReservationService {
 		} else {
 			return reservation.getPaymentAmount();
 		}
-	}
-
-	/**
-	 * 위약금 발생 여부
-	 */
-	public Boolean penaltyExists(PartyMember partyMember){
-		Party party = partyMember.getParty();
-		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
-		return dDay < 8 ? true : false;
 	}
 
 	public void payPenaltyByDriver(Party party){
