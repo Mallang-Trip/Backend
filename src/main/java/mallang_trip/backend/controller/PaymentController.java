@@ -25,11 +25,10 @@ public class PaymentController {
 
     @ApiOperation(value = "카드 등록")
     @PostMapping
-    @PreAuthorize("permitAll()") // anyone
-    public BaseResponse<String> save(@RequestParam String customerKey, @RequestParam String authKey)
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<CardResponse> save(@RequestParam String authKey)
         throws BaseException {
-        paymentService.register(customerKey, authKey);
-        return new BaseResponse<>("성공");
+        return new BaseResponse<>(paymentService.register(authKey));
     }
 
     @ApiOperation(value = "카드 삭제")

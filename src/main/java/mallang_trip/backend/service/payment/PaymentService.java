@@ -39,24 +39,32 @@ public class PaymentService {
     private final CardRepository cardRepository;
 
     /**
-     * 카드 등록
+     * 등록
      */
-    public void register(String customerKey, String authKey) {
-        User user = userRepository.findByCustomerKey(customerKey)
-            .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+    public CardResponse register(String authKey) {
+        User currentUser = userService.getCurrentUser();
+        String customerKey = currentUser.getCustomerKey();
         BillingKeyResponse response = paymentRequestService.postBillingAuthorizations(customerKey,
             authKey);
         if (response.getCustomerKey() != customerKey) {
             throw new BaseException(Forbidden);
         }
         // 기존 결제정보 삭제
-        delete(user);
+        delete(currentUser);
         // 결제정보 저장
-        saveBillingKeyResponseAsPaymentAndCard(user, response);
+        Card card = saveBillingKeyResponseAsPaymentAndCard(currentUser, response);
+        return CardResponse.of(card);
     }
 
     /**
-     * 등록된 카드 정보 조회
+     * 삭제
+     */
+    public void delete() {
+        delete(userService.getCurrentUser());
+    }
+
+    /**
+     * 카드 조회
      */
     public CardResponse getCard() {
         User currentUser = userService.getCurrentUser();
@@ -83,16 +91,9 @@ public class PaymentService {
     }
 
     /**
-     * 현재 유저 결제정보 삭제
-     */
-    public void delete() {
-        delete(userService.getCurrentUser());
-    }
-
-    /**
      * BillingKeyResponse -> Payment, Card 정보 저장
      */
-    public void saveBillingKeyResponseAsPaymentAndCard(User user, BillingKeyResponse response) {
+    public Card saveBillingKeyResponseAsPaymentAndCard(User user, BillingKeyResponse response) {
         Payment payment = paymentRepository.save(Payment.builder()
             .user(user)
             .authenticatedAt(response.getAuthenticatedAt())
@@ -100,7 +101,7 @@ public class PaymentService {
             .billingKey(response.getBillingKey())
             .build());
         CardResponse cardResponse = response.getCard();
-        cardRepository.save(Card.builder()
+        Card card = cardRepository.save(Card.builder()
             .payment(payment)
             .issuerCode(cardResponse.getIssuerCode())
             .acquirerCode(cardResponse.getAcquirerCode())
@@ -108,6 +109,7 @@ public class PaymentService {
             .cardType(cardResponse.getCardType())
             .ownerType(cardResponse.getOwnerType())
             .build());
+        return card;
     }
 
     /**
