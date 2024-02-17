@@ -11,5 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BillingKeyResponse {
 
+    private String mId;
+    private String customerKey;
+    private String authenticatedAt;
+    private String method;
     private String billingKey;
+    private CardResponse card;
 }

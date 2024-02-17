@@ -7,13 +7,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
+import javax.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mallang_trip.backend.domain.entity.BaseEntity;
-import mallang_trip.backend.domain.entity.user.User;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -24,23 +24,29 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE payment SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
-public class Payment extends BaseEntity {
+public class Card extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", nullable = false)
+    private Payment payment;
 
     @Column
-    private String authenticatedAt;
+    private String issuerCode;
 
     @Column
-    private String method;
+    private String acquirerCode;
 
     @Column
-    private String billingKey;
+    private String number;
 
+    @Column
+    private String cardType;
+
+    @Column
+    private String ownerType;
 }

@@ -8,5 +8,5 @@ import lombok.Getter;
 public class BillingKeyRequest {
 
     private String customerKey;
-    private String authkey;
+    private String authKey;
 }
