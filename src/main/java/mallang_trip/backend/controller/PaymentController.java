@@ -10,6 +10,7 @@ import mallang_trip.backend.service.payment.PaymentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @ApiOperation(value = "카드 등록")
-    @GetMapping("/register/success")
+    @PostMapping
     @PreAuthorize("permitAll()") // anyone
     public BaseResponse<String> save(@RequestParam String customerKey, @RequestParam String authKey)
         throws BaseException {
@@ -42,7 +43,7 @@ public class PaymentController {
     @ApiOperation(value = "등록된 카드 조회")
     @GetMapping
     @PreAuthorize("isAuthenticated()") // 로그인 사용자
-    public BaseResponse<CardResponse> getCard() throws BaseException{
+    public BaseResponse<CardResponse> getCard() throws BaseException {
         return new BaseResponse<>(paymentService.getCard());
     }
 }

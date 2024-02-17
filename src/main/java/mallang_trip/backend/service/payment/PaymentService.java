@@ -6,6 +6,7 @@ import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_FAILED;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.controller.io.BaseResponseStatus.Not_Found;
 
 import java.util.Optional;
 import javax.transaction.Transactional;
@@ -61,13 +62,13 @@ public class PaymentService {
         User currentUser = userService.getCurrentUser();
         Optional<Payment> optionalPayment = paymentRepository.findByUser(currentUser);
         if (optionalPayment.isEmpty()) {
-            return null;
+            throw new BaseException(Not_Found);
         }
 
         Payment payment = optionalPayment.get();
         Optional<Card> optionalCard = cardRepository.findByPayment(payment);
         if (optionalCard.isEmpty()) {
-            return null;
+            throw new BaseException(Not_Found);
         }
 
         return CardResponse.of(optionalCard.get());
