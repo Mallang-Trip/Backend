@@ -1,0 +1,36 @@
+package mallang_trip.backend.domain.destination.dto;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
+import mallang_trip.backend.domain.destination.entity.DestinationReview;
+
+@Getter
+@Builder
+public class DestinationReviewResponse {
+
+    private Long reviewId;
+    private Long userId;
+    private String nickname;
+    private String profileImg;
+    private String content;
+    private Double rate;
+    private List<String> images;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static DestinationReviewResponse of(DestinationReview review){
+        return DestinationReviewResponse.builder()
+            .reviewId(review.getId())
+            .userId(review.getUser().getId())
+            .nickname(review.getUser().getNickname())
+            .profileImg(review.getUser().getProfileImage())
+            .content(review.getContent())
+            .rate(review.getRate())
+            .images(review.getImages())
+            .createdAt(review.getCreatedAt())
+            .updatedAt(review.getUpdatedAt())
+            .build();
+    }
+}
