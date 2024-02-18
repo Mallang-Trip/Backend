@@ -10,47 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentResponse {
-    private String mId;
-    private String version;
-    private String paymentKey;
-    private String status;
-    private String transactionKey;
-    private String lastTransactionKey;
-    private String orderId;
-    private String orderName;
-    private String requestedAt;
-    private String approvedAt;
-    private Boolean useEscrow;
-    private Boolean cultureExpense;
-    private Card card;
-    private String type;
-    private Boolean isPartialCancelable;
-    private Receipt receipt;
-    private String currency;
-    private Integer totalAmount;
-    private Integer balanceAmount;
-    private Integer suppliedAmount;
-    private Integer vat;
-    private Integer taxFreeAmount;
-    private String method;
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Card {
-        private String issuerCode;
-        private String acquirerCode;
-        private String number;
-        private Integer installmentPlanMonths;
-        private Boolean isInterestFree;
-        private String interestPayer;
-        private String approveNo;
-        private Boolean useCardPoint;
-        private String cardType;
-        private String ownerType;
-        private String acquireStatus;
-        private Integer amount;
-    }
+    private String paymentKey;
+    private Receipt receipt;
 
     @Getter
     @NoArgsConstructor

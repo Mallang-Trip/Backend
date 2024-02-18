@@ -12,7 +12,6 @@ public class JoinPartyRequest {
     private int headcount;
     private List<PartyMemberCompanionRequest> companions;
     private String content;
-    private String cardId;
     // 코스 제안
     private Boolean changeCourse;
     private CourseRequest newCourse;

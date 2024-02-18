@@ -35,8 +35,7 @@ import org.hibernate.annotations.Where;
 public class Reservation extends BaseEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private String id = UUID.randomUUID().toString();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "party_member_id", nullable = false)
@@ -46,11 +45,10 @@ public class Reservation extends BaseEntity {
 	private Integer paymentAmount;
 
 	@Column
-	@Builder.Default()
-	private String orderId = UUID.randomUUID().toString();
+	private String paymentKey;
 
 	@Column
-	private String paymentKey;
+	private String receiptUrl;
 
 	@Column
 	@Builder.Default()
@@ -59,8 +57,9 @@ public class Reservation extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private ReservationStatus status;
 
-	public void savePaymentKey(String paymentKey){
+	public void savePaymentKeyAndReceiptUrl(String paymentKey, String url){
 		this.paymentKey = paymentKey;
+		this.receiptUrl = url;
 	}
 
 	public void changeStatus(ReservationStatus status){

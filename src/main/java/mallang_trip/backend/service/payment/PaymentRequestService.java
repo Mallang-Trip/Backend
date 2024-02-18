@@ -37,8 +37,6 @@ public class PaymentRequestService {
 
 	private final String URL = "https://api.tosspayments.com/v1";
 
-	private final PaymentRepository paymentRepository;
-
 	/**
 	 * secretKey Base64 인코딩
 	 */
@@ -78,6 +76,7 @@ public class PaymentRequestService {
 				httpBody,
 				BillingKeyResponse.class
 			);
+
 			return responseEntity.getBody();
 
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex){
@@ -114,6 +113,7 @@ public class PaymentRequestService {
 
 	/**
 	 * POST /payments/{paymentKey}/cancel (결제취소)
+	 * 성공 시 true, 실패 시 false 반환
 	 */
 	public Boolean postPaymentsCancel(String paymentKey, Integer cancelAmount) {
 		PaymentCancelRequest request = PaymentCancelRequest.builder()

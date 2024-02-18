@@ -67,7 +67,6 @@ public class PartyProposalService {
 			.headcount(request.getHeadcount())
 			.content(request.getContent())
 			.type(JOIN_WITH_COURSE_CHANGE)
-			.cardId(request.getCardId())
 			.build());
 		createPartyMemberCompanions(proposal, request.getCompanions());
 		createPartyProposalAgreements(proposal);

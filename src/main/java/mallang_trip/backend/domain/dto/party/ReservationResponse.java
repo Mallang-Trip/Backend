@@ -10,10 +10,11 @@ import mallang_trip.backend.domain.entity.reservation.Reservation;
 @Getter
 public class ReservationResponse {
 
-	private Long reservationId;
+	private String reservationId;
 	private ReservationStatus status;
 	private Integer paymentAmount;
 	private Integer refundAmount;
+	private String receiptUrl;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
@@ -24,6 +25,7 @@ public class ReservationResponse {
 			.status(reservation.getStatus())
 			.paymentAmount(reservation.getPaymentAmount())
 			.refundAmount(reservation.getRefundAmount())
+			.receiptUrl(reservation.getReceiptUrl())
 			.createdAt(reservation.getCreatedAt())
 			.updatedAt(reservation.getUpdatedAt())
 			.build();

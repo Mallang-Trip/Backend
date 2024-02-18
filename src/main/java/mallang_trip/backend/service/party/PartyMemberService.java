@@ -71,7 +71,7 @@ public class PartyMemberService {
     /**
      * 파티 멤버 추가 및 파티 headcount 증가
      */
-    public PartyMember createMember(Party party, User user, Integer headcount, String cardId,
+    public PartyMember createMember(Party party, User user, Integer headcount,
         List<PartyMemberCompanionRequest> requests) {
         if (partyMemberRepository.existsByPartyAndUser(party, user)) {
             throw new BaseException(ALREADY_PARTY_MEMBER);
@@ -81,7 +81,6 @@ public class PartyMemberService {
             .party(party)
             .user(user)
             .headcount(headcount)
-            .cardId(cardId)
             .build());
         createCompanion(member, requests);
         return member;

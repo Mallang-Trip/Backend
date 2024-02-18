@@ -3,21 +3,14 @@ package mallang_trip.backend.service.reservation;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.constant.ReservationStatus.REFUND_COMPLETE;
-import static mallang_trip.backend.constant.ReservationStatus.REFUND_FAILED;
 import static mallang_trip.backend.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.constant.Role.ROLE_DRIVER;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_RESERVATION;
-import static mallang_trip.backend.controller.io.BaseResponseStatus.Forbidden;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.constant.Role;
-import mallang_trip.backend.controller.io.BaseException;
 import mallang_trip.backend.domain.dto.party.ReservationResponse;
 import mallang_trip.backend.domain.entity.party.Party;
 import mallang_trip.backend.domain.entity.party.PartyMember;
@@ -28,8 +21,6 @@ import mallang_trip.backend.repository.reservation.ReservationRepository;
 import mallang_trip.backend.service.party.PartyMemberService;
 import mallang_trip.backend.service.payment.PaymentService;
 import mallang_trip.backend.service.user.UserService;
-import org.json.JSONException;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,13 +41,13 @@ public class ReservationService {
 	 */
 	public void reserveParty(Party party) {
 		partyMemberService.getMembers(party).stream()
-			.forEach(this::pay);
+			.forEach(this::reserve);
 	}
 
 	/**
 	 * 파티원 1/N 결제
 	 */
-	private void pay(PartyMember member) {
+	private void reserve(PartyMember member) {
 		Reservation reservation = reservationRepository.save(Reservation.builder()
 			.member(member)
 			.paymentAmount(calculatePaymentAmount(member))
@@ -69,21 +60,24 @@ public class ReservationService {
 	 */
 	public Integer refund(PartyMember member) {
 		// 정상적으로 결제된 상태인 경우
-		Optional<Reservation> paymentComplete = reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE);
+		Optional<Reservation> paymentComplete = reservationRepository.findByMemberAndStatus(member,
+			PAYMENT_COMPLETE);
 		if (paymentComplete.isPresent()) {
 			Reservation reservation = paymentComplete.get();
-			Integer refundAmount = getRefundAmount(reservation);
+			Integer refundAmount = calculateRefundAmount(reservation);
 			paymentService.cancel(reservation, refundAmount);
 			return reservation.getPaymentAmount() - refundAmount;
 		}
 
 		// 결제 실패 상태인 경우
-		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED);
-		if(paymentRequired.isPresent()){
+		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(member,
+			PAYMENT_REQUIRED);
+		if (paymentRequired.isPresent()) {
 			Reservation reservation = paymentRequired.get();
-			Integer penaltyAmount = reservation.getPaymentAmount() - getRefundAmount(reservation);
-			if(penaltyAmount > 0){
-				reservationNotificationService.penaltyPaymentRequired(reservation.getMember().getUser(), penaltyAmount);
+			Integer penaltyAmount = reservation.getPaymentAmount() - calculateRefundAmount(reservation);
+			if (penaltyAmount > 0) {
+				reservationNotificationService.penaltyPaymentRequired(
+					reservation.getMember().getUser(), penaltyAmount);
 			}
 			reservation.changeStatus(REFUND_COMPLETE);
 			return penaltyAmount;
@@ -94,7 +88,7 @@ public class ReservationService {
 	/**
 	 * 무료 환불
 	 */
-	public void freeRefund(PartyMember member){
+	public void freeRefund(PartyMember member) {
 		reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE)
 			.ifPresent(reservation -> {
 				paymentService.cancel(reservation, reservation.getPaymentAmount());
@@ -109,7 +103,7 @@ public class ReservationService {
 	/**
 	 * 모든 파티 멤버 전액 환불
 	 */
-	public void refundAllMembers(Party party){
+	public void refundAllMembers(Party party) {
 		partyMemberService.getMembers(party).stream()
 			.forEach(member -> freeRefund(member));
 	}
@@ -120,80 +114,81 @@ public class ReservationService {
 	private int calculatePaymentAmount(PartyMember member) {
 		Party party = member.getParty();
 		int totalPrice = party.getCourse().getTotalPrice();
+		int discountPrice = party.getCourse().getDiscountPrice();
 		int totalHeadcount = partyMemberService.getTotalHeadcount(party);
-		return totalPrice / totalHeadcount * member.getHeadcount();
+		return (totalPrice - discountPrice) / totalHeadcount * member.getHeadcount();
 	}
 
 	/**
 	 * 환불 금액 계산
 	 */
-	public int getRefundAmount(Reservation reservation) {
+	public int calculateRefundAmount(Reservation reservation) {
 		Party party = reservation.getMember().getParty();
 		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
 		if (dDay <= 2) {
 			return 0;
 		} else if (dDay == 3) {
-			return (int)(reservation.getPaymentAmount() * 0.1);
+			return (int) (reservation.getPaymentAmount() * 0.1);
 		} else if (dDay == 4) {
-			return (int)(reservation.getPaymentAmount() * 0.25);
+			return (int) (reservation.getPaymentAmount() * 0.25);
 		} else if (dDay == 5) {
-			return (int)(reservation.getPaymentAmount() * 0.50);
+			return (int) (reservation.getPaymentAmount() * 0.50);
 		} else if (dDay == 6) {
-			return (int)(reservation.getPaymentAmount() * 0.75);
+			return (int) (reservation.getPaymentAmount() * 0.75);
 		} else if (dDay == 7) {
-			return (int)(reservation.getPaymentAmount() * 0.90);
+			return (int) (reservation.getPaymentAmount() * 0.90);
 		} else {
 			return reservation.getPaymentAmount();
 		}
 	}
 
-	public void payPenaltyByDriver(Party party){
-		int penalty = getPenaltyToDriver(party);
+	public void savePenaltyToDriver(Party party) {
+		int penalty = calculatePenaltyToDriver(party);
 		//TODO: 드라이버 패널티 금액 저장
 	}
-	public int getPenaltyToDriver(Party party){
+
+	public int calculatePenaltyToDriver(Party party) {
 		int totalPrice = party.getCourse().getTotalPrice();
 		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
-		if (dDay > 7) {
-			return 0;
-		} else if (dDay == 0) {
-			return (int)(totalPrice * 0.4);
+		if (dDay == 0) {
+			return (int) (totalPrice * 0.4);
 		} else if (dDay == 1) {
-			return (int)(totalPrice * 0.35);
+			return (int) (totalPrice * 0.35);
 		} else if (dDay == 2) {
-			return (int)(totalPrice * 0.3);
+			return (int) (totalPrice * 0.3);
 		} else if (dDay == 3) {
-			return (int)(totalPrice * 0.25);
+			return (int) (totalPrice * 0.25);
 		} else if (dDay == 4) {
-			return (int)(totalPrice * 0.2);
+			return (int) (totalPrice * 0.2);
 		} else if (dDay == 5) {
-			return (int)(totalPrice * 0.15);
+			return (int) (totalPrice * 0.15);
 		} else if (dDay == 6) {
-			return (int)(totalPrice * 0.1);
+			return (int) (totalPrice * 0.1);
 		} else if (dDay == 7) {
-			return (int)(totalPrice * 0.05);
+			return (int) (totalPrice * 0.05);
 		} else {
-			throw new BaseException(Forbidden);
+			return 0;
 		}
 	}
 
-	public ReservationResponse getReservationResponse(Party party){
+	public ReservationResponse getReservationResponse(Party party) {
 		User user = userService.getCurrentUser();
 		Role role = user.getRole();
-		if(role.equals(ROLE_ADMIN) || role.equals(ROLE_DRIVER)){
+		if (role.equals(ROLE_ADMIN) || role.equals(ROLE_DRIVER)) {
 			return null;
 		}
-		PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)
-			.orElse(null);
+
+		Optional<PartyMember> member = partyMemberRepository.findByPartyAndUser(party, user);
+		if(member.isEmpty()) return null;
 
 		Optional<Reservation> paymentComplete = reservationRepository.findByMemberAndStatus(
-			member, PAYMENT_COMPLETE);
+			member.get(), PAYMENT_COMPLETE);
 		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(
-			member, PAYMENT_REQUIRED);
+			member.get(), PAYMENT_REQUIRED);
 
-		if(paymentComplete.isPresent()){
+		if (paymentComplete.isPresent()) {
 			return ReservationResponse.of(paymentComplete.get());
-		} else if (paymentRequired.isPresent()){
+		} else if (paymentRequired.isPresent()) {
 			return ReservationResponse.of(paymentRequired.get());
 		} else {
 			return null;

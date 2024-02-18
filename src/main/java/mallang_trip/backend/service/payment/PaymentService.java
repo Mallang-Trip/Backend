@@ -125,18 +125,18 @@ public class PaymentService {
         PaymentRequest request = PaymentRequest.builder()
             .amount(reservation.getPaymentAmount())
             .customerKey(user.getCustomerKey())
-            .orderId(reservation.getOrderId())
+            .orderId(reservation.getId())
             .orderName(reservation.getMember().getParty().getCourse().getName())
             .build();
 
-        PaymentResponse response = paymentRequestService.postBilling(payment.get().getBillingKey(),
-            request);
+        PaymentResponse response = paymentRequestService
+            .postBilling(payment.get().getBillingKey(), request);
 
         if (response == null) {
             reservation.changeStatus(PAYMENT_REQUIRED);
             paymentNotificationService.paymentFail(reservation);
         } else {
-            reservation.savePaymentKey(response.getPaymentKey());
+            reservation.savePaymentKeyAndReceiptUrl(response.getPaymentKey(), response.getReceipt().getUrl());
             reservation.changeStatus(PAYMENT_COMPLETE);
             paymentNotificationService.paymentSuccess(reservation);
         }
@@ -146,10 +146,10 @@ public class PaymentService {
     /**
      * 결제 취소
      */
-    public void cancel(Reservation reservation, Integer cancelAmount) {
+    public void cancel(Reservation reservation, Integer refundAmount) {
         Boolean success = paymentRequestService
-            .postPaymentsCancel(reservation.getPaymentKey(), cancelAmount);
-        reservation.setRefundAmount(cancelAmount);
+            .postPaymentsCancel(reservation.getPaymentKey(), refundAmount);
+        reservation.setRefundAmount(refundAmount);
         if (success) {
             reservation.changeStatus(REFUND_COMPLETE);
             paymentNotificationService.refundSuccess(reservation);
