@@ -1,7 +1,8 @@
 package mallang_trip.backend.service.driver;
 
 import static mallang_trip.backend.constant.DriverStatus.ACCEPTED;
-import static mallang_trip.backend.constant.DriverStatus.REFUSED_OR_CANCELED;
+import static mallang_trip.backend.constant.DriverStatus.CANCELED;
+import static mallang_trip.backend.constant.DriverStatus.REFUSED;
 import static mallang_trip.backend.constant.DriverStatus.WAITING;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.CANNOT_FOUND_DRIVER;
 import static mallang_trip.backend.controller.io.BaseResponseStatus.Conflict;
@@ -85,7 +86,7 @@ public class DriverService {
 			throw new BaseException(Not_Found);
 		}
 		// 신청 취소
-		driver.changeStatus(REFUSED_OR_CANCELED);
+		driver.changeStatus(CANCELED);
 	}
 
 	/**
@@ -123,7 +124,7 @@ public class DriverService {
 			driver.changeStatus(ACCEPTED);
 			driver.getUser().setRole(Role.ROLE_DRIVER);
 		} else {
-			driver.changeStatus(REFUSED_OR_CANCELED);
+			driver.changeStatus(REFUSED);
 		}
 	}
 
