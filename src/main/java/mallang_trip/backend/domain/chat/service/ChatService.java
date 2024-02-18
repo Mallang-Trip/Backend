@@ -115,7 +115,7 @@ public class ChatService {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		if(chatMemberService.isMyParty(user, party)){
-			return enterPartyPrivateChatRoom(party);
+			return enterPartyPrivateChatRoom(party, user);
 		} else {
 			return enterPartyPublicChatRoom(party, user);
 		}
@@ -125,9 +125,12 @@ public class ChatService {
 	/**
 	 * PARTY_PRIVATE 채팅방 조회
 	 */
-	private ChatRoomIdResponse enterPartyPrivateChatRoom(Party party){
+	private ChatRoomIdResponse enterPartyPrivateChatRoom(Party party, User user){
 		ChatRoom chatRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
+		if(!chatMemberRepository.existsByChatRoomAndUser(chatRoom, user)){
+			joinParty(user, party);
+		}
 		return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
 	}
 
