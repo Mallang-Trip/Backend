@@ -1,10 +1,9 @@
 package mallang_trip.backend.config.s3;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.controller.io.BaseException;
+import mallang_trip.backend.domains.global.io.BaseException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;

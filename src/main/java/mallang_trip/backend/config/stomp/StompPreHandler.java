@@ -2,11 +2,11 @@ package mallang_trip.backend.config.stomp;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.config.security.TokenProvider;
-import mallang_trip.backend.domain.entity.chat.ChatRoom;
-import mallang_trip.backend.domain.entity.user.User;
-import mallang_trip.backend.repository.chat.ChatMemberRepository;
-import mallang_trip.backend.repository.chat.ChatRoomRepository;
-import mallang_trip.backend.repository.user.UserRepository;
+import mallang_trip.backend.domains.chat.entity.ChatRoom;
+import mallang_trip.backend.domains.user.entity.User;
+import mallang_trip.backend.domains.chat.repository.ChatMemberRepository;
+import mallang_trip.backend.domains.chat.repository.ChatRoomRepository;
+import mallang_trip.backend.domains.user.repository.UserRepository;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.messaging.Message;

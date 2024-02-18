@@ -1,12 +1,15 @@
 package mallang_trip.backend.config.security;
 
+import static mallang_trip.backend.domains.global.io.BaseResponseStatus.EXPIRED_JWT;
+import static mallang_trip.backend.domains.global.io.BaseResponseStatus.INVALID_JWT;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import mallang_trip.backend.controller.io.BaseException;
-import mallang_trip.backend.domain.dto.TokensDto;
-import mallang_trip.backend.repository.user.UserRepository;
+import mallang_trip.backend.domains.global.io.BaseException;
+import mallang_trip.backend.domains.user.dto.TokensDto;
+import mallang_trip.backend.domains.user.repository.UserRepository;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.MessageDeliveryException;
@@ -28,8 +31,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static mallang_trip.backend.controller.io.BaseResponseStatus.*;
 
 @Slf4j
 @Component
@@ -88,7 +89,7 @@ public class TokenProvider implements InitializingBean {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(refreshTokenValidity)
                 .compact();
-        Optional<mallang_trip.backend.domain.entity.user.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+        Optional<mallang_trip.backend.domains.user.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
         findUser.get().setRefreshToken(refreshToken);
 
         return new TokensDto(accessToken, refreshToken);
@@ -183,7 +184,7 @@ public class TokenProvider implements InitializingBean {
                     .parseClaimsJws(refreshToken);
 
             Authentication authentication = getAuthentication(refreshToken);
-            Optional<mallang_trip.backend.domain.entity.user.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
+            Optional<mallang_trip.backend.domains.user.entity.User> findUser = userRepository.findById(Long.valueOf(authentication.getName()));
             if (!findUser.isPresent()) {
                 throw new BaseException(INVALID_JWT);
             }

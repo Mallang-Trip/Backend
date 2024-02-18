@@ -1,11 +1,13 @@
 package mallang_trip.backend.config.s3;
 
+import static mallang_trip.backend.domains.global.io.BaseResponseStatus.FILE_CONVERT_ERROR;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mallang_trip.backend.controller.io.BaseException;
+import mallang_trip.backend.domains.global.io.BaseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,8 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-
-import static mallang_trip.backend.controller.io.BaseResponseStatus.*;
 
 @Slf4j
 @RequiredArgsConstructor
