@@ -47,6 +47,9 @@ public class PaymentService {
         String customerKey = currentUser.getCustomerKey();
         BillingKeyResponse response = paymentRequestService.postBillingAuthorizations(customerKey,
             authKey);
+        if (!response.getCustomerKey().equals(customerKey)) {
+            throw new BaseException(Forbidden);
+        }
         // 기존 결제정보 삭제
         delete(currentUser);
         // 결제정보 저장
