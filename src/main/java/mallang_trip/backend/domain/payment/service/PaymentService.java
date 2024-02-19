@@ -1,5 +1,7 @@
 package mallang_trip.backend.domain.payment.service;
 
+import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
+import static mallang_trip.backend.domain.global.io.BaseResponseStatus.PAYMENT_FAIL;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
@@ -20,8 +22,8 @@ import mallang_trip.backend.domain.payment.entity.Payment;
 import mallang_trip.backend.domain.payment.repository.CardRepository;
 import mallang_trip.backend.domain.payment.repository.PaymentRepository;
 import mallang_trip.backend.domain.reservation.entity.Reservation;
+import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
 import mallang_trip.backend.domain.user.entity.User;
-import mallang_trip.backend.domain.user.repository.UserRepository;
 import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +35,7 @@ public class PaymentService {
     private final UserService userService;
     private final PaymentRequestService paymentRequestService;
     private final PaymentNotificationService paymentNotificationService;
-    private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
     private final CardRepository cardRepository;
 
@@ -46,6 +48,8 @@ public class PaymentService {
         BillingKeyResponse response = paymentRequestService.postBillingAuthorizations(customerKey,
             authKey);
         if (response.getCustomerKey() != customerKey) {
+            System.out.println("response customerKey: " + response.getCustomerKey());
+            System.out.println("user customerKey: " + customerKey);
             throw new BaseException(Forbidden);
         }
         // 기존 결제정보 삭제
@@ -141,6 +145,45 @@ public class PaymentService {
         }
     }
 
+    /**
+     * 결제 재시도
+     */
+    public void retryPayment(Long reservationId){
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new BaseException(Not_Found));
+        if(!reservation.getStatus().equals(PAYMENT_REQUIRED)){
+            throw new BaseException(Forbidden);
+        }
+        payManually(reservation);
+    }
+
+    /**
+     * 수동 결제
+     */
+    public void payManually(Reservation reservation) {
+        User user = reservation.getMember().getUser();
+        Optional<Payment> payment = paymentRepository.findByUser(user);
+        if (payment.isEmpty()) {
+            throw new BaseException(CANNOT_FOUND_PAYMENT);
+        }
+
+        PaymentRequest request = PaymentRequest.builder()
+            .amount(reservation.getPaymentAmount())
+            .customerKey(user.getCustomerKey())
+            .orderId(reservation.getId())
+            .orderName(reservation.getMember().getParty().getCourse().getName())
+            .build();
+
+        PaymentResponse response = paymentRequestService
+            .postBilling(payment.get().getBillingKey(), request);
+
+        if (response == null) {
+            throw new BaseException(PAYMENT_FAIL);
+        } else {
+            reservation.savePaymentKeyAndReceiptUrl(response.getPaymentKey(), response.getReceipt().getUrl());
+            reservation.changeStatus(PAYMENT_COMPLETE);
+        }
+    }
 
     /**
      * 결제 취소

@@ -38,6 +38,7 @@ public enum BaseResponseStatus {
     CANNOT_CHANGE_COURSE(403, "코스 변경이 불가능한 상태입니다."),
     EXPIRED_PROPOSAL(403, "종료된 제안입니다."),
     ONGOING_PARTY_EXISTS(403, "진행중인 여행이 있습니다."),
+    PAYMENT_FAIL(403, "결제에 실패했습니다."),
 
     // Chat
     CANNOT_FOUND_CHATROOM(404, "채팅방을 찾을 수 없습니다."),
