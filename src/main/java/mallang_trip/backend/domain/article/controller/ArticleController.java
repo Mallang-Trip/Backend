@@ -50,18 +50,18 @@ public class ArticleController {
 	@ApiOperation(value = "글 수정")
 	@PutMapping("/{article_id}")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> changeArticle(@PathVariable(value = "article_id") Long id,
+	public BaseResponse<String> changeArticle(@PathVariable(value = "article_id") Long articleId,
 		@RequestBody @Valid ArticleRequest request) throws BaseException {
-		articleService.modify(id, request);
+		articleService.modify(articleId, request);
 		return new BaseResponse<>("성공");
 	}
 
 	@ApiOperation(value = "글 삭제")
 	@DeleteMapping("/{article_id}")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> deleteArticle(@PathVariable(value = "article_id") Long id)
+	public BaseResponse<String> deleteArticle(@PathVariable(value = "article_id") Long articleId)
 		throws BaseException {
-		articleService.delete(id);
+		articleService.delete(articleId);
 		return new BaseResponse<>("성공");
 	}
 
@@ -69,8 +69,8 @@ public class ArticleController {
 	@GetMapping("/{article_id}")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<ArticleDetailsResponse> viewDetails(
-		@PathVariable(value = "article_id") Long id) throws BaseException {
-		return new BaseResponse<>(articleService.view(id));
+		@PathVariable(value = "article_id") Long articleId) throws BaseException {
+		return new BaseResponse<>(articleService.view(articleId));
 	}
 
 	@ApiOperation(value = "키워드 검색")
@@ -101,8 +101,7 @@ public class ArticleController {
 	@GetMapping("/comment/my")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<Page<MyCommentResponse>> getMyComments(
-		@PageableDefault(size = 6, sort = "createdAt", direction = Direction.DESC) Pageable pageable)
-		throws BaseException {
+		@PageableDefault(size = 6) Pageable pageable) throws BaseException {
 		return new BaseResponse<>(articleCommentService.getMyComments(pageable));
 	}
 

@@ -48,15 +48,16 @@ public class ArticleNotificationService {
 	 * 답글 작성자 + 답글에 대댓글 단 유저 조회 (현재 유저 제외)
 	 */
 	private List<User> getRepliedUsers(Comment comment) {
-		User writer = comment.getUser();
+		// 댓글에 대한 대댓글 작성자 목록 조회
 		List<User> users = replyRepository.findByCommentAndDeleted(comment, false).stream()
 			.map(Reply::getUser)
 			.collect(Collectors.toList());
-		users.add(writer);
-		List<User> targets = users.stream()
+		// 댓글 작성자 추가
+		users.add(comment.getUser());
+		// 중복 제거 + 현재 유저 제외
+		return users.stream()
 			.distinct()
 			.filter(user -> !user.equals(userService.getCurrentUser()))
 			.collect(Collectors.toList());
-		return targets;
 	}
 }

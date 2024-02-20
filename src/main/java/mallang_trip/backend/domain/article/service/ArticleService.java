@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.article.constant.ArticleType;
-import mallang_trip.backend.domain.article.repository.CommentRepository;
-import mallang_trip.backend.domain.article.repository.ReplyRepository;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
 import mallang_trip.backend.domain.global.io.BaseException;
 import mallang_trip.backend.domain.article.entity.Article;
