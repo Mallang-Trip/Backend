@@ -34,7 +34,7 @@ public class PartyBriefResponse {
             .name(course.getName())
             .startDate(party.getStartDate())
             .endDate(party.getEndDate())
-            .price(course.getTotalPrice() / party.getCapacity())
+            .price(course.getTotalPrice() - course.getDiscountPrice() / party.getCapacity())
             .driverName(party.getDriver().getUser().getName())
             .headcount(party.getHeadcount())
             .capacity(party.getCapacity())
