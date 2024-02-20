@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.user.entity;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import mallang_trip.backend.domain.user.constant.Country;
 import mallang_trip.backend.domain.user.constant.Gender;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.global.BaseEntity;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.SQLDelete;
 
 @Entity
@@ -73,15 +75,17 @@ public class User extends BaseEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (id == null) return false;
-        if (!(o instanceof User))
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
             return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
 
-        final User user = (User)o;
-
-        return id.equals(user.getId());
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.intValue() : 0;
+        return result;
     }
 
     public Integer getAgeRange(){

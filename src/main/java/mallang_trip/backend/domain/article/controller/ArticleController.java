@@ -4,6 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.article.service.ArticleCommentService;
+import mallang_trip.backend.domain.article.service.ArticleDibsService;
 import mallang_trip.backend.domain.article.service.ArticleService;
 import mallang_trip.backend.domain.global.io.BaseException;
 import mallang_trip.backend.domain.global.io.BaseResponse;
@@ -34,13 +36,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticleController {
 
 	private final ArticleService articleService;
+	private final ArticleCommentService articleCommentService;
+	private final ArticleDibsService articleDibsService;
 
 	@ApiOperation(value = "글 등록")
 	@PostMapping
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<ArticleIdResponse> createArticle(
 		@RequestBody @Valid ArticleRequest request) throws BaseException {
-		return new BaseResponse<>(articleService.createArticle(request));
+		return new BaseResponse<>(articleService.create(request));
 	}
 
 	@ApiOperation(value = "글 수정")
@@ -48,7 +52,7 @@ public class ArticleController {
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> changeArticle(@PathVariable(value = "article_id") Long id,
 		@RequestBody @Valid ArticleRequest request) throws BaseException {
-		articleService.changeArticle(id, request);
+		articleService.modify(id, request);
 		return new BaseResponse<>("성공");
 	}
 
@@ -57,7 +61,7 @@ public class ArticleController {
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> deleteArticle(@PathVariable(value = "article_id") Long id)
 		throws BaseException {
-		articleService.deleteArticle(id);
+		articleService.delete(id);
 		return new BaseResponse<>("성공");
 	}
 
@@ -66,7 +70,7 @@ public class ArticleController {
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<ArticleDetailsResponse> viewDetails(
 		@PathVariable(value = "article_id") Long id) throws BaseException {
-		return new BaseResponse<>(articleService.getArticleDetails(id));
+		return new BaseResponse<>(articleService.view(id));
 	}
 
 	@ApiOperation(value = "키워드 검색")
@@ -99,60 +103,60 @@ public class ArticleController {
 	public BaseResponse<Page<MyCommentResponse>> getMyComments(
 		@PageableDefault(size = 6, sort = "createdAt", direction = Direction.DESC) Pageable pageable)
 		throws BaseException {
-		return new BaseResponse<>(articleService.getMyComments(pageable));
+		return new BaseResponse<>(articleCommentService.getMyComments(pageable));
 	}
 
 	@PostMapping("/dibs/{article_id}")
 	@ApiOperation(value = "게시글 좋아요")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> createArticleDibs(@PathVariable(value = "article_id") Long id)
+	public BaseResponse<String> createArticleDibs(@PathVariable(value = "article_id") Long articleId)
 		throws BaseException {
-		articleService.createArticleDibs(id);
+		articleDibsService.create(articleId);
 		return new BaseResponse<>("성공");
 	}
 
 	@DeleteMapping("/dibs/{article_id}")
 	@ApiOperation(value = "게시글 좋아요 취소")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> deleteArticleDibs(@PathVariable(value = "article_id") Long id)
+	public BaseResponse<String> deleteArticleDibs(@PathVariable(value = "article_id") Long articleId)
 		throws BaseException {
-		articleService.deleteArticleDibs(id);
+		articleDibsService.delete(articleId);
 		return new BaseResponse<>("성공");
 	}
 
 	@PostMapping("/comment/{article_id}")
 	@ApiOperation(value = "댓글 작성")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> createComment(@PathVariable(value = "article_id") Long id,
+	public BaseResponse<String> createComment(@PathVariable(value = "article_id") Long articleId,
 		@RequestParam String content) throws BaseException {
-		articleService.createComment(id, content);
+		articleCommentService.createComment(articleId, content);
 		return new BaseResponse<>("성공");
 	}
 
 	@PostMapping("/reply/{comment_id}")
 	@ApiOperation(value = "대댓글 작성")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> createReply(@PathVariable(value = "comment_id") Long id,
+	public BaseResponse<String> createReply(@PathVariable(value = "comment_id") Long commentId,
 		@RequestParam String content) throws BaseException {
-		articleService.createReply(id, content);
+		articleCommentService.createReply(commentId, content);
 		return new BaseResponse<>("성공");
 	}
 
 	@DeleteMapping("/comment/{comment_id}")
 	@ApiOperation(value = "댓글 삭제")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> deleteComment(@PathVariable(value = "comment_id") Long id)
+	public BaseResponse<String> deleteComment(@PathVariable(value = "comment_id") Long commentId)
 		throws BaseException {
-		articleService.deleteComment(id);
+		articleCommentService.deleteComment(commentId);
 		return new BaseResponse<>("성공");
 	}
 
 	@DeleteMapping("/reply/{reply_id}")
 	@ApiOperation(value = "대댓글 삭제")
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> deleteReply(@PathVariable(value = "reply_id") Long id)
+	public BaseResponse<String> deleteReply(@PathVariable(value = "reply_id") Long replyId)
 		throws BaseException {
-		articleService.deleteReply(id);
+		articleCommentService.deleteReply(replyId);
 		return new BaseResponse<>("성공");
 	}
 

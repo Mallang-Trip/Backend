@@ -18,8 +18,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import mallang_trip.backend.domain.article.constant.ArticleType;
+import mallang_trip.backend.domain.article.dto.ArticleRequest;
 import mallang_trip.backend.domain.global.BaseEntity;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.user.entity.User;
@@ -28,7 +28,6 @@ import org.hibernate.annotations.SQLDelete;
 @Entity
 @Table
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -59,4 +58,12 @@ public class Article extends BaseEntity {
 	@ElementCollection
 	@OrderColumn
 	private List<String> images;
+
+	public void modify(Party party, ArticleRequest request){
+		this.party = party;
+		this.type = ArticleType.from(request.getType());
+		this.title = request.getTitle();
+		this.content = request.getContent();
+		this.images = request.getImages();
+	}
 }

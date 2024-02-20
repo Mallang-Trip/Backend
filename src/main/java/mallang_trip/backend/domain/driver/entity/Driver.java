@@ -3,6 +3,7 @@ package mallang_trip.backend.domain.driver.entity;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -25,6 +26,7 @@ import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverRegistrationRequest;
 import mallang_trip.backend.domain.global.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -136,5 +138,20 @@ public class Driver extends BaseEntity {
 		this.holiday = holiday.stream()
 			.map(LocalDate::parse)
 			.collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+			return false;
+		Driver driver = (Driver) o;
+		return Objects.equals(id, driver.id);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = id != null ? id.intValue() : 0;
+		return result;
 	}
 }

@@ -45,6 +45,9 @@ public enum BaseResponseStatus {
     NOT_CHATROOM_MEMBER(403, "채팅방 멤버가 아닙니다."),
     CHATROOM_EXIT_FORBIDDEN(403, "파티 진행중에는 채팅방을 나갈 수 없습니다."),
     CANNOT_KICK_CHAT_MEMBER(403, "채팅방 추방 권한이 없습니다."),
+
+    // Article
+    CANNOT_FOUND_ARTICLE(404, "게시글을 찾을 수 없습니다."),
     ;
 
     private final int statusCode;

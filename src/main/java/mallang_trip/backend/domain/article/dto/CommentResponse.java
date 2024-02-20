@@ -22,7 +22,7 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private Boolean deleted;
 
-    public static CommentResponse of(Comment comment) {
+    public static CommentResponse of(Comment comment, List<ReplyResponse> replies) {
         User user = comment.getUser();
         String content = comment.getDeleted() ? "[삭제된 댓글]" : comment.getContent();
         return CommentResponse.builder()
@@ -31,6 +31,7 @@ public class CommentResponse {
             .nickname(user.getNickname())
             .profileImg(user.getProfileImage())
             .content(content)
+            .replies(replies)
             .createdAt(comment.getCreatedAt())
             .deleted(comment.getDeleted())
             .build();
