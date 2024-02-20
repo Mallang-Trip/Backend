@@ -75,11 +75,14 @@ public class User extends BaseEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+        if (this == o) {
+            return true;
+        }
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
             return false;
+        }
         User user = (User) o;
-        return Objects.equals(id, user.id);
+        return Objects.equals(id, user.getId());
     }
 
     @Override
@@ -88,8 +91,8 @@ public class User extends BaseEntity {
         return result;
     }
 
-    public Integer getAgeRange(){
+    public Integer getAgeRange() {
         int age = LocalDate.now().getYear() - this.birthday.getYear();
-        return (int)(age / 10) * 10;
+        return (int) (age / 10) * 10;
     }
 }

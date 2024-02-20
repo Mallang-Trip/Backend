@@ -39,119 +39,123 @@ import org.hibernate.annotations.Where;
 @SQLDelete(sql = "UPDATE driver SET deleted = true WHERE id = ?")
 public class Driver extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@MapsId
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id", nullable = false)
-	private User user;
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", nullable = false)
+    private User user;
 
-	@Column(name = "vehicle_img", nullable = false)
-	private String vehicleImg;
+    @Column(name = "vehicle_img", nullable = false)
+    private String vehicleImg;
 
-	@Column(name = "driver_license_img", nullable = false)
-	private String driverLicenceImg;
+    @Column(name = "driver_license_img", nullable = false)
+    private String driverLicenceImg;
 
-	@Column(name = "taxi_license_img", nullable = false)
-	private String taxiLicenceImg;
+    @Column(name = "taxi_license_img", nullable = false)
+    private String taxiLicenceImg;
 
-	@Column(name = "insurance_license_img", nullable = false)
-	private String insuranceLicenceImg;
+    @Column(name = "insurance_license_img", nullable = false)
+    private String insuranceLicenceImg;
 
-	@Column(name = "vehicle_model", nullable = false)
-	private String vehicleModel;
+    @Column(name = "vehicle_model", nullable = false)
+    private String vehicleModel;
 
-	@Column(name = "vehicle_number", nullable = false)
-	private String vehicleNumber;
+    @Column(name = "vehicle_number", nullable = false)
+    private String vehicleNumber;
 
-	@Column(name = "vehicle_capacity", nullable = false)
-	private Integer vehicleCapacity;
+    @Column(name = "vehicle_capacity", nullable = false)
+    private Integer vehicleCapacity;
 
-	@Column
-	private String region;
+    @Column
+    private String region;
 
-	@Column
-	private String bank;
+    @Column
+    private String bank;
 
-	@Column
-	private String accountHolder;
+    @Column
+    private String accountHolder;
 
-	@Column
-	private String accountNumber;
+    @Column
+    private String accountNumber;
 
-	@Column
-	private String introduction;
+    @Column
+    private String introduction;
 
-	@ElementCollection
-	@Enumerated(EnumType.STRING)
-	private List<DayOfWeek> weeklyHoliday;
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private List<DayOfWeek> weeklyHoliday;
 
-	@ElementCollection
-	private List<LocalDate> holiday;
+    @ElementCollection
+    private List<LocalDate> holiday;
 
-	@Enumerated(EnumType.STRING)
-	@Builder.Default()
-	private DriverStatus status = DriverStatus.WAITING;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default()
+    private DriverStatus status = DriverStatus.WAITING;
 
-	public void changeRegistration(DriverRegistrationRequest request) {
-		this.vehicleModel = request.getVehicleModel();
-		this.vehicleCapacity = request.getVehicleCapacity();
-		this.vehicleNumber = request.getVehicleNumber();
-		this.vehicleImg = request.getVehicleImg();
-		this.region = request.getRegion();
-		this.bank = request.getBank();
-		this.accountHolder = request.getAccountHolder();
-		this.accountNumber = request.getAccountNumber();
-		this.driverLicenceImg = request.getDriverLicenceImg();
-		this.taxiLicenceImg = request.getTaxiLicenceImg();
-		this.insuranceLicenceImg = request.getInsuranceLicenceImg();
-		this.introduction = request.getIntroduction();
-		this.status = DriverStatus.WAITING;
-	}
+    public void changeRegistration(DriverRegistrationRequest request) {
+        this.vehicleModel = request.getVehicleModel();
+        this.vehicleCapacity = request.getVehicleCapacity();
+        this.vehicleNumber = request.getVehicleNumber();
+        this.vehicleImg = request.getVehicleImg();
+        this.region = request.getRegion();
+        this.bank = request.getBank();
+        this.accountHolder = request.getAccountHolder();
+        this.accountNumber = request.getAccountNumber();
+        this.driverLicenceImg = request.getDriverLicenceImg();
+        this.taxiLicenceImg = request.getTaxiLicenceImg();
+        this.insuranceLicenceImg = request.getInsuranceLicenceImg();
+        this.introduction = request.getIntroduction();
+        this.status = DriverStatus.WAITING;
+    }
 
-	public void changeProfile(ChangeDriverProfileRequest request){
-		this.region = request.getRegion();
-		this.bank = request.getBank();
-		this.accountHolder = request.getAccountHolder();
-		this.accountNumber = request.getAccountNumber();
-		this.vehicleImg = request.getVehicleImg();
-		this.vehicleModel = request.getVehicleModel();
-		this.vehicleNumber = request.getVehicleNumber();
-		this.vehicleCapacity = request.getVehicleCapacity();
-		this.introduction = request.getIntroduction();
-		changeHoliday(request.getHolidays());
-		changeWeeklyHoliday(request.getWeeklyHolidays());
-	}
+    public void changeProfile(ChangeDriverProfileRequest request) {
+        this.region = request.getRegion();
+        this.bank = request.getBank();
+        this.accountHolder = request.getAccountHolder();
+        this.accountNumber = request.getAccountNumber();
+        this.vehicleImg = request.getVehicleImg();
+        this.vehicleModel = request.getVehicleModel();
+        this.vehicleNumber = request.getVehicleNumber();
+        this.vehicleCapacity = request.getVehicleCapacity();
+        this.introduction = request.getIntroduction();
+        changeHoliday(request.getHolidays());
+        changeWeeklyHoliday(request.getWeeklyHolidays());
+    }
 
-	public void changeStatus(DriverStatus status) {
-		this.status = status;
-	}
+    public void changeStatus(DriverStatus status) {
+        this.status = status;
+    }
 
-	private void changeWeeklyHoliday(List<String> holiday){
-		this.weeklyHoliday = holiday.stream()
-			.map(DayOfWeek::valueOf)
-			.collect(Collectors.toList());
-	}
-	private void changeHoliday(List<String> holiday) {
-		this.holiday = holiday.stream()
-			.map(LocalDate::parse)
-			.collect(Collectors.toList());
-	}
+    private void changeWeeklyHoliday(List<String> holiday) {
+        this.weeklyHoliday = holiday.stream()
+            .map(DayOfWeek::valueOf)
+            .collect(Collectors.toList());
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
-			return false;
-		Driver driver = (Driver) o;
-		return Objects.equals(id, driver.id);
-	}
+    private void changeHoliday(List<String> holiday) {
+        this.holiday = holiday.stream()
+            .map(LocalDate::parse)
+            .collect(Collectors.toList());
+    }
 
-	@Override
-	public int hashCode() {
-		int result = id != null ? id.intValue() : 0;
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
+            return false;
+        }
+        Driver driver = (Driver) o;
+        return Objects.equals(id, driver.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.intValue() : 0;
+        return result;
+    }
 }

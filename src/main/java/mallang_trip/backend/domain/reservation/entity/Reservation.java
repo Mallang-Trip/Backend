@@ -29,6 +29,7 @@ import org.hibernate.annotations.Where;
 public class Reservation extends BaseEntity {
 
 	@Id
+	@Builder.Default()
 	private String id = UUID.randomUUID().toString();
 
 	@ManyToOne(fetch = FetchType.LAZY)
