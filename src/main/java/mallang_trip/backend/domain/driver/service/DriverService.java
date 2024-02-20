@@ -53,7 +53,7 @@ public class DriverService {
 	public void registerDriver(DriverRegistrationRequest request) {
 		User currentUser = userService.getCurrentUser();
 		// 이미 신청 정보가 있을 경우
-		if (driverRepository.existsByUser(currentUser)) {
+		if (driverRepository.existsById(currentUser.getId())) {
 			throw new BaseException(Conflict);
 		}
 		// 신청 정보 저장

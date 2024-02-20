@@ -17,7 +17,5 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     Optional<Driver> findByIdAndStatus(Long id, DriverStatus status);
 
-    Boolean existsByUser(User user);
-
     Optional<Driver> findByUser(User user);
 }
