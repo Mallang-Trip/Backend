@@ -74,7 +74,7 @@ public class ChatRoomService {
 		if (!room.getType().equals(GROUP)) {
 			throw new BaseException(Forbidden);
 		}
-		room.setRoomName(roomName);
+		room.modifyRoomName(roomName);
 	}
 
 	/**
@@ -125,13 +125,13 @@ public class ChatRoomService {
 		if (room.getType().equals(COUPLE)) {
 			chatMemberService.leaveCoupleChatRoom(room, user);
 		} else if (room.getType().equals(GROUP)) {
-			chatMemberService.leaveGroupChatRoom(room, user);
+			chatMemberService.leaveChatRoomWithMessage(room, user);
 		} else if (room.getType().equals(PARTY_PUBLIC)) {
 			chatMemberService.leavePartyChatRoom(room, user);
 		} else if (room.getType().equals(PARTY_PRIVATE)) {
 			// private chat 탈퇴 시, public chat 자동 탈퇴
 			chatMemberService.leavePartyChatRoom(room, user);
-			chatMemberService.leaveGroupChatRoom(getPublicRoomByPrivateRoom(room), user);
+			chatMemberService.leaveChatRoomWithMessage(getPublicRoomByPrivateRoom(room), user);
 		}
 	}
 

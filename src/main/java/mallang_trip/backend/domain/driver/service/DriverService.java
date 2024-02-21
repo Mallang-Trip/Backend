@@ -123,6 +123,7 @@ public class DriverService {
 		if (accept) {
 			driver.changeStatus(ACCEPTED);
 			driver.getUser().setRole(Role.ROLE_DRIVER);
+			driver.getUser().setRefreshToken(null);
 		} else {
 			driver.changeStatus(REFUSED);
 		}

@@ -21,7 +21,6 @@ import mallang_trip.backend.domain.user.entity.User;
 @Entity
 @Table(name = "chat_member")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,10 +54,18 @@ public class ChatMember extends BaseEntity {
 		this.unreadCount++;
 	}
 
+	public void setUnreadCountZero() {
+		this.unreadCount = 0;
+	}
+
 	public void setActiveTrue() {
 		if (this.active == false) {
-			this.setActive(true);
+			this.active = true;
 			this.joinedAt = LocalDateTime.now();
 		}
+	}
+
+	public void setActiveFalse(){
+		this.active = false;
 	}
 }

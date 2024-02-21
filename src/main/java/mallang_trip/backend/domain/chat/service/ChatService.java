@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.chat.constant.ChatRoomType;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
 import mallang_trip.backend.domain.chat.repository.ChatMessageRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
@@ -61,50 +62,56 @@ public class ChatService {
 	private final SimpMessagingTemplate template;
 
 	/**
-	 * 파티 전용 채팅방 생성
+	 * 파티 전용 채팅방 시작
 	 */
 	public void startPartyChat(Party party) {
-		ChatRoom privateRoom = chatRoomService.createChatRoom(PARTY_PRIVATE, null, party);
-		ChatRoom publicRoom = chatRoomService.createChatRoom(PARTY_PUBLIC, null, party);
-		partyMemberService.getMembers(party).stream()
-			.map(member -> member.getUser())
-			.forEach(user -> {
-				chatMemberService.createChatMember(privateRoom, user);
-				chatMemberService.createChatMember(privateRoom, party.getDriver().getUser());
-				chatMemberService.createChatMember(publicRoom, user);
-				chatMemberService.createChatMember(publicRoom, party.getDriver().getUser());
-			});
-		chatMemberService.activeAllMembers(privateRoom);
-		chatMemberService.activeAllMembers(publicRoom);
+		startPartyChat(party, PARTY_PRIVATE);
+		startPartyChat(party, PARTY_PUBLIC);
 	}
 
 	/**
-	 * 파티 가입 시 파티 채팅방 가입
+	 * 채팅방 생성 + 파티원, 드라이버 초대
 	 */
-	public void joinParty(User user, Party party) {
-		ChatRoom privateRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
+	private void startPartyChat(Party party, ChatRoomType type){
+		ChatRoom room = chatRoomService.createChatRoom(type, null, party);
+		partyMemberService.getMembersAndDriver(party)
+			.forEach(user -> chatMemberService.createChatMember(room, user));
+		chatMessageService.createStartPartyMessage(room);
+		chatMemberService.activeAllMembers(room);
+	}
+
+	/**
+	 * PARTY_PRIVATE, PARTY_PUBLIC 채팅방 입장
+	 * PARTY_PRIVATE ChatRoom 반환
+	 */
+	public ChatRoom joinPartyChat(User user, Party party) {
+		joinPartyChat(user, party, PARTY_PUBLIC);
+		return joinPartyChat(user, party, PARTY_PRIVATE);
+	}
+
+	/**
+	 * 파티 채팅방 입장
+	 */
+	private ChatRoom joinPartyChat(User user, Party party, ChatRoomType type){
+		ChatRoom room = chatRoomRepository.findByPartyAndType(party, type)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		ChatRoom publicRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PUBLIC)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		// private room 가입
-		chatMemberService.createChatMember(privateRoom, user).setActiveTrue();
-		template.convertAndSend("/sub/room/" + privateRoom.getId(),
-			ChatMessageResponse.of(chatMessageService.createEnterMessage(user, privateRoom)));
-		// public room 가입
-		if(!chatMemberRepository.existsByChatRoomAndUser(publicRoom, user)){
-			chatMemberService.createChatMember(publicRoom, user).setActiveTrue();
-			template.convertAndSend("/sub/room/" + publicRoom.getId(),
-				ChatMessageResponse.of(chatMessageService.createEnterMessage(user, publicRoom)));
+		if(!chatMemberRepository.existsByChatRoomAndUser(room, user)){
+			chatMemberService.createChatMember(room, user).setActiveTrue();
+			template.convertAndSend("/sub/room/" + room.getId(),
+				ChatMessageResponse.of(chatMessageService.createEnterMessage(user, room)));
 		}
+
+		return room;
 	}
 
 	/**
 	 * 파티 탈퇴 시 PARTY_PRIVATE ChatRoom 강퇴
 	 */
-	public void leaveParty(User user, Party party) {
-		ChatRoom privateRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		chatMemberService.leavePartyChatRoom(privateRoom, user);
+	public void leavePrivateChatWhenLeavingParty(User user, Party party) {
+		chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
+			.ifPresent(room -> {
+				chatMemberService.leaveChatRoomWithMessage(room, user);
+			});
 	}
 
 	/**
@@ -123,19 +130,15 @@ public class ChatService {
 
 
 	/**
-	 * PARTY_PRIVATE 채팅방 조회
+	 * 내 파티의 채팅방 입장
 	 */
 	private ChatRoomIdResponse enterPartyPrivateChatRoom(Party party, User user){
-		ChatRoom chatRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		if(!chatMemberRepository.existsByChatRoomAndUser(chatRoom, user)){
-			joinParty(user, party);
-		}
-		return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
+		ChatRoom privateRoom = joinPartyChat(user, party);
+		return ChatRoomIdResponse.builder().chatRoomId(privateRoom.getId()).build();
 	}
 
 	/**
-	 * PARTY_PUBLIC 채팅방 입장 및 조회.
+	 * PARTY_PUBLIC 채팅방 입장 및 조회
 	 */
 	private ChatRoomIdResponse enterPartyPublicChatRoom(Party party, User user){
 		if(suspensionService.isSuspending(user)){
@@ -145,23 +148,17 @@ public class ChatService {
 		if (!party.getStatus().equals(RECRUITING)) {
 			throw new BaseException(PARTY_NOT_RECRUITING);
 		}
-		ChatRoom chatRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PUBLIC)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		// 가입되어 있지 않은 경우
-		if (!chatMemberRepository.existsByChatRoomAndUser(chatRoom, user)) {
-			chatMemberService.createChatMember(chatRoom, user).setActiveTrue();
-			template.convertAndSend("/sub/room/" + chatRoom.getId(),
-				ChatMessageResponse.of(chatMessageService.createEnterMessage(user, chatRoom)));
-		}
-		return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
+		ChatRoom publicRoom = joinPartyChat(user, party, PARTY_PUBLIC);
+
+		return ChatRoomIdResponse.builder().chatRoomId(publicRoom.getId()).build();
 	}
 
 	/**
 	 * 채팅방 강퇴
 	 */
-	public void kickChatMember(Long chatRoomId, Long userId){
+	public void kickChatMember(Long chatRoomId, Long targetUserId){
 		User user = userService.getCurrentUser();
-		User target = userRepository.findById(userId)
+		User target = userRepository.findById(targetUserId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		ChatRoom room = chatRoomRepository.findById(chatRoomId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
@@ -174,20 +171,18 @@ public class ChatService {
 	public ChatRoomIdResponse startGroupChat(List<Long> userIds, String roomName) {
 		ChatRoom room = chatRoomService.createChatRoom(GROUP, roomName, null);
 		User currentUser = userService.getCurrentUser();
+		// 정지 유저인지 CHECK
 		if(suspensionService.isSuspending(currentUser)){
 			throw new BaseException(SUSPENDING);
 		}
+		// 자기 자신을 멤버로 추가
 		chatMemberService.createChatMember(room, currentUser).setActiveTrue();
 		// 멤버 초대
-		List<User> users = userIds.stream()
-			.map(userId -> userRepository.findById(userId)
-				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER)))
-			.filter(user -> !currentUser.equals(user))
-			.filter(user -> !chatBlockService.isBlocked(user, currentUser))
-			.collect(Collectors.toList());
-		users.stream().forEach(user -> chatMemberService.createChatMember(room, user));
+		List<User> users = chatMemberService.inviteUsers(room, currentUser, userIds);
+		chatMemberService.activeAllMembers(room);
 		// 초대 메시지 생성
 		chatMessageService.createInviteMessage(currentUser, users, room);
+
 		return ChatRoomIdResponse.builder().chatRoomId(room.getId()).build();
 	}
 
@@ -195,6 +190,7 @@ public class ChatService {
 	 * 그룹 채팅방 초대
 	 */
 	public void inviteToGroupChat(Long chatRoomId, List<Long> userIds) {
+		User currentUser = userService.getCurrentUser();
 		ChatRoom room = chatRoomRepository.findById(chatRoomId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
 		// 그룹 채팅방이 아닌 경우
@@ -205,19 +201,12 @@ public class ChatService {
 		if (!chatMemberRepository.existsByChatRoomAndUser(room, userService.getCurrentUser())) {
 			throw new BaseException(Forbidden);
 		}
-		List<User> users = userIds.stream()
-			.map(userId -> userRepository.findById(userId)
-				.orElseThrow(() -> new BaseException(Not_Found)))
-			.filter(user -> !chatBlockService.isBlocked(user, userService.getCurrentUser()))
-			.filter(user -> !chatMemberRepository.existsByChatRoomAndUser(room, user))
-			.collect(Collectors.toList());
-		// chatMember 추가
-		users.stream()
-			.forEach(user -> chatMemberService.createChatMember(room, user));
-		// 초대 메시지 작성
-		template.convertAndSend("/sub/room/" + room.getId(),
-			ChatMessageResponse.of(
-				chatMessageService.createInviteMessage(userService.getCurrentUser(), users, room)));
+		// 멤버 초대
+		List<User> users = chatMemberService.inviteUsers(room, currentUser, userIds);
+		chatMemberService.activeAllMembers(room);
+		// 초대 메시지 SEND
+		template.convertAndSend("/sub/room/" + room.getId(), ChatMessageResponse.of(
+				chatMessageService.createInviteMessage(currentUser, users, room)));
 	}
 
 	/**
@@ -226,7 +215,8 @@ public class ChatService {
 	public ChatRoomIdResponse startCoupleChat(Long userId) {
 		User user = userService.getCurrentUser();
 		User receiver = userRepository.findById(userId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+		// 정지인지 CHECK
 		if(suspensionService.isSuspending(user)){
 			throw new BaseException(SUSPENDING);
 		}
@@ -243,8 +233,7 @@ public class ChatService {
 			chatMemberService.createChatMember(newChatRoom, receiver);
 			return ChatRoomIdResponse.builder().chatRoomId(newChatRoom.getId()).build();
 		} else { // 진행중인 채팅방이 존재하는 경우
-			chatMemberRepository.findByChatRoomAndUser(chatRoom, user)
-				.orElseThrow(() -> new BaseException(Not_Found)).setActiveTrue();
+			chatMemberRepository.findByChatRoomAndUser(chatRoom, user).ifPresent(ChatMember::setActiveTrue);
 			return ChatRoomIdResponse.builder().chatRoomId(chatRoom.getId()).build();
 		}
 	}
@@ -300,13 +289,14 @@ public class ChatService {
 		User user = userService.getCurrentUser();
 		ChatRoom room = chatRoomRepository.findById(chatRoomId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
-		ChatMember currentMember = chatMemberRepository.findByChatRoomAndUser(room,
-			userService.getCurrentUser()).orElseThrow(() -> new BaseException(NOT_CHATROOM_MEMBER));
+		ChatMember currentMember = chatMemberRepository.findByChatRoomAndUser(room, user)
+			.orElseThrow(() -> new BaseException(NOT_CHATROOM_MEMBER));
 		// 현재 유저 unreadCount 0 초기화
-		currentMember.setUnreadCount(0);
+		currentMember.setUnreadCountZero();
 		// 업데이트된 채팅방 리스트 STOMP publish
 		template.convertAndSend("/sub/list/" + currentMember.getUser().getId(),
 			getChatRooms(currentMember.getUser()));
+
 		return chatRoomService.toDetailResponse(room, user);
 	}
 
@@ -325,14 +315,11 @@ public class ChatService {
 		List<ChatMember> members = chatMemberRepository.findByChatRoom(room);
 		chatMemberService.increaseAllMembersUnreadCount(room, user);
 		// 채팅 저장
-		ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
-			.user(user)
-			.chatRoom(room)
-			.type(request.getType())
-			.content(request.getContent())
-			.build());
+		ChatMessage message = chatMessageService.create(user, room, request.getType(),
+			request.getContent());
 		// 멤버들에게 업데이트된 채팅방 리스트 send
 		sendNewChatRoomList(members);
+
 		return ChatMessageResponse.of(message);
 	}
 
@@ -346,7 +333,7 @@ public class ChatService {
 			.orElseThrow(() -> new BaseException(Not_Found));
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		member.setUnreadCount(0);
+		member.setUnreadCountZero();
 		template.convertAndSend("/sub/list/" + user.getId(), getChatRooms(user));
 	}
 
