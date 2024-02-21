@@ -40,8 +40,7 @@ public class CourseController {
 	@ApiOperation(value = "(드라이버)코스 수정")
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<String> changeCourse(@PathVariable(value = "course_id") Long courseId,
-		@RequestBody @Valid CourseRequest request)
-		throws BaseException {
+		@RequestBody @Valid CourseRequest request) throws BaseException {
 		courseService.changeCourseByDriver(courseId, request);
 		return new BaseResponse<>("성공");
 	}

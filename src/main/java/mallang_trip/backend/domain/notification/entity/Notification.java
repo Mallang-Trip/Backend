@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import mallang_trip.backend.domain.notification.constant.NotificationType;
 import mallang_trip.backend.domain.global.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
@@ -21,7 +20,6 @@ import mallang_trip.backend.domain.user.entity.User;
 @Entity
 @Table
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -47,4 +45,8 @@ public class Notification extends BaseEntity {
     @Column
     @Builder.Default()
     private Boolean checked = false;
+
+    public void setCheckTrue(){
+        this.checked = true;
+    }
 }
