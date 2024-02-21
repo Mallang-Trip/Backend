@@ -16,48 +16,56 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mallang_trip.backend.domain.course.dto.CourseRequest;
 import mallang_trip.backend.domain.global.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE course SET deleted = true WHERE id = ?")
 public class Course extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private User owner;
 
-    @ElementCollection
-    @OrderColumn
-    private List<String> images;
+	@ElementCollection
+	@OrderColumn
+	private List<String> images;
 
-    @Column(name = "total_days")
-    private Integer totalDays;
+	@Column(name = "total_days")
+	private Integer totalDays;
 
-    @Column
-    private String name;
+	@Column
+	private String name;
 
-    @Column
-    private Integer capacity;
+	@Column
+	private Integer capacity;
 
-    @Column(name = "total_price")
-    private Integer totalPrice;
+	@Column(name = "total_price")
+	private Integer totalPrice;
 
-    @Column(name = "discount_price")
-    @Builder.Default()
-    private Integer discountPrice = 0;
+	@Column(name = "discount_price")
+	@Builder.Default()
+	private Integer discountPrice = 0;
 
-    public void increaseDiscountPrice(Integer amount){
-        this.discountPrice += amount;
-    }
+	public void increaseDiscountPrice(Integer amount) {
+		this.discountPrice += amount;
+	}
+
+	public void modify(CourseRequest request){
+		this.images = request.getImages();
+		this.totalDays = request.getTotalDays();
+		this.totalPrice = request.getTotalPrice();
+		this.name = request.getName();
+		this.capacity = request.getCapacity();
+	}
 }

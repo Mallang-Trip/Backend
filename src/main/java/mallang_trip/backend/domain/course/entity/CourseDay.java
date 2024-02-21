@@ -22,7 +22,6 @@ import mallang_trip.backend.domain.global.BaseEntity;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @Table(name = "course_day")
 @AllArgsConstructor
