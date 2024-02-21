@@ -24,9 +24,9 @@ public class ChatMessageResponse {
         return ChatMessageResponse.builder()
             .messageId(message.getId())
             .type(message.getType())
-            .userId(user.getId())
-            .nickname(user.getNickname())
-            .profileImg(user.getProfileImage())
+            .userId(user == null? null : user.getId())
+            .nickname(user == null? null : user.getNickname())
+            .profileImg(user == null? null : user.getProfileImage())
             .content(message.getContent())
             .createdAt(message.getCreatedAt())
             .build();
