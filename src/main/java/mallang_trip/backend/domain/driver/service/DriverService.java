@@ -123,6 +123,7 @@ public class DriverService {
 		if (accept) {
 			driver.changeStatus(ACCEPTED);
 			driver.getUser().setRole(Role.ROLE_DRIVER);
+			driver.getUser().setRefreshToken(null);
 		} else {
 			driver.changeStatus(REFUSED);
 		}
@@ -174,7 +175,7 @@ public class DriverService {
 			.phoneNumber(user.getPhoneNumber())
 			.introduction(driver.getIntroduction())
 			.prices(getDriverPrice(driver))
-			.courses(courseService.getCourseNames(user))
+			.courses(courseService.getDriversCourses(user))
 			.status(driver.getStatus())
 			.build();
 	}
@@ -195,7 +196,7 @@ public class DriverService {
 			.introduction(driver.getIntroduction())
 			.region(driver.getRegion())
 			.reviews(driverReviewService.get(driver))
-			.courses(courseService.getCourseNames(user))
+			.courses(courseService.getDriversCourses(user))
 			.build();
 	}
 

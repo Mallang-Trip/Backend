@@ -6,6 +6,7 @@ import static mallang_trip.backend.domain.chat.constant.ChatType.INFO;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.chat.constant.ChatType;
 import mallang_trip.backend.domain.chat.dto.ChatMessageResponse;
 import mallang_trip.backend.domain.chat.entity.ChatMessage;
 import mallang_trip.backend.domain.chat.entity.ChatRoom;
@@ -20,6 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatMessageService {
 
 	private final ChatMessageRepository chatMessageRepository;
+
+	public ChatMessage create(User user, ChatRoom room, ChatType type, String content){
+		return chatMessageRepository.save(ChatMessage.builder()
+			.user(user)
+			.chatRoom(room)
+			.type(type)
+			.content(content)
+			.build());
+	}
 
 	/**
 	 * 유저 기준, 채팅방의 마지막 메시지 조회 (INFO 제외)
@@ -60,23 +70,6 @@ public class ChatMessageService {
 	}
 
 	/**
-	 * 채팅 초대 메시지 생성 및 저장
-	 */
-	public ChatMessage createInviteMessage(User inviter, List<User> users, ChatRoom room) {
-		List<String> nicknames = users.stream()
-			.map(user -> user.getNickname())
-			.collect(Collectors.toList());
-		String message =
-			inviter.getNickname() + "님이 " + String.join(", ", nicknames) + "님을 초대했습니다.";
-		return chatMessageRepository.save(ChatMessage.builder()
-			.user(inviter)
-			.chatRoom(room)
-			.type(INFO)
-			.content(message)
-			.build());
-	}
-
-	/**
 	 * 유저의 채팅방 가입 이후의 모든 메시지 조회
 	 */
 	public List<ChatMessageResponse> getChatMessages(ChatRoom room, User user) {
@@ -86,35 +79,61 @@ public class ChatMessageService {
 	}
 
 	/**
-	 * 채팅 나가기 메시지 생성 및 저장
-	 */
-	public ChatMessage createLeaveMessage(User user, ChatRoom room) {
-		String message = user.getNickname() + "님이 나갔습니다.";
-		return chatMessageRepository.save(ChatMessage.builder()
-			.user(user)
-			.chatRoom(room)
-			.type(INFO)
-			.content(message)
-			.build());
-	}
-
-	/**
-	 * 입장 메시지 생성 및 저장
-	 */
-	public ChatMessage createEnterMessage(User user, ChatRoom room) {
-		String message = user.getNickname() + "님이 참여했습니다.";
-		return chatMessageRepository.save(ChatMessage.builder()
-			.user(user)
-			.chatRoom(room)
-			.type(INFO)
-			.content(message)
-			.build());
-	}
-
-	/**
 	 * 전체 메시지 조회
 	 */
 	public List<ChatMessage> getEntireMessages(ChatRoom room){
 		return chatMessageRepository.findByChatRoom(room);
+	}
+
+	/** INFO message 생성 */
+
+	/**
+	 * 1. 파티 채팅방 시작 메시지 생성 및 저장
+	 */
+	public ChatMessage createStartPartyMessage(ChatRoom room){
+		String content = new StringBuilder()
+			.append("[")
+			.append(room.getParty().getCourse().getName())
+			.append("] 전용 채팅방입니다.")
+			.toString();
+		return create(null, room, INFO, content);
+	}
+
+	/**
+	 * 2. 채팅 초대 메시지 생성 및 저장
+	 */
+	public ChatMessage createInviteMessage(User inviter, List<User> users, ChatRoom room) {
+		List<String> nicknames = users.stream()
+			.map(user -> user.getNickname())
+			.collect(Collectors.toList());
+		String content = new StringBuilder()
+			.append(inviter.getNickname())
+			.append("님이")
+			.append(String.join(", ", nicknames))
+			.append("님을 초대했습니다.")
+			.toString();
+		return create(null, room, INFO, content);
+	}
+
+	/**
+	 * 3. 채팅 나가기 메시지 생성 및 저장
+	 */
+	public ChatMessage createLeaveMessage(User user, ChatRoom room) {
+		String content = new StringBuilder()
+			.append(user.getNickname())
+			.append("님이 나갔습니다.")
+			.toString();
+		return create(null, room, INFO, content);
+	}
+
+	/**
+	 * 4. 입장 메시지 생성 및 저장
+	 */
+	public ChatMessage createEnterMessage(User user, ChatRoom room) {
+		String content = new StringBuilder()
+			.append(user.getNickname())
+			.append("님이 입장했습니다.")
+			.toString();
+		return create(null, room, INFO, content);
 	}
 }

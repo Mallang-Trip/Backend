@@ -23,7 +23,6 @@ import mallang_trip.backend.domain.party.entity.Party;
 @Entity
 @Table(name = "chat_room")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,4 +41,8 @@ public class ChatRoom extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ChatRoomType type;
+
+    public void modifyRoomName(String roomName){
+        this.roomName = roomName;
+    }
 }

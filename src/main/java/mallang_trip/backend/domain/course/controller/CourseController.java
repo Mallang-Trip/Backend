@@ -39,19 +39,18 @@ public class CourseController {
 	@PutMapping("/{course_id}")
 	@ApiOperation(value = "(드라이버)코스 수정")
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<String> changeCourse(@PathVariable(value = "course_id") Long id,
-		@RequestBody @Valid CourseRequest request)
-		throws BaseException {
-		courseService.changeCourseByDriver(id, request);
+	public BaseResponse<String> changeCourse(@PathVariable(value = "course_id") Long courseId,
+		@RequestBody @Valid CourseRequest request) throws BaseException {
+		courseService.changeCourseByDriver(courseId, request);
 		return new BaseResponse<>("성공");
 	}
 
 	@DeleteMapping("/{course_id}")
 	@ApiOperation(value = "(드라이버)코스 삭제")
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<String> deleteCourse(@PathVariable(value = "course_id") Long id)
+	public BaseResponse<String> deleteCourse(@PathVariable(value = "course_id") Long courseId)
 		throws BaseException {
-		courseService.deleteCourse(id);
+		courseService.deleteCourse(courseId);
 		return new BaseResponse<>("성공");
 	}
 
@@ -59,8 +58,7 @@ public class CourseController {
 	@ApiOperation(value = "코스 상세 조회")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<CourseDetailsResponse> getCourseDetails(
-		@PathVariable(value = "course_id") Long id)
-		throws BaseException {
-		return new BaseResponse<>(courseService.getCourseDetails(id));
+		@PathVariable(value = "course_id") Long courseId) throws BaseException {
+		return new BaseResponse<>(courseService.getCourseDetails(courseId));
 	}
 }

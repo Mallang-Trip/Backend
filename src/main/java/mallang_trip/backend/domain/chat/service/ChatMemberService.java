@@ -2,6 +2,7 @@ package mallang_trip.backend.domain.chat.service;
 
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.COUPLE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PUBLIC;
+import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.SEALED;
@@ -12,6 +13,7 @@ import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CHATROOM_
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.NOT_CHATROOM_MEMBER;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
@@ -22,6 +24,7 @@ import mallang_trip.backend.domain.chat.entity.ChatRoom;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.party.repository.PartyMemberRepository;
+import mallang_trip.backend.domain.user.repository.UserRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ public class ChatMemberService {
 
 	private final ChatMemberRepository chatMemberRepository;
 	private final PartyMemberRepository partyMemberRepository;
+	private final UserRepository userRepository;
 	private final ChatMessageService chatMessageService;
 	private final ChatBlockService chatBlockService;
 	private final SimpMessagingTemplate template;
@@ -40,7 +44,7 @@ public class ChatMemberService {
 	/**
 	 * 채팅방 멤버 생성
 	 */
-	public ChatMember createChatMember(ChatRoom room, User user) {
+	public ChatMember createChatMember(ChatRoom room, User user) {;
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user).orElse(null);
 		if (member == null) {
 			return chatMemberRepository.save(ChatMember.builder()
@@ -50,6 +54,21 @@ public class ChatMemberService {
 		} else {
 			return member;
 		}
+	}
+
+	/**
+	 * 채팅방 초대
+	 */
+	public List<User> inviteUsers(ChatRoom room, User currentUser, List<Long> userIds){
+		List<User> users = userIds.stream()
+			.map(userId -> userRepository.findById(userId)
+				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER)))
+			.filter(user -> !chatBlockService.isBlocked(user, currentUser))
+			.filter(user -> !chatMemberRepository.existsByChatRoomAndUser(room, user))
+			.collect(Collectors.toList());
+		users.forEach(user -> createChatMember(room, user));
+
+		return users;
 	}
 
 	/**
@@ -126,19 +145,19 @@ public class ChatMemberService {
 	public void leaveCoupleChatRoom(ChatRoom room, User user) {
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
 			.orElseThrow(() -> new BaseException(NOT_CHATROOM_MEMBER));
-		member.setActive(false);
+		member.setActiveFalse();
 	}
 
 	/**
-	 * GROUP ChatRoom 나가기
+	 * 나가기 메시지와 함께 파티 나가기
 	 */
-	public void leaveGroupChatRoom(ChatRoom room, User user) {
-		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
-			.orElseThrow(() -> new BaseException(NOT_CHATROOM_MEMBER));
-		chatMemberRepository.delete(member);
-		// 나가기 메시지 작성
-		template.convertAndSend("/sub/room/" + room.getId(),
-			ChatMessageResponse.of(chatMessageService.createLeaveMessage(user, room)));
+	public void leaveChatRoomWithMessage(ChatRoom room, User user) {
+		chatMemberRepository.findByChatRoomAndUser(room, user)
+			.ifPresent(member -> {
+				template.convertAndSend("/sub/room/" + room.getId(),
+					ChatMessageResponse.of(chatMessageService.createLeaveMessage(user, room)));
+				chatMemberRepository.delete(member);
+			});
 	}
 
 	/**
@@ -155,7 +174,7 @@ public class ChatMemberService {
 				|| status.equals(DAY_OF_TRAVEL))) {
 			throw new BaseException(CHATROOM_EXIT_FORBIDDEN);
 		} else {
-			leaveGroupChatRoom(room, user);
+			leaveChatRoomWithMessage(room, user);
 		}
 	}
 
@@ -167,9 +186,8 @@ public class ChatMemberService {
 			|| !isMyParty(user, room.getParty())
 			|| isMyParty(target, room.getParty())) {
 			throw new BaseException(CANNOT_KICK_CHAT_MEMBER);
-		} else {
-			leaveGroupChatRoom(room, target);
 		}
+		leaveChatRoomWithMessage(room, target);
 	}
 
 	public Boolean isMyParty(User user, Party party) {

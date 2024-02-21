@@ -21,40 +21,48 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class NotificationService {
 
-    private final UserService userService;
-    private final NotificationRepository notificationRepository;
+	private final UserService userService;
+	private final NotificationRepository notificationRepository;
 
-    /** 현재 유저 알림 조회 */
-    public NotificationListResponse getNotifications(){
-        User user = userService.getCurrentUser();
-        List<NotificationResponse> notifications = notificationRepository.findByUser(user).stream()
-            .map(NotificationResponse::of)
-            .collect(Collectors.toList());
-        return NotificationListResponse.builder()
-            .contents(notifications)
-            .uncheckedCount(getUncheckedCount(user))
-            .build();
-    }
+	/**
+	 * 현재 유저 알림 조회
+	 */
+	public NotificationListResponse getNotifications() {
+		User user = userService.getCurrentUser();
+		List<NotificationResponse> notifications = notificationRepository.findByUser(user).stream()
+			.map(NotificationResponse::of)
+			.collect(Collectors.toList());
+		return NotificationListResponse.builder()
+			.contents(notifications)
+			.uncheckedCount(getUncheckedCount(user))
+			.build();
+	}
 
-    /** 알림 생성 및 저장 */
-    public void create(User user, String content, NotificationType type, Long targetId) {
-        notificationRepository.save(Notification.builder()
-            .user(user)
-            .content(content)
-            .type(type)
-            .targetId(targetId)
-            .build());
-    }
+	/**
+	 * 알림 생성 및 저장
+	 */
+	public void create(User user, String content, NotificationType type, Long targetId) {
+		notificationRepository.save(Notification.builder()
+			.user(user)
+			.content(content)
+			.type(type)
+			.targetId(targetId)
+			.build());
+	}
 
-    /** 알림 확인 처리 */
-    public void check(Long notificationId){
-        Notification notification = notificationRepository.findById(notificationId)
-            .orElseThrow(() -> new BaseException(Not_Found));
-        notification.setChecked(true);
-    }
+	/**
+	 * 알림 확인 처리
+	 */
+	public void check(Long notificationId) {
+		Notification notification = notificationRepository.findById(notificationId)
+			.orElseThrow(() -> new BaseException(Not_Found));
+		notification.setCheckTrue();
+	}
 
-    /** 확인하지 않은 알림 수 조회 */
-    private Integer getUncheckedCount(User user){
-        return notificationRepository.countByUserAndChecked(user, false);
-    }
+	/**
+	 * 확인하지 않은 알림 수 조회
+	 */
+	private Integer getUncheckedCount(User user) {
+		return notificationRepository.countByUserAndChecked(user, false);
+	}
 }

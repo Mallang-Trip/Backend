@@ -203,7 +203,7 @@ public class PartyService {
 			partyMemberService.setReadyAllMembers(party, false);
 			party.setStatus(RECRUITING);
 		}
-		chatService.joinParty(user, party);
+		chatService.joinPartyChat(user, party);
 	}
 
 	/**
@@ -332,7 +332,7 @@ public class PartyService {
 		} else if (role.equals(Role.ROLE_USER)) {
 			quitPartyBeforeReservationByMember(party);
 		}
-		chatService.leaveParty(userService.getCurrentUser(), party);
+		chatService.leavePrivateChatWhenLeavingParty(userService.getCurrentUser(), party);
 		partyMemberService.setReadyAllMembers(party, false);
 	}
 
@@ -423,7 +423,7 @@ public class PartyService {
 		} else if (role.equals(Role.ROLE_USER)) {
 			cancelReservationByMember(party);
 		}
-		chatService.leaveParty(userService.getCurrentUser(), party);
+		chatService.leavePrivateChatWhenLeavingParty(userService.getCurrentUser(), party);
 		partyMemberService.setReadyAllMembers(party, false);
 	}
 

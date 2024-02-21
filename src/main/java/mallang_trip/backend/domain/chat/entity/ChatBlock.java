@@ -19,7 +19,6 @@ import mallang_trip.backend.domain.user.entity.User;
 @Entity
 @Table(name = "chat_block")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
