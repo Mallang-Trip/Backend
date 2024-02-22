@@ -5,15 +5,22 @@ import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FO
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.EMPTY_JWT;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Unauthorized;
+import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.config.security.TokenProvider;
 import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.domain.identification.dto.IdentificationResultResponse;
+import mallang_trip.backend.domain.identification.service.PortOneIdentificationService;
+import mallang_trip.backend.domain.user.constant.Country;
+import mallang_trip.backend.domain.user.constant.Gender;
 import mallang_trip.backend.domain.user.dto.TokensDto;
 import mallang_trip.backend.domain.user.dto.AuthResponse;
 import mallang_trip.backend.domain.user.dto.ChangePasswordRequest;
@@ -43,6 +50,7 @@ public class UserService {
 	private final TokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
 	private final SmsService smsService;
+	private final PortOneIdentificationService portOneIdentificationService;
 
 	/**
 	 * 회원가입
@@ -51,7 +59,21 @@ public class UserService {
 		if(isDuplicate(request)){
 			throw new BaseException(Conflict);
 		}
-		userRepository.save(request.toUser(passwordEncoder));
+		IdentificationResultResponse response = portOneIdentificationService.get(request.getImpUid());
+		userRepository.save(User.builder()
+			.loginId(request.getId())
+			.password(passwordEncoder.encode(request.getPassword()))
+			.email(request.getEmail())
+			.name(response.getName())
+			.birthday(LocalDate.parse(response.getBirthday(), DateTimeFormatter.ofPattern("yyMMdd")))
+			.country(Country.from(request.getCountry()))
+			.gender(Gender.from(response.getGender()))
+			.phoneNumber(response.getPhone())
+			.nickname(request.getNickname())
+			.introduction(request.getIntroduction())
+			.profileImage(request.getProfileImg())
+			.role(ROLE_USER)
+			.build());
 	}
 
 	/**
@@ -111,8 +133,7 @@ public class UserService {
 	private Boolean isDuplicate(SignupRequest request){
 		if(userRepository.existsByLoginId(request.getId())
 		|| userRepository.existsByEmail(request.getEmail())
-		|| userRepository.existsByNickname(request.getNickname())
-		|| userRepository.existsByPhoneNumber(request.getPhoneNumber())){
+		|| userRepository.existsByNickname(request.getNickname())){
 			return true;
 		}
 		else{

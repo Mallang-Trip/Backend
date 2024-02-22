@@ -35,7 +35,7 @@ public class PaymentRequestService {
 	@Value("${toss-payment.secretKey}")
 	private String secretKey;
 
-	private final String URL = "https://api.tosspayments.com/v1";
+	private final String hostname = "https://api.tosspayments.com/v1";
 
 	/**
 	 * secretKey Base64 인코딩
@@ -111,7 +111,7 @@ public class PaymentRequestService {
 			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 
 			ResponseEntity<BillingKeyResponse> responseEntity = restTemplate.postForEntity(
-				new URI(URL + "/billing/authorizations/issue"),
+				new URI(hostname + "/billing/authorizations/issue"),
 				httpBody,
 				BillingKeyResponse.class
 			);
@@ -136,7 +136,7 @@ public class PaymentRequestService {
 			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 
 			ResponseEntity<PaymentResponse> responseEntity = restTemplate.postForEntity(
-				new URI(URL + "/billing/" + billingKey),
+				new URI(hostname + "/billing/" + billingKey),
 				httpBody,
 				PaymentResponse.class
 			);
@@ -160,7 +160,7 @@ public class PaymentRequestService {
 			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(
-				new URI(URL + "/payments/" + paymentKey + "/cancel"),
+				new URI(hostname + "/payments/" + paymentKey + "/cancel"),
 				httpBody,
 				String.class
 			);

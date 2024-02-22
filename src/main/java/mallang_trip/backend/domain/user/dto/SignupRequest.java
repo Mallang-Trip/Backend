@@ -33,55 +33,18 @@ public class SignupRequest {
     private String email;
 
     @NotBlank
-    private String name;
-
-    @NotBlank
-    @ApiModelProperty(value = "yyyyMMdd")
-    private String birthday;
-
-    @NotBlank
     @ApiModelProperty(value = "local/foreigner")
     private String country;
 
     @NotBlank
-    @ApiModelProperty(value = "male/female")
-    private String gender;
-
-    @NotBlank
-    private String phoneNumber;
-
-    @NotBlank
     private String nickname;
+
+    @NotBlank
+    private String impUid;
 
     @ApiModelProperty(value = "생략가능")
     private String introduction;
 
     @ApiModelProperty(value = "생략가능")
     private String profileImg;
-
-    public User toUser(PasswordEncoder passwordEncoder) {
-        return User.builder()
-            .loginId(id)
-            .password(passwordEncoder.encode(password))
-            .email(email)
-            .name(name)
-            .birthday(parsingBirthday(birthday))
-            .country(Country.from(country))
-            .gender(Gender.from(gender))
-            .phoneNumber(phoneNumber)
-            .nickname(nickname)
-            .introduction(introduction)
-            .profileImage(profileImg)
-            .role(Role.ROLE_USER)
-            .build();
-    }
-
-    private LocalDate parsingBirthday(String birthday) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        try {
-            return LocalDate.parse(birthday, formatter);
-        } catch (Exception e) {
-            return null;
-        }
-    }
 }

@@ -70,7 +70,7 @@ public class ChatService {
 	}
 
 	/**
-	 * 채팅방 생성 + 파티원, 드라이버 초대
+	 * 파티 전용 채팅방 생성 + 파티원, 드라이버 초대
 	 */
 	private void startPartyChat(Party party, ChatRoomType type){
 		ChatRoom room = chatRoomService.createChatRoom(type, null, party);
@@ -91,6 +91,7 @@ public class ChatService {
 
 	/**
 	 * 파티 채팅방 입장
+	 * 이미 가입되어 있다면 해당 ChatRoom 반환
 	 */
 	private ChatRoom joinPartyChat(User user, Party party, ChatRoomType type){
 		ChatRoom room = chatRoomRepository.findByPartyAndType(party, type)
@@ -100,7 +101,6 @@ public class ChatService {
 			template.convertAndSend("/sub/room/" + room.getId(),
 				ChatMessageResponse.of(chatMessageService.createEnterMessage(user, room)));
 		}
-
 		return room;
 	}
 
