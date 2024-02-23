@@ -12,11 +12,20 @@ import lombok.NoArgsConstructor;
 public class IdentificationResultResponse {
 
     private Integer code;
-    private String birthday;
-    private String carrier;
-    private Boolean certified;
-    private String gender;
-    private String name;
-    private String phone;
-    private String imp_uid;
+    private String message;
+    private CertificationAnnotation response;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class CertificationAnnotation {
+        private String imp_uid;
+        private String name;
+        private String gender;
+        private String birthday;
+        private Boolean foreigner;
+        private String phone;
+        private String carrier;
+        private Boolean certified;
+    }
 }

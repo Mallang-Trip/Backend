@@ -50,6 +50,7 @@ public class SecurityConfig {
             .antMatchers(HttpMethod.GET, "/article/**").permitAll() // article API
             .antMatchers(HttpMethod.GET, "/party/**").permitAll() // party API
             .antMatchers(HttpMethod.GET, "/announcement/**").permitAll() // announcement API
+            .antMatchers("/identification/**").permitAll() // identification API
             .antMatchers("/ws/chat/**").permitAll() // STOMP chat
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()

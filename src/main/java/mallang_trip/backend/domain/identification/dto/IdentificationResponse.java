@@ -12,5 +12,13 @@ import lombok.NoArgsConstructor;
 public class IdentificationResponse {
 
     private Integer code;
-    private String imp_uid;
+    private String message;
+    private CertificationOTPAnnotation response;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class CertificationOTPAnnotation {
+        private String imp_uid;
+    }
 }

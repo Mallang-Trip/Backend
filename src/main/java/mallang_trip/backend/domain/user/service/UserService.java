@@ -59,13 +59,14 @@ public class UserService {
 		if(isDuplicate(request)){
 			throw new BaseException(Conflict);
 		}
-		IdentificationResultResponse response = portOneIdentificationService.get(request.getImpUid());
+		IdentificationResultResponse.CertificationAnnotation response =
+			portOneIdentificationService.get(request.getImpUid()).getResponse();
 		userRepository.save(User.builder()
 			.loginId(request.getId())
 			.password(passwordEncoder.encode(request.getPassword()))
 			.email(request.getEmail())
 			.name(response.getName())
-			.birthday(LocalDate.parse(response.getBirthday(), DateTimeFormatter.ofPattern("yyMMdd")))
+			.birthday(LocalDate.parse(response.getBirthday()))
 			.country(Country.from(request.getCountry()))
 			.gender(Gender.from(response.getGender()))
 			.phoneNumber(response.getPhone())

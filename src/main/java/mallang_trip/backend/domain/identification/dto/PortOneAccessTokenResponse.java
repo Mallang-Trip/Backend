@@ -12,5 +12,15 @@ import lombok.NoArgsConstructor;
 public class PortOneAccessTokenResponse {
 
     private Integer code;
-    private String access_token;
+    private String message;
+    private AuthAnnotation response;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class AuthAnnotation {
+        private String access_token;
+        private String now;
+        private String expired_at;
+    }
 }
