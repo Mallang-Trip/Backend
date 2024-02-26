@@ -4,14 +4,14 @@ import static mallang_trip.backend.domain.notification.constant.NotificationType
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.CANCELED;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.EXPIRED;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.SUSPENDING;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_USER;
+import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.admin.exception.AdminExceptionStatus;
 import mallang_trip.backend.domain.global.io.BaseException;
-import mallang_trip.backend.domain.global.io.BaseResponseStatus;
 import mallang_trip.backend.domain.admin.dto.SuspendingUserResponse;
 import mallang_trip.backend.domain.admin.dto.SuspensionRequest;
 import mallang_trip.backend.domain.admin.entity.Suspension;
@@ -132,7 +132,7 @@ public class SuspensionService {
 	 */
 	public void checkSuspension(User user){
 		if(isSuspending(user)){
-			throw new BaseException(BaseResponseStatus.SUSPENDING);
+			throw new BaseException(AdminExceptionStatus.SUSPENDING);
 		}
 	}
 }

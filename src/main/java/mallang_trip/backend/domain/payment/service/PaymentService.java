@@ -1,7 +1,7 @@
 package mallang_trip.backend.domain.payment.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_PAYMENT;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.PAYMENT_FAIL;
+import static mallang_trip.backend.domain.payment.exception.PaymentExceptionStatus.CANNOT_FOUND_PAYMENT;
+import static mallang_trip.backend.domain.payment.exception.PaymentExceptionStatus.PAYMENT_FAIL;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;

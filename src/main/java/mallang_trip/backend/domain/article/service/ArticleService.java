@@ -1,10 +1,10 @@
 package mallang_trip.backend.domain.article.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_ARTICLE;
+import static mallang_trip.backend.domain.admin.exception.AdminExceptionStatus.SUSPENDING;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.CANNOT_FOUND_ARTICLE;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.DELETION_FORBIDDEN;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.MODIFICATION_FORBIDDEN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.SUSPENDING;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,7 +72,7 @@ public class ArticleService {
 	 */
 	public void modify(Long articleId, ArticleRequest request) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
 		User user = userService.getCurrentUser();
 		// 정지 CHECK
 		if (suspensionService.isSuspending(user)) {
@@ -80,7 +80,7 @@ public class ArticleService {
 		}
 		// 작성자인지 CHECK
 		if (!user.equals(article.getUser())) {
-			throw new BaseException(Forbidden);
+			throw new BaseException(MODIFICATION_FORBIDDEN);
 		}
 		// 수정
 		Party party = request.getPartyId() == null ? null
@@ -93,11 +93,11 @@ public class ArticleService {
 	 */
 	public void delete(Long articleId) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
 		// 작성자 또는 관리자인지 CHECK
 		User user = userService.getCurrentUser();
 		if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(article.getUser())) {
-			throw new BaseException(Forbidden);
+			throw new BaseException(DELETION_FORBIDDEN);
 		}
 		articleRepository.delete(article);
 	}

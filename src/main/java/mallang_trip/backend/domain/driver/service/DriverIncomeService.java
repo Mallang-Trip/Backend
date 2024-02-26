@@ -2,7 +2,7 @@ package mallang_trip.backend.domain.driver.service;
 
 import static mallang_trip.backend.domain.driver.constant.DriverIncomeType.CANCEL_PENALTY;
 import static mallang_trip.backend.domain.driver.constant.DriverIncomeType.WITHDRAW;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_DRIVER;
+import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
 
 import java.util.List;
 import java.util.stream.Collectors;

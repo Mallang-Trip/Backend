@@ -1,6 +1,6 @@
 package mallang_trip.backend.domain.course.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_DESTINATION;
+import static mallang_trip.backend.domain.destination.exception.DestinationExceptionStatus.CANNOT_FOUND_DESTINATION;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
 

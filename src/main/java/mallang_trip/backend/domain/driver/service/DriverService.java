@@ -4,7 +4,7 @@ import static mallang_trip.backend.domain.driver.constant.DriverStatus.ACCEPTED;
 import static mallang_trip.backend.domain.driver.constant.DriverStatus.CANCELED;
 import static mallang_trip.backend.domain.driver.constant.DriverStatus.REFUSED;
 import static mallang_trip.backend.domain.driver.constant.DriverStatus.WAITING;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_DRIVER;
+import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;

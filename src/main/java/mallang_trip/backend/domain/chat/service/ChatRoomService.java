@@ -1,12 +1,12 @@
 package mallang_trip.backend.domain.chat.service;
 
+import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.CANNOT_FOUND_CHATROOM;
+import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.NOT_CHATROOM_MEMBER;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.COUPLE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.GROUP;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PRIVATE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PUBLIC;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_CHATROOM;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.NOT_CHATROOM_MEMBER;
 
 import java.util.List;
 import java.util.stream.Collectors;

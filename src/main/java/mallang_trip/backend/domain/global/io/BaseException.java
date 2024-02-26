@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Slf4j
 public class BaseException extends RuntimeException {
-    private BaseResponseStatus status;
+    private ResponseStatus status;
 
-    public BaseException(BaseResponseStatus status) {
+    public BaseException(ResponseStatus status) {
         this.status = status;
         log.info("exception type : " + status);
     }

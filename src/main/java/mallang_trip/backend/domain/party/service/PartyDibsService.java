@@ -1,6 +1,6 @@
 package mallang_trip.backend.domain.party.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,7 +1,7 @@
 package mallang_trip.backend.domain.party.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.ALREADY_PARTY_MEMBER;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.NOT_PARTY_MEMBER;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.ALREADY_PARTY_MEMBER;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
 
 import java.util.List;
 import java.util.stream.Collectors;

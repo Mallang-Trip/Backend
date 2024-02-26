@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.user.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.ONGOING_PARTY_EXISTS;
+
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.ONGOING_PARTY_EXISTS;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;

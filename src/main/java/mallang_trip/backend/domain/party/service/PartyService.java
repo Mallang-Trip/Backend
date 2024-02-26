@@ -1,5 +1,7 @@
 package mallang_trip.backend.domain.party.service;
 
+import static mallang_trip.backend.domain.admin.exception.AdminExceptionStatus.SUSPENDING;
+import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_ALL_QUIT;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_DRIVER_QUIT;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_DRIVER_REFUSED;
@@ -11,17 +13,15 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_DRI
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.ALREADY_PARTY_MEMBER;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_CHANGE_COURSE;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_DRIVER;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.EXCEED_PARTY_CAPACITY;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.EXPIRED_PROPOSAL;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.NOT_PARTY_MEMBER;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.PARTY_CONFLICTED;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.SUSPENDING;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.ALREADY_PARTY_MEMBER;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_CHANGE_COURSE;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXCEED_PARTY_CAPACITY;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXPIRED_PROPOSAL;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_CONFLICTED;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_NOT_RECRUITING;
 
 import java.time.LocalDate;
 import java.time.Period;

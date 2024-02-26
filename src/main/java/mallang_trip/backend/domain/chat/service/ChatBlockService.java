@@ -1,5 +1,7 @@
 package mallang_trip.backend.domain.chat.service;
 
+import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,7 @@ public class ChatBlockService {
 	public void save(Long targetUserId){
 		User user = userService.getCurrentUser();
 		User targetUser = userRepository.findById(targetUserId)
-				.orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
+				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		if(isBlocked(user, targetUser)){
 			return;
 		}
@@ -45,7 +47,7 @@ public class ChatBlockService {
 	public void delete(Long targetUserId){
 		User user = userService.getCurrentUser();
 		User targetUser = userRepository.findById(targetUserId)
-			.orElseThrow(() -> new BaseException(BaseResponseStatus.CANNOT_FOUND_USER));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		chatBlockRepository.deleteByUserAndTargetUser(user, targetUser);
 	}
 

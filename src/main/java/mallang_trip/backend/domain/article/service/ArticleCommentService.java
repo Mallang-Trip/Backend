@@ -1,8 +1,10 @@
 package mallang_trip.backend.domain.article.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.SUSPENDING;
+import static mallang_trip.backend.domain.admin.exception.AdminExceptionStatus.SUSPENDING;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.CANNOT_FOUND_ARTICLE;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.CANNOT_FOUND_COMMENT;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.CANNOT_FOUND_REPLY;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.DELETION_FORBIDDEN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 
 import java.util.ArrayList;
@@ -46,7 +48,7 @@ public class ArticleCommentService {
      */
     public void createComment(Long articleId, String content) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
-            .orElseThrow(() -> new BaseException(Not_Found));
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
         User user = userService.getCurrentUser();
         // 정지 CHECK
         if (suspensionService.isSuspending(user)) {
@@ -67,7 +69,7 @@ public class ArticleCommentService {
      */
     public void createReply(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new BaseException(Not_Found));
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_COMMENT));
         User user = userService.getCurrentUser();
         // 정지 CHECK
         if (suspensionService.isSuspending(user)) {
@@ -88,11 +90,11 @@ public class ArticleCommentService {
      */
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-            .orElseThrow(() -> new BaseException(Not_Found));
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_COMMENT));
         // 작성자 또는 관리자인지 CHECK
         User user = userService.getCurrentUser();
         if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(comment.getUser())) {
-            throw new BaseException(Forbidden);
+            throw new BaseException(DELETION_FORBIDDEN);
         }
         // 삭제
         commentRepository.delete(comment);
@@ -103,11 +105,11 @@ public class ArticleCommentService {
      */
     public void deleteReply(Long replyId) {
         Reply reply = replyRepository.findById(replyId)
-            .orElseThrow(() -> new BaseException(Not_Found));
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_REPLY));
         // 작성자 또는 관리자인지 CHECK
         User user = userService.getCurrentUser();
         if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(reply.getUser())) {
-            throw new BaseException(Forbidden);
+            throw new BaseException(DELETION_FORBIDDEN);
         }
         replyRepository.delete(reply);
     }

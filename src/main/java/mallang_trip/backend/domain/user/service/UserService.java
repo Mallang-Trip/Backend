@@ -1,11 +1,11 @@
 package mallang_trip.backend.domain.user.service;
 
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Bad_Request;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.EMPTY_JWT;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Unauthorized;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
+import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;

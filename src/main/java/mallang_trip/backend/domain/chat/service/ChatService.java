@@ -1,18 +1,18 @@
 package mallang_trip.backend.domain.chat.service;
 
+import static mallang_trip.backend.domain.admin.exception.AdminExceptionStatus.SUSPENDING;
+import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.CANNOT_FOUND_CHATROOM;
+import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.NOT_CHATROOM_MEMBER;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.COUPLE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.GROUP;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PRIVATE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PUBLIC;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_CHATROOM;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_PARTY;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.NOT_CHATROOM_MEMBER;
 import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.PARTY_NOT_RECRUITING;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.SUSPENDING;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_NOT_RECRUITING;
+import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +20,6 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.chat.constant.ChatRoomType;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
-import mallang_trip.backend.domain.chat.repository.ChatMessageRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
 import mallang_trip.backend.domain.global.io.BaseException;
 import mallang_trip.backend.domain.chat.dto.ChatMessageRequest;
@@ -52,10 +51,8 @@ public class ChatService {
 	private final ChatRoomService chatRoomService;
 	private final ChatMemberService chatMemberService;
 	private final ChatMessageService chatMessageService;
-	private final ChatBlockService chatBlockService;
 	private final SuspensionService suspensionService;
 	private final UserRepository userRepository;
-	private final ChatMessageRepository chatMessageRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMemberRepository chatMemberRepository;
 	private final PartyRepository partyRepository;

@@ -1,6 +1,6 @@
 package mallang_trip.backend.domain.article.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.CANNOT_FOUND_ARTICLE;
+import static mallang_trip.backend.domain.article.exception.ArticleExceptionStatus.CANNOT_FOUND_ARTICLE;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.article.entity.Article;
