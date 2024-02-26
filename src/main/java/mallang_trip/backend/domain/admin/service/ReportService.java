@@ -2,14 +2,14 @@ package mallang_trip.backend.domain.admin.service;
 
 import static mallang_trip.backend.domain.admin.constant.ReportStatus.COMPLETE;
 import static mallang_trip.backend.domain.admin.constant.ReportStatus.WAITING;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.ReportBriefResponse;
 import mallang_trip.backend.domain.admin.dto.ReportDetailsResponse;
 import mallang_trip.backend.domain.admin.dto.ReportRequest;

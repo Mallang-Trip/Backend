@@ -13,7 +13,7 @@ import javax.persistence.*;
 import mallang_trip.backend.domain.user.constant.Country;
 import mallang_trip.backend.domain.user.constant.Gender;
 import mallang_trip.backend.domain.user.constant.Role;
-import mallang_trip.backend.domain.global.BaseEntity;
+import mallang_trip.backend.global.entity.BaseEntity;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.SQLDelete;
 

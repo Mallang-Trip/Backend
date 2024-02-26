@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.driver.constant.DriverIncomeType;
 import mallang_trip.backend.domain.driver.repository.DriverRepository;
 import mallang_trip.backend.domain.driver.repository.DriverIncomeRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.driver.dto.DriverIncomeResponse;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.driver.entity.DriverIncome;

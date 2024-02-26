@@ -2,7 +2,7 @@ package mallang_trip.backend.domain.user.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import mallang_trip.backend.domain.global.io.ResponseStatus;
+import mallang_trip.backend.global.io.ResponseStatus;
 
 @Getter
 @AllArgsConstructor

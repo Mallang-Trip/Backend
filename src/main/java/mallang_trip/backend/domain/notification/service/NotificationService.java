@@ -1,12 +1,12 @@
 package mallang_trip.backend.domain.notification.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.notification.constant.NotificationType;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.notification.dto.NotificationListResponse;
 import mallang_trip.backend.domain.notification.dto.NotificationResponse;
 import mallang_trip.backend.domain.notification.entity.Notification;

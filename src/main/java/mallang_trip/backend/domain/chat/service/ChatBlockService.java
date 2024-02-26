@@ -5,8 +5,7 @@ import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CAN
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
-import mallang_trip.backend.domain.global.io.BaseResponseStatus;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.dto.UserBriefResponse;
 import mallang_trip.backend.domain.chat.entity.ChatBlock;
 import mallang_trip.backend.domain.user.entity.User;

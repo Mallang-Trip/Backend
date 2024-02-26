@@ -2,7 +2,7 @@ package mallang_trip.backend.domain.destination.service;
 
 import static mallang_trip.backend.domain.destination.constant.DestinationType.BY_ADMIN;
 import static mallang_trip.backend.domain.destination.exception.DestinationExceptionStatus.CANNOT_FOUND_DESTINATION;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,7 +10,7 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.destination.constant.DestinationType;
 import mallang_trip.backend.domain.destination.repository.DestinationRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.destination.dto.DestinationBriefResponse;
 import mallang_trip.backend.domain.destination.dto.DestinationDetailsResponse;
 import mallang_trip.backend.domain.destination.dto.DestinationIdResponse;

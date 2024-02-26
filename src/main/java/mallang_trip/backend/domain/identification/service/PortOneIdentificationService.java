@@ -1,10 +1,10 @@
 package mallang_trip.backend.domain.identification.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Bad_Request;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Internal_Server_Error;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Unauthorized;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_Error;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Unauthorized;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -18,7 +18,7 @@ import mallang_trip.backend.domain.identification.dto.IdentificationConfirmReque
 import mallang_trip.backend.domain.identification.dto.IdentificationRequest;
 import mallang_trip.backend.domain.identification.dto.IdentificationResponse;
 import mallang_trip.backend.domain.identification.dto.IdentificationResultResponse;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;

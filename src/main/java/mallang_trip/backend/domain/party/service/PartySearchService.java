@@ -8,7 +8,7 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_COU
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
 
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
 import mallang_trip.backend.domain.party.dto.PartyDetailsResponse;
 import mallang_trip.backend.domain.party.entity.Party;

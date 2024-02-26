@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.user.constant.Role;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyMemberCompanionRequest;
 import mallang_trip.backend.domain.party.dto.PartyMemberCompanionResponse;
 import mallang_trip.backend.domain.party.dto.PartyMemberResponse;

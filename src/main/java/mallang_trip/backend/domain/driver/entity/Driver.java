@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 import mallang_trip.backend.domain.driver.constant.DriverStatus;
 import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverRegistrationRequest;
-import mallang_trip.backend.domain.global.BaseEntity;
+import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.SQLDelete;

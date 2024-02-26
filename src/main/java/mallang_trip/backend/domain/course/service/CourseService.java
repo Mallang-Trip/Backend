@@ -1,8 +1,8 @@
 package mallang_trip.backend.domain.course.service;
 
 import static mallang_trip.backend.domain.destination.exception.DestinationExceptionStatus.CANNOT_FOUND_DESTINATION;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +12,7 @@ import mallang_trip.backend.domain.course.dto.CourseDayRequest;
 import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.course.dto.CourseDayResponse;
 import mallang_trip.backend.domain.course.dto.CourseDetailsResponse;
 import mallang_trip.backend.domain.course.dto.CourseBriefResponse;

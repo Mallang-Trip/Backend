@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.article.constant.ArticleType;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.article.entity.Article;
 import mallang_trip.backend.domain.article.dto.ArticleBriefResponse;
 import mallang_trip.backend.domain.article.dto.ArticleDetailsResponse;

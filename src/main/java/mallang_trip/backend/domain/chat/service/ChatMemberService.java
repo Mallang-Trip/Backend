@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.chat.dto.ChatMessageResponse;
 import mallang_trip.backend.domain.chat.entity.ChatMember;
 import mallang_trip.backend.domain.chat.entity.ChatRoom;

@@ -6,7 +6,7 @@ import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.O
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.party.constant.ProposalType;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
 import mallang_trip.backend.domain.party.repository.PartyRepository;

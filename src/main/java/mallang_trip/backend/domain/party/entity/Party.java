@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
-import mallang_trip.backend.domain.global.BaseEntity;
+import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import org.hibernate.annotations.SQLDelete;

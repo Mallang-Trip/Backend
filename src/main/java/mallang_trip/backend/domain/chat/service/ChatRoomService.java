@@ -6,7 +6,7 @@ import static mallang_trip.backend.domain.chat.constant.ChatRoomType.COUPLE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.GROUP;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PRIVATE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PUBLIC;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.chat.constant.ChatRoomType;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.chat.dto.ChatRoomBriefResponse;
 import mallang_trip.backend.domain.chat.dto.ChatRoomDetailsResponse;
 import mallang_trip.backend.domain.user.dto.UserBriefResponse;

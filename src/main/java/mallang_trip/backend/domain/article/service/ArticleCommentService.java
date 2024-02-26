@@ -22,7 +22,7 @@ import mallang_trip.backend.domain.article.entity.Reply;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
 import mallang_trip.backend.domain.article.repository.CommentRepository;
 import mallang_trip.backend.domain.article.repository.ReplyRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.data.domain.Page;

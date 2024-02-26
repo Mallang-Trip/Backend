@@ -1,11 +1,11 @@
 package mallang_trip.backend.domain.user.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.dto.UserBriefResponse;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.admin.service.SuspensionService;

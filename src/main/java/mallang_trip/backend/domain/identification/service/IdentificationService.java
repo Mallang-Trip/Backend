@@ -1,10 +1,10 @@
 package mallang_trip.backend.domain.identification.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.identification.dto.IdentificationRequest;
 import mallang_trip.backend.domain.identification.dto.ImpUidResponse;
 import mallang_trip.backend.domain.identification.dto.UserIdentificationRequest;

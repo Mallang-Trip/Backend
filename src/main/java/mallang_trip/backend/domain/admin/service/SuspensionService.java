@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.exception.AdminExceptionStatus;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.SuspendingUserResponse;
 import mallang_trip.backend.domain.admin.dto.SuspensionRequest;
 import mallang_trip.backend.domain.admin.entity.Suspension;

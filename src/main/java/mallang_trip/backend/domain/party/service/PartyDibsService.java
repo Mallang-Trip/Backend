@@ -5,7 +5,7 @@ import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.C
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.entity.PartyDibs;

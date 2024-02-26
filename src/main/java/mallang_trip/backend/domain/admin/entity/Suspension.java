@@ -18,7 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.admin.constant.SuspensionStatus;
-import mallang_trip.backend.domain.global.BaseEntity;
+import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;

@@ -7,7 +7,7 @@ import mallang_trip.backend.domain.article.entity.Article;
 import mallang_trip.backend.domain.article.entity.ArticleDibs;
 import mallang_trip.backend.domain.article.repository.ArticleDibsRepository;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;

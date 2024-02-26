@@ -2,16 +2,16 @@ package mallang_trip.backend.domain.destination.service;
 
 import static mallang_trip.backend.domain.destination.exception.DestinationExceptionStatus.CANNOT_FOUND_DESTINATION;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Conflict;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.destination.repository.DestinationRepository;
 import mallang_trip.backend.domain.destination.repository.DestinationReviewRepository;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.destination.dto.DestinationReviewRequest;
 import mallang_trip.backend.domain.destination.dto.DestinationReviewResponse;
 import mallang_trip.backend.domain.destination.entity.Destination;

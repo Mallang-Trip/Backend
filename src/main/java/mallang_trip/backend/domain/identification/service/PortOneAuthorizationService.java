@@ -1,13 +1,13 @@
 package mallang_trip.backend.domain.identification.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Internal_Server_Error;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_Error;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.identification.dto.PortOneAccessTokenRequest;
 import mallang_trip.backend.domain.identification.dto.PortOneAccessTokenResponse;
 import org.springframework.beans.factory.annotation.Value;

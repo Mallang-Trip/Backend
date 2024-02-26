@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mallang_trip.backend.domain.destination.constant.DestinationType;
 import mallang_trip.backend.domain.destination.dto.DestinationRequest;
-import mallang_trip.backend.domain.global.BaseEntity;
+import mallang_trip.backend.global.entity.BaseEntity;
 import org.hibernate.annotations.SQLDelete;
 
 @Entity

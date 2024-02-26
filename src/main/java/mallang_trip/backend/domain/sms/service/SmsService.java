@@ -1,6 +1,6 @@
 package mallang_trip.backend.domain.sms.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,7 @@ import java.util.Random;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.sms.repository.SmsCertification;
 import mallang_trip.backend.domain.sms.dto.SmsMessage;
 import mallang_trip.backend.domain.sms.dto.SmsRequest;

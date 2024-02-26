@@ -4,7 +4,7 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXPIRED_PROPOSAL;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
 
@@ -15,7 +15,7 @@ import mallang_trip.backend.domain.party.constant.AgreementStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.user.constant.Role;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.ChangeCourseRequest;
 import mallang_trip.backend.domain.party.dto.JoinPartyRequest;
 import mallang_trip.backend.domain.party.dto.PartyMemberCompanionRequest;

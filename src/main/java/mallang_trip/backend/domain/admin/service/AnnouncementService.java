@@ -1,12 +1,12 @@
 package mallang_trip.backend.domain.admin.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.constant.AnnouncementType;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.AnnouncementBriefResponse;
 import mallang_trip.backend.domain.admin.dto.AnnouncementDetailsResponse;
 import mallang_trip.backend.domain.admin.dto.AnnouncementIdResponse;

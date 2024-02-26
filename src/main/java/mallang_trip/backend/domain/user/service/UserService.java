@@ -1,9 +1,9 @@
 package mallang_trip.backend.domain.user.service;
 
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Bad_Request;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Conflict;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.EMPTY_JWT;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Unauthorized;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.global.io.BaseResponseStatus.EMPTY_JWT;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Unauthorized;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
@@ -13,10 +13,9 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.config.security.TokenProvider;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.config.security.TokenProvider;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.identification.dto.IdentificationResultResponse;
 import mallang_trip.backend.domain.identification.service.PortOneIdentificationService;
 import mallang_trip.backend.domain.user.constant.Country;

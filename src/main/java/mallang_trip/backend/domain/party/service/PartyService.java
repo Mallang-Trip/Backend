@@ -13,7 +13,7 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_DRI
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
-import static mallang_trip.backend.domain.global.io.BaseResponseStatus.Forbidden;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.ALREADY_PARTY_MEMBER;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_CHANGE_COURSE;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.user.constant.Role;
-import mallang_trip.backend.domain.global.io.BaseException;
+import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.ChangeCourseRequest;
 import mallang_trip.backend.domain.party.dto.CreatePartyRequest;
 import mallang_trip.backend.domain.party.dto.JoinPartyRequest;
