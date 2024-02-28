@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 import mallang_trip.backend.domain.notification.constant.NotificationType;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table
@@ -23,6 +25,8 @@ import mallang_trip.backend.domain.user.entity.User;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE notification SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class Notification extends BaseEntity {
 
     @Id

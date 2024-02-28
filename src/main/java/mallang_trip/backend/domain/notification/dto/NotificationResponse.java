@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.notification.dto;
 
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.notification.constant.NotificationType;
@@ -14,6 +15,7 @@ public class NotificationResponse {
     private NotificationType type;
     private Long targetId;
     private Boolean checked;
+    private LocalDateTime createdAt;
 
     public static NotificationResponse of(Notification notification){
         return NotificationResponse.builder()
@@ -22,6 +24,7 @@ public class NotificationResponse {
             .type(notification.getType())
             .targetId(notification.getTargetId())
             .checked(notification.getChecked())
+            .createdAt(notification.getCreatedAt())
             .build();
     }
 }

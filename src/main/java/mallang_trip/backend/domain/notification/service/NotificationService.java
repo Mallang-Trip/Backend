@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.notification.service;
 
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
@@ -29,7 +30,8 @@ public class NotificationService {
 	 */
 	public NotificationListResponse getNotifications() {
 		User user = userService.getCurrentUser();
-		List<NotificationResponse> notifications = notificationRepository.findByUser(user).stream()
+		List<NotificationResponse> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user)
+			.stream()
 			.map(NotificationResponse::of)
 			.collect(Collectors.toList());
 		return NotificationListResponse.builder()
@@ -56,7 +58,22 @@ public class NotificationService {
 	public void check(Long notificationId) {
 		Notification notification = notificationRepository.findById(notificationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
+		if(!notification.getUser().equals(userService.getCurrentUser())){
+			throw new BaseException(Forbidden);
+		}
 		notification.setCheckTrue();
+	}
+
+	/**
+	 * 알림 삭제
+	 */
+	public void delete(Long notificationId){
+		Notification notification = notificationRepository.findById(notificationId)
+			.orElseThrow(() -> new BaseException(Not_Found));
+		if(!notification.getUser().equals(userService.getCurrentUser())){
+			throw new BaseException(Forbidden);
+		}
+		notificationRepository.delete(notification);
 	}
 
 	/**

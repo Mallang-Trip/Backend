@@ -157,5 +157,4 @@ public class ArticleController {
 		articleCommentService.deleteReply(replyId);
 		return new BaseResponse<>("성공");
 	}
-
 }
