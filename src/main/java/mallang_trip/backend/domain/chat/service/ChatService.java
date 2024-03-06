@@ -320,10 +320,10 @@ public class ChatService {
             request.getContent());
         // 멤버 unreadCount++
         chatMemberService.increaseAllMembersUnreadCount(room, currentUser);
-		// 채팅 메시지 PUBLISH
-		template.convertAndSend("/sub/room/" + roomId, ChatMessageResponse.of(message));
 		// 멤버들에게 업데이트된 채팅방 리스트 STOMP publish
 		sendNewChatRoomList(chatMemberService.getChatMembers(room));
+        // 채팅 메시지 PUBLISH
+        template.convertAndSend("/sub/room/" + roomId, ChatMessageResponse.of(message));
     }
 
     /**
