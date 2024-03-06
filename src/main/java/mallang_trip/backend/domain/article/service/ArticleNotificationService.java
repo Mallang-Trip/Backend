@@ -11,6 +11,7 @@ import mallang_trip.backend.domain.article.entity.Comment;
 import mallang_trip.backend.domain.article.entity.Reply;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.notification.service.NotificationService;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,7 @@ public class ArticleNotificationService {
 
 	private final NotificationService notificationService;
 	private final ReplyRepository replyRepository;
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 
 	// 1. 새 댓글 알림
 	public void newComment(Article article) {
@@ -57,7 +58,7 @@ public class ArticleNotificationService {
 		// 중복 제거 + 현재 유저 제외
 		return users.stream()
 			.distinct()
-			.filter(user -> !user.equals(userService.getCurrentUser()))
+			.filter(user -> !user.equals(currentUserService.getCurrentUser()))
 			.collect(Collectors.toList());
 	}
 }

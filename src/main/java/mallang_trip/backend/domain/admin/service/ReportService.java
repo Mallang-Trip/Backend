@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.ReportBriefResponse;
 import mallang_trip.backend.domain.admin.dto.ReportDetailsResponse;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ReportService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final UserRepository userRepository;
 	private final ReportRepository reportRepository;
 
@@ -37,7 +38,7 @@ public class ReportService {
 		User reportee = userRepository.findById(request.getReporteeId())
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		reportRepository.save(Report.builder()
-			.reporter(userService.getCurrentUser())
+			.reporter(currentUserService.getCurrentUser())
 			.reportee(reportee)
 			.content(request.getContent())
 			.type(request.getType())

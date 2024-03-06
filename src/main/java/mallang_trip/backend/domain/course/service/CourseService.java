@@ -12,6 +12,7 @@ import mallang_trip.backend.domain.course.dto.CourseDayRequest;
 import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.course.dto.CourseDayResponse;
 import mallang_trip.backend.domain.course.dto.CourseDetailsResponse;
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class CourseService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final CourseRepository courseRepository;
 	private final CourseDayRepository courseDayRepository;
 	private final DestinationRepository destinationRepository;
@@ -39,7 +40,7 @@ public class CourseService {
 	 */
 	public Course createCourse(CourseRequest request) {
 		Course course = courseRepository.save(Course.builder()
-			.owner(userService.getCurrentUser())
+			.owner(currentUserService.getCurrentUser())
 			.images(request.getImages())
 			.totalDays(request.getTotalDays())
 			.name(request.getName())
@@ -65,7 +66,7 @@ public class CourseService {
 		Course course = courseRepository.findById(courseId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		// 내 코스가 아닌 경우
-		if (!course.getOwner().equals(userService.getCurrentUser())) {
+		if (!course.getOwner().equals(currentUserService.getCurrentUser())) {
 			throw new BaseException(Forbidden);
 		}
 		// 코스 정보 변경
@@ -134,7 +135,7 @@ public class CourseService {
 		Course course = courseRepository.findById(courseId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		// 코스 생성자가 아닌 경우
-		if (!course.getOwner().equals(userService.getCurrentUser())) {
+		if (!course.getOwner().equals(currentUserService.getCurrentUser())) {
 			throw new BaseException(Forbidden);
 		}
 		// 삭제

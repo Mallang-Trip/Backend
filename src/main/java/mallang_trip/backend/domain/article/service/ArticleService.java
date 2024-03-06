@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.article.constant.ArticleType;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.article.entity.Article;
 import mallang_trip.backend.domain.article.dto.ArticleBriefResponse;
@@ -33,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArticleService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final ArticleCommentService articleCommentService;
 	private final ArticleDibsService articleDibsService;
 	private final SuspensionService suspensionService;
@@ -44,7 +45,7 @@ public class ArticleService {
 	 * 게시글 생성
 	 */
 	public ArticleIdResponse create(ArticleRequest request) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		// 정지 CHECK
 		if (suspensionService.isSuspending(user)) {
 			throw new BaseException(SUSPENDING);
@@ -73,7 +74,7 @@ public class ArticleService {
 	public void modify(Long articleId, ArticleRequest request) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		// 정지 CHECK
 		if (suspensionService.isSuspending(user)) {
 			throw new BaseException(SUSPENDING);
@@ -95,7 +96,7 @@ public class ArticleService {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
 		// 작성자 또는 관리자인지 CHECK
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(article.getUser())) {
 			throw new BaseException(DELETION_FORBIDDEN);
 		}
@@ -123,7 +124,7 @@ public class ArticleService {
 			.images(article.getImages())
 			.comments(articleCommentService.getCommentsAndReplies(article))
 			.commentsCount(articleCommentService.countCommentsAndReplies(article))
-			.dibs(articleDibsService.checkArticleDibs(userService.getCurrentUser(), article))
+			.dibs(articleDibsService.checkArticleDibs(currentUserService.getCurrentUser(), article))
 			.createdAt(article.getCreatedAt())
 			.updatedAt(article.getUpdatedAt())
 			.build();
@@ -156,7 +157,7 @@ public class ArticleService {
 	 * 내가 작성한 글 조회
 	 */
 	public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		Page<Article> articles = articleRepository.
 			findByDeletedAndUserOrderByUpdatedAtDesc(false, user, pageable);
 		List<ArticleBriefResponse> responses = getArticleBriefResponses(articles);

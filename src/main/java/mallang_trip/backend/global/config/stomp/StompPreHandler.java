@@ -1,12 +1,12 @@
 package mallang_trip.backend.global.config.stomp;
 
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.config.security.TokenProvider;
 import mallang_trip.backend.domain.chat.entity.ChatRoom;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
-import mallang_trip.backend.domain.user.repository.UserRepository;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.messaging.Message;
@@ -14,7 +14,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,8 +21,8 @@ import org.springframework.stereotype.Component;
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class StompPreHandler implements ChannelInterceptor {
 
+    private final CurrentUserService currentUserService;
     private final TokenProvider tokenProvider;
-    private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMemberRepository chatMemberRepository;
 
@@ -37,20 +36,37 @@ public class StompPreHandler implements ChannelInterceptor {
     private void handleMessage(StompHeaderAccessor accessor) {
         switch (accessor.getCommand()) {
             case CONNECT:
-                tokenProvider.validateToken(accessor);
+                // JWT 유효성 검사
+                tokenProvider.validateToken(extractAccessToken(accessor));
                 break;
             case SUBSCRIBE:
+                // SUBSCRIBE 권한 검사
                 checkSubscribe(accessor);
                 break;
             case SEND:
+                // SEND 권한 검사
                 checkSend(accessor);
                 break;
         }
     }
 
+    /**
+     * StompHeaderAccessor 에서 헤더의 JWT 토큰 추출
+     */
+    private String extractAccessToken(StompHeaderAccessor accessor){
+        String tokenHeader = accessor.getFirstNativeHeader("access-token");
+        if (tokenHeader == null || tokenHeader.isEmpty()) {
+            throw new MessageDeliveryException("EMPTY_JWT");
+        }
+        return tokenHeader.substring(7);
+    }
+
+    /**
+     * 현재 유저가 해당 경로를 SUBSCRIBE 할 수 있는 권한이 있는지 확인
+     */
     private void checkSubscribe(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
-        User user = getCurrentUser(accessor);
+        User user = currentUserService.getCurrentUser(accessor);
         if (destination.startsWith("/sub/room")) {
             checkPermissionForChatRoom(user, destination);
         } else if (destination.startsWith("/sub/list")) {
@@ -60,9 +76,12 @@ public class StompPreHandler implements ChannelInterceptor {
         }
     }
 
+    /**
+     * 현재 유저가 해당 경로로 SEND 할 수 있는 권한이 있는지 확인
+     */
     private void checkSend(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
-        User user = getCurrentUser(accessor);
+        User user = currentUserService.getCurrentUser(accessor);
         try{
             if (destination.startsWith("/pub/read") || destination.startsWith("/pub/write")) {
                 Long roomId = Long.parseLong(accessor.getFirstNativeHeader("room-id"));
@@ -101,17 +120,5 @@ public class StompPreHandler implements ChannelInterceptor {
         } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
             throw new MessageDeliveryException("INVALID_FORMAT");
         }
-    }
-
-    private User getCurrentUser(StompHeaderAccessor accessor) {
-        String accessToken = accessor.getFirstNativeHeader("access-token");
-        if (accessToken == null) {
-            throw new MessageDeliveryException("EMPTY_JWT");
-        }
-        String token = accessToken.substring(7);
-        Authentication authentication = tokenProvider.getAuthentication(token);
-        User user = userRepository.findById(Long.parseLong(authentication.getName()))
-            .orElseThrow(() -> new MessageDeliveryException("CANNOT_FOUND_USER"));
-        return user;
     }
 }

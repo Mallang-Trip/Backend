@@ -42,9 +42,9 @@ public class ChatMemberService {
 	private final SimpMessagingTemplate template;
 
 	/**
-	 * 채팅방 멤버 생성
+	 * 채팅방 멤버 조회. 없다면 채팅 멤버 생성
 	 */
-	public ChatMember createChatMember(ChatRoom room, User user) {;
+	public ChatMember getOrCreate(ChatRoom room, User user) {
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user).orElse(null);
 		if (member == null) {
 			return chatMemberRepository.save(ChatMember.builder()
@@ -66,13 +66,13 @@ public class ChatMemberService {
 			.filter(user -> !chatBlockService.isBlocked(user, currentUser))
 			.filter(user -> !chatMemberRepository.existsByChatRoomAndUser(room, user))
 			.collect(Collectors.toList());
-		users.forEach(user -> createChatMember(room, user));
+		users.forEach(user -> getOrCreate(room, user));
 
 		return users;
 	}
 
 	/**
-	 * 채팅방 멤버 조회
+	 * 채팅방의 모든 멤버 조회
 	 */
 	public List<ChatMember> getChatMembers(ChatRoom room) {
 		return chatMemberRepository.findByChatRoom(room);
@@ -86,7 +86,7 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * COUPLE ChatRoom에서 상대방 유저 조회
+	 * COUPLE 채팅방에서 상대방 유저 조회
 	 */
 	public User getOtherUserInCoupleChatRoom(ChatRoom room, User user) {
 		return chatMemberRepository.findByChatRoom(room).stream()
@@ -140,7 +140,7 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * COUPLE ChatRoom 나가기
+	 * COUPLE 채팅방 나가기 (active status -> false)
 	 */
 	public void leaveCoupleChatRoom(ChatRoom room, User user) {
 		ChatMember member = chatMemberRepository.findByChatRoomAndUser(room, user)
@@ -149,7 +149,7 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * 나가기 메시지와 함께 파티 나가기
+	 * 나가기 메시지와 함께 채팅방 나가기
 	 */
 	public void leaveChatRoomWithMessage(ChatRoom room, User user) {
 		chatMemberRepository.findByChatRoomAndUser(room, user)
@@ -161,7 +161,7 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * PARTY_PUBLIC ChatRoom 나가기. 내가 속한 파티이고, 파티가 진행중이면 나가기 불가.
+	 * PARTY 채팅방 나가기. 내가 속한 파티이고, 파티가 진행중이면 나가기 불가.
 	 */
 	public void leavePartyChatRoom(ChatRoom room, User user) {
 		Party party = room.getParty();
@@ -188,6 +188,10 @@ public class ChatMemberService {
 			throw new BaseException(CANNOT_KICK_CHAT_MEMBER);
 		}
 		leaveChatRoomWithMessage(room, target);
+	}
+
+	public Boolean isChatMember(User user, ChatRoom room){
+		return chatMemberRepository.existsByChatRoomAndUser(room, user);
 	}
 
 	public Boolean isMyParty(User user, Party party) {

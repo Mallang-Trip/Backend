@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.user.constant.Role;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyMemberCompanionRequest;
 import mallang_trip.backend.domain.party.dto.PartyMemberCompanionResponse;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PartyMemberService {
 
-    private final UserService userService;
+    private final CurrentUserService currentUserService;
     private final PartyMemberRepository partyMemberRepository;
     private final PartyMemberCompanionRepository partyMemberCompanionRepository;
 
@@ -114,7 +115,7 @@ public class PartyMemberService {
      * 파티 레디 or 취소
      */
     public void setReady(Party party, Boolean ready) {
-        Role role = userService.getCurrentUser().getRole();
+        Role role = currentUserService.getCurrentUser().getRole();
         if (role.equals(Role.ROLE_DRIVER)) {
             setReadyByDriver(party, ready);
         }
@@ -127,7 +128,7 @@ public class PartyMemberService {
      * (드라이버) 파티 레디 or 취소
      */
     public void setReadyByDriver(Party party, Boolean ready) {
-        if (!party.getDriver().getUser().equals(userService.getCurrentUser())) {
+        if (!party.getDriver().getUser().equals(currentUserService.getCurrentUser())) {
             throw new BaseException(NOT_PARTY_MEMBER);
         }
         party.setDriverReady(ready);
@@ -138,7 +139,7 @@ public class PartyMemberService {
      */
     public void setReadyByMember(Party party, Boolean ready) {
         PartyMember member = partyMemberRepository.findByPartyAndUser(party,
-                userService.getCurrentUser())
+                currentUserService.getCurrentUser())
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
         member.setReady(ready);
     }

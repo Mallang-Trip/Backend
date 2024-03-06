@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.destination.repository.DestinationRepository;
 import mallang_trip.backend.domain.destination.repository.DestinationReviewRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.destination.dto.DestinationReviewRequest;
 import mallang_trip.backend.domain.destination.dto.DestinationReviewResponse;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DestinationReviewService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final SuspensionService suspensionService;
 	private final DestinationRepository destinationRepository;
 	private final DestinationReviewRepository destinationReviewRepository;
@@ -38,7 +39,7 @@ public class DestinationReviewService {
 	public void create(Long destinationId, DestinationReviewRequest request) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 정지된 유저인지 CHECK
 		suspensionService.checkSuspension(currentUser);
 		// 1인 1리뷰 CHECK
@@ -60,7 +61,7 @@ public class DestinationReviewService {
 	public void change(Long reviewId, DestinationReviewRequest request) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 정지된 사용자인지 CHECK
 		suspensionService.checkSuspension(currentUser);
 		// 작성자가 아닐 경우
@@ -76,7 +77,7 @@ public class DestinationReviewService {
 	public void delete(Long reviewId) {
 		DestinationReview review = destinationReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 관리자나 작성자가 아닐 경우
 		if (!currentUser.getRole().equals(ROLE_ADMIN) && !currentUser.equals(review.getUser())) {
 			throw new BaseException(Forbidden);

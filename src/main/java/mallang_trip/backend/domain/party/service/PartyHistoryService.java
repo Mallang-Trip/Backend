@@ -9,6 +9,7 @@ import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.entity.PartyHistory;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.party.repository.PartyHistoryRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PartyHistoryService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final PartyHistoryRepository partyHistoryRepository;
 
 	/**
 	 * 최근 본 파티 저장. 처음 본 파티면 party_history 생성, 이미 본 파티면 updated_at 현재 시간으로 update.
 	 */
 	public void createPartyHistory(Party party) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		if(user == null){
 			return;
 		}
@@ -44,7 +45,7 @@ public class PartyHistoryService {
 	 * 최근 본 파티 조회
 	 */
 	public List<PartyBriefResponse> getPartyHistory() {
-		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(userService.getCurrentUser())
+		return partyHistoryRepository.findByUserOrderByUpdatedAtDesc(currentUserService.getCurrentUser())
 			.stream()
 			.map(partyHistory -> partyHistory.getParty())
 			.map(party -> PartyBriefResponse.of(party))

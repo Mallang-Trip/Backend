@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
 import mallang_trip.backend.domain.party.dto.PartyDetailsResponse;
@@ -46,7 +47,7 @@ public class PartySearchService {
 	private final PartyMemberService partyMemberService;
 	private final PartyProposalService partyProposalService;
 	private final CourseService courseService;
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final DriverService driverService;
 	private final ReservationService reservationService;
 	private final PartyHistoryService partyHistoryService;
@@ -75,7 +76,7 @@ public class PartySearchService {
 	 * (멤버) 내 파티 목록 조회
 	 */
 	public List<PartyBriefResponse> getMyPartiesByMember() {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		List<PartyBriefResponse> partyResponses = Stream.concat(
 				getMyProposingParties(user).stream(),
 				partyMemberRepository.findByUser(user).stream().map(PartyMember::getParty)
@@ -99,7 +100,7 @@ public class PartySearchService {
 	 * 파티 상세 조회
 	 */
 	public PartyDetailsResponse getPartyDetails(Long partyId) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		partyHistoryService.createPartyHistory(party);
@@ -254,7 +255,7 @@ public class PartySearchService {
 		PartyProposal proposal = partyProposalService.getWaitingProposalByParty(party);
 		return PartyDetailsResponse.builder()
 			.partyId(party.getId())
-			.myParty(partyService.isMyParty(userService.getCurrentUser(), party))
+			.myParty(partyService.isMyParty(currentUserService.getCurrentUser(), party))
 			.dibs(partyDibsService.checkPartyDibs(party))
 			.partyStatus(party.getStatus())
 			.driverId(party.getDriver().getId())

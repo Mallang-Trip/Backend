@@ -20,6 +20,7 @@ import mallang_trip.backend.domain.party.repository.PartyMemberRepository;
 import mallang_trip.backend.domain.party.service.PartyMemberService;
 import mallang_trip.backend.domain.payment.service.PaymentService;
 import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,7 @@ public class ReservationService {
 
 	private final PartyMemberService partyMemberService;
 	private final PaymentService paymentService;
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final ReservationNotificationService reservationNotificationService;
 	private final ReservationRepository reservationRepository;
 	private final PartyMemberRepository partyMemberRepository;
@@ -172,7 +173,7 @@ public class ReservationService {
 	}
 
 	public ReservationResponse getReservationResponse(Party party) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		Role role = user.getRole();
 		if (role.equals(ROLE_ADMIN) || role.equals(ROLE_DRIVER)) {
 			return null;

@@ -22,6 +22,9 @@ public class ChatMessageService {
 
 	private final ChatMessageRepository chatMessageRepository;
 
+	/**
+	 * 채팅 메시지 생성
+	 */
 	public ChatMessage create(User user, ChatRoom room, ChatType type, String content){
 		return chatMessageRepository.save(ChatMessage.builder()
 			.user(user)
@@ -57,9 +60,9 @@ public class ChatMessageService {
 	}
 
 	/**
-	 * LastMessage 의 content 조회
+	 * 채팅방 리스트에 보여질 최근 메시지 내용 조회
 	 */
-	public String getContentOfLastMessage(ChatMessage lastMessage) {
+	public String getContent(ChatMessage lastMessage) {
 		if (lastMessage == null) {
 			return "";
 		} else if (lastMessage.getType().equals(IMAGE)) {
@@ -85,8 +88,10 @@ public class ChatMessageService {
 		return chatMessageRepository.findByChatRoom(room);
 	}
 
-	/** INFO message 생성 */
 
+	//
+	// INFO 메시지 생성
+	//
 	/**
 	 * 1. 파티 채팅방 시작 메시지 생성 및 저장
 	 */

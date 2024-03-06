@@ -5,6 +5,7 @@ import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CAN
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.dto.UserBriefResponse;
 import mallang_trip.backend.domain.chat.entity.ChatBlock;
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ChatBlockService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final ChatBlockRepository chatBlockRepository;
 	private final UserRepository userRepository;
 
@@ -28,7 +29,7 @@ public class ChatBlockService {
 	 * 차단하기
 	 */
 	public void save(Long targetUserId){
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		User targetUser = userRepository.findById(targetUserId)
 				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		if(isBlocked(user, targetUser)){
@@ -44,7 +45,7 @@ public class ChatBlockService {
 	 * 차단 취소
 	 */
 	public void delete(Long targetUserId){
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		User targetUser = userRepository.findById(targetUserId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		chatBlockRepository.deleteByUserAndTargetUser(user, targetUser);
@@ -61,7 +62,7 @@ public class ChatBlockService {
 	 * 차단 목록 조회
 	 */
 	public List<UserBriefResponse> getBlockList(){
-		return chatBlockRepository.findByUser(userService.getCurrentUser()).stream()
+		return chatBlockRepository.findByUser(currentUserService.getCurrentUser()).stream()
 			.map(block -> block.getTargetUser())
 			.map(UserBriefResponse::of)
 			.collect(Collectors.toList());

@@ -19,6 +19,7 @@ import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.driver.repository.DriverPriceRepository;
 import mallang_trip.backend.domain.driver.repository.DriverRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverBriefResponse;
@@ -40,7 +41,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class DriverService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final DriverReviewService driverReviewService;
 	private final CourseService courseService;
 	private final DriverRepository driverRepository;
@@ -51,7 +52,7 @@ public class DriverService {
 	 * 드라이버 전환 신청
 	 */
 	public void registerDriver(DriverRegistrationRequest request) {
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 이미 신청 정보가 있을 경우
 		if (driverRepository.existsById(currentUser.getId())) {
 			throw new BaseException(Conflict);
@@ -133,7 +134,7 @@ public class DriverService {
 	 * 드라이버 프로필 변경
 	 */
 	public void changeProfile(ChangeDriverProfileRequest request) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		Driver driver = getCurrentDriver();
 
 		driver.changeProfile(request);
@@ -230,7 +231,7 @@ public class DriverService {
 	 * 현재 드라이버 조회
 	 */
 	public Driver getCurrentDriver() {
-		Driver driver = driverRepository.findByUser(userService.getCurrentUser())
+		Driver driver = driverRepository.findByUser(currentUserService.getCurrentUser())
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
 		return driver;
 	}

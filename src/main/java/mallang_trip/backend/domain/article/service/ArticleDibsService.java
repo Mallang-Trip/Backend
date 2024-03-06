@@ -7,6 +7,7 @@ import mallang_trip.backend.domain.article.entity.Article;
 import mallang_trip.backend.domain.article.entity.ArticleDibs;
 import mallang_trip.backend.domain.article.repository.ArticleDibsRepository;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.service.UserService;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArticleDibsService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final ArticleRepository articleRepository;
 	private final ArticleDibsRepository articleDibsRepository;
 
@@ -28,7 +29,7 @@ public class ArticleDibsService {
 	public void create(Long articleId) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 이미 찜한 경우
 		if (checkArticleDibs(currentUser, article)) {
 			return;
@@ -45,7 +46,7 @@ public class ArticleDibsService {
 	public void delete(Long articleId) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 찜한 여행지 아닐 때
 		if (!checkArticleDibs(currentUser, article)) {
 			return;

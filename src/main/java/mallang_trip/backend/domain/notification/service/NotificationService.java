@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.notification.constant.NotificationType;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.notification.dto.NotificationListResponse;
 import mallang_trip.backend.domain.notification.dto.NotificationResponse;
@@ -22,14 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class NotificationService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final NotificationRepository notificationRepository;
 
 	/**
 	 * 현재 유저 알림 조회
 	 */
 	public NotificationListResponse getNotifications() {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		List<NotificationResponse> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user)
 			.stream()
 			.map(NotificationResponse::of)
@@ -58,7 +59,7 @@ public class NotificationService {
 	public void check(Long notificationId) {
 		Notification notification = notificationRepository.findById(notificationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if(!notification.getUser().equals(userService.getCurrentUser())){
+		if(!notification.getUser().equals(currentUserService.getCurrentUser())){
 			throw new BaseException(Forbidden);
 		}
 		notification.setCheckTrue();
@@ -70,7 +71,7 @@ public class NotificationService {
 	public void delete(Long notificationId){
 		Notification notification = notificationRepository.findById(notificationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if(!notification.getUser().equals(userService.getCurrentUser())){
+		if(!notification.getUser().equals(currentUserService.getCurrentUser())){
 			throw new BaseException(Forbidden);
 		}
 		notificationRepository.delete(notification);

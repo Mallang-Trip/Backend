@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserWithdrawalService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final ChatService chatService;
 	private final PartyRepository partyRepository;
 	private final PartyProposalRepository partyProposalRepository;
@@ -31,7 +31,7 @@ public class UserWithdrawalService {
 	 * 회원탈퇴
 	 */
 	public void withdrawal() {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		if (isOngoingPartyExists(user)) {
 			throw new BaseException(ONGOING_PARTY_EXISTS);
 		}

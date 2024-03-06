@@ -13,13 +13,11 @@ import org.springframework.stereotype.Controller;
 public class ChatMessageController {
 
     private final ChatService chatService;
-    private final SimpMessagingTemplate template;
 
     // SEND '/pub/write'
     @MessageMapping("/write")
-    public void message(ChatMessageRequest message, StompHeaderAccessor accessor) throws Exception {
-        template.convertAndSend("/sub/room/" + accessor.getFirstNativeHeader("room-id"),
-            chatService.handleNewMessage(message, accessor));
+    public void message(ChatMessageRequest message, StompHeaderAccessor accessor) {
+        chatService.handleNewMessage(message, accessor);
     }
 
     // SEND '/pub/read'

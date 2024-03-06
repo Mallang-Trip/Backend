@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.driver.repository.DriverRepository;
 import mallang_trip.backend.domain.driver.repository.DriverReviewRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.driver.dto.DriverReviewRequest;
 import mallang_trip.backend.domain.driver.dto.DriverReviewResponse;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DriverReviewService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final SuspensionService suspensionService;
 	private final DriverRepository driverRepository;
 	private final DriverReviewRepository driverReviewRepository;
@@ -40,7 +41,7 @@ public class DriverReviewService {
 	public void create(Long driverId, DriverReviewRequest request) {
 		Driver driver = driverRepository.findByIdAndStatus(driverId, ACCEPTED)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 정지된 사용자인지 확인
 		suspensionService.checkSuspension(currentUser);
 		// 1인 1리뷰 확인
@@ -65,7 +66,7 @@ public class DriverReviewService {
 	public void change(Long reviewId, DriverReviewRequest request) {
 		DriverReview review = driverReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		// 정지된 사용자일 경우
 		suspensionService.checkSuspension(currentUser);
 		// 작성자가 아닐 경우
@@ -82,7 +83,7 @@ public class DriverReviewService {
 		DriverReview review = driverReviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		// 관리자나 작성자가 아닐 경우 403
-		User CurrentUser = userService.getCurrentUser();
+		User CurrentUser = currentUserService.getCurrentUser();
 		if (!CurrentUser.getRole().equals(ROLE_ADMIN) && !CurrentUser.equals(review.getUser())) {
 			throw new BaseException(Forbidden);
 		}

@@ -12,6 +12,7 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 import java.util.Optional;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.payment.dto.CardResponse;
 import mallang_trip.backend.domain.payment.dto.BillingKeyResponse;
@@ -31,7 +32,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class PaymentService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final PaymentRequestService paymentRequestService;
 	private final PaymentNotificationService paymentNotificationService;
 	private final ReservationRepository reservationRepository;
@@ -42,7 +43,7 @@ public class PaymentService {
 	 * 등록
 	 */
 	public CardResponse register(String authKey) {
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		String customerKey = currentUser.getCustomerKey();
 		BillingKeyResponse response =
 			paymentRequestService.postBillingAuthorizations(customerKey, authKey);
@@ -60,14 +61,14 @@ public class PaymentService {
 	 * 삭제
 	 */
 	public void delete() {
-		delete(userService.getCurrentUser());
+		delete(currentUserService.getCurrentUser());
 	}
 
 	/**
 	 * 카드 조회
 	 */
 	public CardResponse getCard() {
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		Optional<Payment> optionalPayment = paymentRepository.findByUser(currentUser);
 		if (optionalPayment.isEmpty()) {
 			throw new BaseException(Not_Found);

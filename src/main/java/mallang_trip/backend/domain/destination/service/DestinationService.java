@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.destination.constant.DestinationType;
 import mallang_trip.backend.domain.destination.repository.DestinationRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.destination.dto.DestinationBriefResponse;
 import mallang_trip.backend.domain.destination.dto.DestinationDetailsResponse;
@@ -26,7 +27,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class DestinationService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final DestinationReviewService destinationReviewService;
 	private final DestinationDibsService destinationDibsService;
 	private final DestinationRepository destinationRepository;
@@ -56,7 +57,7 @@ public class DestinationService {
 	 */
 	public List<DestinationBriefResponse> search(String keyword) {
 		List<Destination> destinations = destinationRepository.searchByKeyword(keyword);
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		return destinations.stream()
 			.map(destination -> DestinationBriefResponse.of(destination,
 				destinationDibsService.checkDestinationDibs(currentUser, destination),
@@ -102,7 +103,7 @@ public class DestinationService {
 			.views(destination.getViews())
 			.reviews(destinationReviewService.get(destination))
 			.avgRate(destinationReviewService.getAvgRating(destination))
-			.dibs(destinationDibsService.checkDestinationDibs(userService.getCurrentUser(),
+			.dibs(destinationDibsService.checkDestinationDibs(currentUserService.getCurrentUser(),
 				destination))
 			.build();
 	}

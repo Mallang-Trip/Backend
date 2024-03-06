@@ -2,7 +2,6 @@ package mallang_trip.backend.domain.user.service;
 
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
-import static mallang_trip.backend.global.io.BaseResponseStatus.EMPTY_JWT;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Unauthorized;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
@@ -34,7 +33,6 @@ import mallang_trip.backend.domain.user.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +46,7 @@ public class UserService {
 	private final AuthenticationManagerBuilder managerBuilder;
 	private final TokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
+	private final CurrentUserService currentUserService;
 	private final SmsService smsService;
 	private final PortOneIdentificationService portOneIdentificationService;
 
@@ -90,7 +89,7 @@ public class UserService {
 	 * Auth (내 정보 조회)
 	 */
 	public AuthResponse auth() {
-		User user = getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		return AuthResponse.of(user);
 	}
 
@@ -139,35 +138,6 @@ public class UserService {
 		else{
 			return false;
 		}
-	}
-
-	/**
-	 * 현재 유저 조회
-	 */
-	public User getCurrentUser() {
-		final Authentication authentication = SecurityContextHolder.getContext()
-			.getAuthentication();
-		if (authentication == null || authentication.getName() == null) {
-			throw new RuntimeException("Security Context에 인증 정보가 없습니다.");
-		}
-		User user = authentication.getName().equals("anonymousUser") ? null
-			: userRepository.findById(Long.parseLong(authentication.getName()))
-				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		return user;
-	}
-
-	/**
-	 * STOMP header 기반 현재 유저 조회
-	 */
-	public User getCurrentUser(String accessToken) {
-		if (accessToken == null) {
-			throw new BaseException(EMPTY_JWT);
-		}
-		String token = accessToken.substring(7);
-		Authentication authentication = tokenProvider.getAuthentication(token);
-		User user = userRepository.findById(Long.parseLong(authentication.getName()))
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		return user;
 	}
 
 	/**
@@ -227,7 +197,7 @@ public class UserService {
 	 * 비밀번호 변경
 	 */
 	public void changePassword(ChangePasswordRequest request) {
-		User user = getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		if (!passwordEncoder.matches(request.getBefore(), user.getPassword())) {
 			throw new BaseException(Unauthorized);
 		}
@@ -238,7 +208,7 @@ public class UserService {
 	 * 프로필 변경
 	 */
 	public void changeProfile(ChangeProfileRequest request) {
-		User user = getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		String newNickname = request.getNickname();
 		String newEmail = request.getEmail();
 

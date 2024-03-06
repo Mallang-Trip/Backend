@@ -15,6 +15,7 @@ import mallang_trip.backend.domain.party.constant.AgreementStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.user.constant.Role;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.ChangeCourseRequest;
 import mallang_trip.backend.domain.party.dto.JoinPartyRequest;
@@ -45,7 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PartyProposalService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final DriverService driverService;
 	private final CourseService courseService;
 	private final PartyMemberService partyMemberService;
@@ -63,7 +64,7 @@ public class PartyProposalService {
 		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
 			.party(party)
-			.proposer(userService.getCurrentUser())
+			.proposer(currentUserService.getCurrentUser())
 			.headcount(request.getHeadcount())
 			.content(request.getContent())
 			.type(JOIN_WITH_COURSE_CHANGE)
@@ -80,7 +81,7 @@ public class PartyProposalService {
 		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
 			.party(party)
-			.proposer(userService.getCurrentUser())
+			.proposer(currentUserService.getCurrentUser())
 			.headcount(null)
 			.content(request.getContent())
 			.type(COURSE_CHANGE)
@@ -97,7 +98,7 @@ public class PartyProposalService {
 	 */
 	public void cancelProposal(PartyProposal proposal) {
 		// 권한 CHECK
-		if (!userService.getCurrentUser().equals(proposal.getProposer())) {
+		if (!currentUserService.getCurrentUser().equals(proposal.getProposer())) {
 			throw new BaseException(Forbidden);
 		}
 		// proposal status CHECK
@@ -116,7 +117,7 @@ public class PartyProposalService {
 	 * 제안 수락 or 거절 투표
 	 */
 	public void voteProposal(PartyProposal proposal, Boolean accept) {
-		Role role = userService.getCurrentUser().getRole();
+		Role role = currentUserService.getCurrentUser().getRole();
 		if (role.equals(Role.ROLE_DRIVER)) {
 			voteProposalByDriver(proposal, accept);
 		}
@@ -145,7 +146,7 @@ public class PartyProposalService {
 	 * (파티 멤버) Proposal 수락 or 거절
 	 */
 	private void voteProposalByMember(PartyProposal proposal, Boolean accept) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		PartyMember member = partyMemberRepository.findByPartyAndUser(proposal.getParty(), user)
 			.orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 		PartyProposalAgreement agreement = partyProposalAgreementRepository.findByMemberAndProposal(

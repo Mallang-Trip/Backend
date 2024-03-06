@@ -22,6 +22,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws/chat")
             .setAllowedOriginPatterns("*")
             .withSockJS();
+        // set ErrorHandler
         registry.setErrorHandler(stompErrorHandler);
     }
 
@@ -33,6 +34,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        // set PreHandler
         registration.interceptors(stompPreHandler);
     }
 }

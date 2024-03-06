@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserSearchService {
 
 	private final UserRepository userRepository;
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final SuspensionService suspensionService;
 	private final ChatBlockService chatBlockService;
 
@@ -28,7 +28,7 @@ public class UserSearchService {
 	 * 유저 검색 by nickname
 	 */
 	public List<UserBriefResponse> findByNickname(String nickname) {
-		User currentUser = userService.getCurrentUser();
+		User currentUser = currentUserService.getCurrentUser();
 		return userRepository.findByNicknameContainingIgnoreCaseAndDeleted(nickname, false).stream()
 			.filter(user -> !user.equals(currentUser))
 			.filter(user -> !chatBlockService.isBlocked(user, currentUser))

@@ -22,6 +22,7 @@ import mallang_trip.backend.domain.article.entity.Reply;
 import mallang_trip.backend.domain.article.repository.ArticleRepository;
 import mallang_trip.backend.domain.article.repository.CommentRepository;
 import mallang_trip.backend.domain.article.repository.ReplyRepository;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.service.UserService;
@@ -36,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArticleCommentService {
 
-    private final UserService userService;
+    private final CurrentUserService currentUserService;
     private final SuspensionService suspensionService;
     private final ArticleNotificationService articleNotificationService;
     private final ArticleRepository articleRepository;
@@ -49,7 +50,7 @@ public class ArticleCommentService {
     public void createComment(Long articleId, String content) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_ARTICLE));
-        User user = userService.getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         // 정지 CHECK
         if (suspensionService.isSuspending(user)) {
             throw new BaseException(SUSPENDING);
@@ -70,7 +71,7 @@ public class ArticleCommentService {
     public void createReply(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_COMMENT));
-        User user = userService.getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         // 정지 CHECK
         if (suspensionService.isSuspending(user)) {
             throw new BaseException(SUSPENDING);
@@ -92,7 +93,7 @@ public class ArticleCommentService {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_COMMENT));
         // 작성자 또는 관리자인지 CHECK
-        User user = userService.getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(comment.getUser())) {
             throw new BaseException(DELETION_FORBIDDEN);
         }
@@ -107,7 +108,7 @@ public class ArticleCommentService {
         Reply reply = replyRepository.findById(replyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_REPLY));
         // 작성자 또는 관리자인지 CHECK
-        User user = userService.getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(reply.getUser())) {
             throw new BaseException(DELETION_FORBIDDEN);
         }
@@ -148,7 +149,7 @@ public class ArticleCommentService {
      * 내가 댓글 or 대댓글 단 게시글 조회
      */
     public Page<MyCommentResponse> getMyComments(Pageable pageable) {
-        User user = userService.getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         // 내 댓글 + 대댓글
         List<MyCommentResponse> responses = new ArrayList<>();
         responses.addAll(getMyComments(user));

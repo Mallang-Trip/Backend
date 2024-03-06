@@ -5,6 +5,7 @@ import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.C
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
 import mallang_trip.backend.domain.party.entity.Party;
@@ -21,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PartyDibsService {
 
-	private final UserService userService;
+	private final CurrentUserService currentUserService;
 	private final PartyDibsRepository partyDibsRepository;
 	private final PartyRepository partyRepository;
 
@@ -36,7 +37,7 @@ public class PartyDibsService {
 		}
 		partyDibsRepository.save(PartyDibs.builder()
 			.party(party)
-			.user(userService.getCurrentUser())
+			.user(currentUserService.getCurrentUser())
 			.build());
 	}
 
@@ -49,14 +50,14 @@ public class PartyDibsService {
 		if (!checkPartyDibs(party)) {
 			return;
 		}
-		partyDibsRepository.deleteByPartyAndUser(party, userService.getCurrentUser());
+		partyDibsRepository.deleteByPartyAndUser(party, currentUserService.getCurrentUser());
 	}
 
 	/**
 	 * 현재 유저 찜한 파티 목록 조회
 	 */
 	public List<PartyBriefResponse> getMyPartyDibs() {
-		return partyDibsRepository.findAllByUserOrderByUpdatedAtDesc(userService.getCurrentUser())
+		return partyDibsRepository.findAllByUserOrderByUpdatedAtDesc(currentUserService.getCurrentUser())
 			.stream()
 			.map(dibs -> PartyBriefResponse.of(dibs.getParty()))
 			.collect(Collectors.toList());
@@ -66,7 +67,7 @@ public class PartyDibsService {
 	 * 현재 유저 파티 찜 여부 확인
 	 */
 	public boolean checkPartyDibs(Party party) {
-		User user = userService.getCurrentUser();
+		User user = currentUserService.getCurrentUser();
 		if (user == null) {
 			return false;
 		}
