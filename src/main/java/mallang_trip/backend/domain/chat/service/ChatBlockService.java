@@ -12,7 +12,6 @@ import mallang_trip.backend.domain.chat.entity.ChatBlock;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.chat.repository.ChatBlockRepository;
 import mallang_trip.backend.domain.user.repository.UserRepository;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
