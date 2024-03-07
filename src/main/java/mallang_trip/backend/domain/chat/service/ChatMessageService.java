@@ -82,7 +82,7 @@ public class ChatMessageService {
 	}
 
 	/**
-	 * 전체 메시지 조회
+	 * (관리자) 전체 메시지 조회
 	 */
 	public List<ChatMessage> getEntireMessages(ChatRoom room){
 		return chatMessageRepository.findByChatRoom(room);
@@ -113,7 +113,7 @@ public class ChatMessageService {
 			.collect(Collectors.toList());
 		String content = new StringBuilder()
 			.append(inviter.getNickname())
-			.append("님이")
+			.append("님이 ")
 			.append(String.join(", ", nicknames))
 			.append("님을 초대했습니다.")
 			.toString();

@@ -4,6 +4,8 @@ import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.CAN
 import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.CHATROOM_EXIT_FORBIDDEN;
 import static mallang_trip.backend.domain.chat.Exception.ChatExceptionStatus.NOT_CHATROOM_MEMBER;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.COUPLE;
+import static mallang_trip.backend.domain.chat.constant.ChatRoomType.GROUP;
+import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PRIVATE;
 import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PUBLIC;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
@@ -122,7 +124,7 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * 유저를 제외한 채팅방 모든 멤버 unread++
+	 * 유저를 제외한 채팅방 모든 멤버 unreadCount++
 	 */
 	public void increaseAllMembersUnreadCount(ChatRoom room, User user) {
 		chatMemberRepository.findByChatRoom(room).stream()
@@ -163,7 +165,7 @@ public class ChatMemberService {
 	/**
 	 * PARTY 채팅방 나가기. 내가 속한 파티이고, 파티가 진행중이면 나가기 불가.
 	 */
-	public void leavePartyChatRoom(ChatRoom room, User user) {
+	public void leavePartyChatRoomWithMessage(ChatRoom room, User user) {
 		Party party = room.getParty();
 		PartyStatus status = party.getStatus();
 		if (isMyParty(user, party) &&
@@ -190,10 +192,16 @@ public class ChatMemberService {
 		leaveChatRoomWithMessage(room, target);
 	}
 
+	/**
+	 * 채팅 멤버인지 확인
+	 */
 	public Boolean isChatMember(User user, ChatRoom room){
 		return chatMemberRepository.existsByChatRoomAndUser(room, user);
 	}
 
+	/**
+	 * 파티 멤버인지 확인
+	 */
 	public Boolean isMyParty(User user, Party party) {
 		if (user == null) {
 			return false;

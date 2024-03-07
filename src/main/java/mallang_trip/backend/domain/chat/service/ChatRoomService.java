@@ -59,7 +59,7 @@ public class ChatRoomService {
 	/**
 	 * 내가 속한 파티의 공용 채팅방인지 확인
 	 */
-	public Boolean isMyPartyPublicChatRoom(ChatRoom room, User user) {
+	private Boolean isMyPartyPublicChatRoom(ChatRoom room, User user) {
 		return room.getType().equals(PARTY_PUBLIC)
 			&& chatMemberService.isMyParty(user, room.getParty());
 	}
@@ -82,9 +82,12 @@ public class ChatRoomService {
 	 */
 	private String getChatRoomImage(ChatRoom room, User user) {
 		ChatRoomType type = room.getType();
+		// 1:1 채팅방일 경우, 상대방 프로필 이미지 반환
 		if (type.equals(COUPLE)) {
 			return chatMemberService.getOtherUserInCoupleChatRoom(room, user).getProfileImage();
-		} else if (type.equals(PARTY_PUBLIC) || type.equals(PARTY_PRIVATE)) {
+		}
+		// 파티 채팅방일 경우, 파티 대표 이미지 반환
+		else if (type.equals(PARTY_PUBLIC) || type.equals(PARTY_PRIVATE)) {
 			List<String> images = room.getParty().getCourse().getImages();
 			return images == null ? null : images.get(0);
 		} else {
@@ -97,11 +100,16 @@ public class ChatRoomService {
 	 */
 	private String getChatRoomName(ChatRoom room, User user) {
 		ChatRoomType type = room.getType();
+		// 1:1 채팅방일 경우, 상대방 닉네임 반환
 		if (type.equals(COUPLE)) {
 			return chatMemberService.getOtherUserInCoupleChatRoom(room, user).getNickname();
-		} else if (type.equals(PARTY_PUBLIC) || type.equals(PARTY_PRIVATE)) {
+		}
+		// 파티 채팅방일 경우, 파티 이름 반환
+		else if (type.equals(PARTY_PUBLIC) || type.equals(PARTY_PRIVATE)) {
 			return room.getParty().getCourse().getName();
-		} else {
+		}
+		// 단체 채팅방일 경우, 설정된 채팅방 이름 반환
+		else {
 			return room.getRoomName();
 		}
 	}
@@ -127,10 +135,10 @@ public class ChatRoomService {
 		} else if (room.getType().equals(GROUP)) {
 			chatMemberService.leaveChatRoomWithMessage(room, user);
 		} else if (room.getType().equals(PARTY_PUBLIC)) {
-			chatMemberService.leavePartyChatRoom(room, user);
+			chatMemberService.leavePartyChatRoomWithMessage(room, user);
 		} else if (room.getType().equals(PARTY_PRIVATE)) {
 			// private chat 탈퇴 시, public chat 자동 탈퇴
-			chatMemberService.leavePartyChatRoom(room, user);
+			chatMemberService.leavePartyChatRoomWithMessage(room, user);
 			chatMemberService.leaveChatRoomWithMessage(getPublicRoomByPrivateRoom(room), user);
 		}
 	}
@@ -146,7 +154,7 @@ public class ChatRoomService {
 	}
 
 	/**
-	 * 채팅방의 모든 채팅 내역 조회
+	 * (관리자) 채팅방의 모든 채팅 내역 조회
 	 */
 	public List<ChatMessage> getEntireMessages(Long chatRoomId) {
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
@@ -203,6 +211,9 @@ public class ChatRoomService {
 			.build();
 	}
 
+	/**
+	 * ChatRoom -> ChatRoomDetailsResponse
+	 */
 	public ChatRoomDetailsResponse toDetailResponse(ChatRoom room, User user) {
 		ChatRoom publicRoom = getPublicRoomByPrivateRoom(room);
 		List<UserBriefResponse> members = chatMemberService.getChatMembers(room).stream()

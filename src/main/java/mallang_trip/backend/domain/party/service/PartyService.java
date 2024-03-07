@@ -54,7 +54,6 @@ import mallang_trip.backend.domain.party.repository.PartyMemberRepository;
 import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.reservation.service.ReservationService;
-import mallang_trip.backend.domain.user.service.UserService;
 import mallang_trip.backend.domain.chat.service.ChatService;
 import org.springframework.stereotype.Service;
 
