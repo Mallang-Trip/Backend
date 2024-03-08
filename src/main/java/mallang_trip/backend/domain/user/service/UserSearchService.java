@@ -1,6 +1,6 @@
 package mallang_trip.backend.domain.user.service;
 
-import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
+import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +42,7 @@ public class UserSearchService {
 	 */
 	public UserBriefResponse getUserBriefInfo(Long userId) {
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BaseException(Not_Found));
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		return UserBriefResponse.of(user);
 	}
 }
