@@ -1,9 +1,7 @@
 package mallang_trip.backend.domain.user.constant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public enum Gender {
 
     MALE,
