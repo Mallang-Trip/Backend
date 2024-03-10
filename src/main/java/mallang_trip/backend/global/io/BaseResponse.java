@@ -2,13 +2,11 @@ package mallang_trip.backend.global.io;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @Getter
-@AllArgsConstructor
 @JsonPropertyOrder({"code", "message", "payload"})
 public class BaseResponse<T> {
     private final String message;
