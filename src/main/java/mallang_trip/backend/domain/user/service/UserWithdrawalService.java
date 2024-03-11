@@ -39,6 +39,7 @@ public class UserWithdrawalService {
 		// TODO: 결제 정보 저장
 		deletePersonalInformation(user);
 		chatService.leaveAllChat(user);
+		user.setRefreshToken(null);
 	}
 
 	/**

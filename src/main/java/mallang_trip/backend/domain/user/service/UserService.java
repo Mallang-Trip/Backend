@@ -6,11 +6,6 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Unauthorized;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.global.config.security.TokenProvider;
@@ -54,7 +49,7 @@ public class UserService {
 	 * 회원가입
 	 */
 	public void signup(SignupRequest request) {
-		if(isDuplicate(request)){
+		if (isDuplicate(request)) {
 			throw new BaseException(Conflict);
 		}
 		IdentificationResultResponse.CertificationAnnotation response =
@@ -129,13 +124,12 @@ public class UserService {
 	/**
 	 * User table unique check
 	 */
-	private Boolean isDuplicate(SignupRequest request){
-		if(userRepository.existsByLoginId(request.getId())
-		|| userRepository.existsByEmail(request.getEmail())
-		|| userRepository.existsByNickname(request.getNickname())){
+	private Boolean isDuplicate(SignupRequest request) {
+		if (userRepository.existsByLoginId(request.getId())
+			|| userRepository.existsByEmail(request.getEmail())
+			|| userRepository.existsByNickname(request.getNickname())) {
 			return true;
-		}
-		else{
+		} else {
 			return false;
 		}
 	}
@@ -143,8 +137,7 @@ public class UserService {
 	/**
 	 * 인증 코드 보내기 (아이디 찾기, 비밀번호 찾기 공통)
 	 */
-	public void sendSmsCertification(String phoneNumber)
-		throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+	public void sendSmsCertification(String phoneNumber) {
 		if (!userRepository.existsByPhoneNumber(phoneNumber)) {
 			throw new BaseException(CANNOT_FOUND_USER);
 		}
@@ -155,28 +148,24 @@ public class UserService {
 	 * 아이디 찾기 (인증코드 확인)
 	 */
 	public LoginIdResponse findId(String phoneNumber, String code) {
-		if (!userRepository.existsByPhoneNumber(phoneNumber)) {
-			throw new BaseException(CANNOT_FOUND_USER);
-		}
 		if (!smsService.verifyAndDeleteCode(phoneNumber, code)) {
 			throw new BaseException(Unauthorized);
-		} else {
-			User user = userRepository.findByPhoneNumber(phoneNumber)
-				.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-			return LoginIdResponse.builder()
-				.loginId(user.getLoginId())
-				.build();
 		}
+
+		User user = userRepository.findByPhoneNumber(phoneNumber)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+
+		return LoginIdResponse.builder()
+			.loginId(user.getLoginId())
+			.build();
 	}
 
 	/**
 	 * 비밀번호 찾기 (인증코드 확인)
 	 */
-	public String findPassword(String phoneNumber, String code) {
+	public void findPassword(String phoneNumber, String code) {
 		if (!smsService.verifyAndExtendCode(phoneNumber, code)) {
 			throw new BaseException(Unauthorized);
-		} else {
-			return "성공";
 		}
 	}
 

@@ -1,6 +1,5 @@
 package mallang_trip.backend.domain.user.service;
 
-import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Unauthorized;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,7 @@ public class CurrentUserService {
         }
         User user = authentication.getName().equals("anonymousUser") ? null
             : userRepository.findById(Long.parseLong(authentication.getName()))
-                .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+                .orElseThrow(() -> new BaseException(Unauthorized));
         return user;
     }
 
