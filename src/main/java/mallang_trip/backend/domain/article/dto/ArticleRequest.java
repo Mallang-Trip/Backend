@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ArticleRequest {
 
 	@NotBlank
-	@ApiModelProperty(value = "게시판 타입", required = true)
+	@ApiModelProperty(value = "게시판 타입 (all | FIND_PARTNER | FREE_BOARD | FEEDBACK 중 하나)", required = true)
 	private String type;
 
 	@NotBlank
