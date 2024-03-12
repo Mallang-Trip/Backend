@@ -45,8 +45,6 @@ public class UserController {
 	@PostMapping("/signup")
 	@ApiOperation(value = "회원가입")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 403, message = "유효하지 않은 imp_uid 입니다."),
 		@ApiResponse(code = 409, message = "중복된 값이 존재합니다."),
 		@ApiResponse(code = 500, message = "본인인증 서버 통신 실패.")
@@ -60,11 +58,7 @@ public class UserController {
 
 	@PostMapping("/login")
 	@ApiOperation(value = "로그인", notes = "로그인 성공 시 Access Token, Refresh Token 을 발급합니다.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
-		@ApiResponse(code = 401, message = "사용자 인증에 실패했습니다.")
-	})
+	@ApiResponse(code = 401, message = "사용자 인증에 실패했습니다.")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<TokensDto> login(@RequestBody @Valid LoginRequest request)
 		throws BaseException {
@@ -75,8 +69,6 @@ public class UserController {
 	@ApiOperation(value = "Auth", notes = "Access Token 으로 로그인 정보를 조회합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "사용자 인증에 실패했습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Access Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Access Token 입니다.")
@@ -90,8 +82,6 @@ public class UserController {
 	@ApiOperation(value = "Refresh Token", notes = "Refresh Token 으로 Access Token 을 재발급 받습니다.")
 	@ApiImplicitParam(name = "refresh-token", value = "Refresh Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
@@ -106,11 +96,7 @@ public class UserController {
 		@ApiImplicitParam(name = "type", value = "[phoneNumber/loginId/email/nickname] 중 하나", required = true, paramType = "query", dataTypeClass = String.class),
 		@ApiImplicitParam(name = "value", value = "중복 확인할 값", required = true, paramType = "query", dataTypeClass = String.class)
 	})
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "사용 가능한 값입니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
-		@ApiResponse(code = 409, message = "사용 불가한(중복된) 값입니다.")
-	})
+	@ApiResponse(code = 409, message = "사용 불가한(중복된) 값입니다.")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<String> checkDuplication(@RequestParam String type,
 		@RequestParam String value) throws BaseException {
@@ -122,8 +108,6 @@ public class UserController {
 	@ApiOperation(value = "SMS 인증번호 요청", notes = "아이디/비밀번호 찾기를 위한 SMS 인증번호를 발송합니다. 인증번호의 유효시간은 5분입니다.")
 	@ApiImplicitParam(name = "phoneNumber", value = "휴대폰 번호", required = true, paramType = "query", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 404, message = "해당 휴대폰 번호로 가입된 정보가 없습니다."),
 		@ApiResponse(code = 500, message = "SMS 발송 서버 통신 실패.")
 	})
@@ -141,8 +125,6 @@ public class UserController {
 		@ApiImplicitParam(name = "code", value = "인증번호", required = true, paramType = "query", dataTypeClass = String.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증번호가 일치하지 않습니다."),
 		@ApiResponse(code = 404, message = "해당 휴대폰 번호로 가입된 정보가 없습니다."),
 	})
@@ -158,11 +140,7 @@ public class UserController {
 		@ApiImplicitParam(name = "phoneNumber", value = "휴대폰 번호", required = true, paramType = "query", dataTypeClass = String.class),
 		@ApiImplicitParam(name = "code", value = "인증번호", required = true, paramType = "query", dataTypeClass = String.class)
 	})
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
-		@ApiResponse(code = 401, message = "인증번호가 일치하지 않습니다.")
-	})
+	@ApiResponse(code = 401, message = "인증번호가 일치하지 않습니다.")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<String> findPassword(@RequestParam String phoneNumber,
 		@RequestParam String code) throws BaseException {
@@ -173,8 +151,6 @@ public class UserController {
 	@PutMapping("/certification/password")
 	@ApiOperation(value = "(비밀번호 찾기)비밀번호 초기화", notes = "인증번호 일치 시, 새로운 비밀번호로 변경합니다.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증번호가 일치하지 않습니다."),
 		@ApiResponse(code = 404, message = "해당 휴대폰 번호로 가입된 정보가 없습니다.")
 	})
@@ -189,8 +165,6 @@ public class UserController {
 	@ApiOperation(value = "비밀번호 변경", notes = "기존 비밀번호 일치 시, 새 비밀번호로 재설정합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자이거나, 비밀번호가 일치하지 않습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Access Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Access Token 입니다.")
@@ -206,8 +180,6 @@ public class UserController {
 	@ApiOperation(value = "프로필 변경", notes = "입력한 값으로 프로필을 변경합니다. 변경하지 않는 값이라도 기존 값을 입력해야 합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 409, message = "중복된 값이 존재합니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Access Token 입니다."),
@@ -227,7 +199,6 @@ public class UserController {
 		@ApiImplicitParam(name = "nickname", value = "닉네임", required = true, paramType = "query", dataTypeClass = String.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Access Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Access Token 입니다.")
@@ -241,10 +212,7 @@ public class UserController {
 	@GetMapping("/user/info/{userId}")
 	@ApiOperation(value = "유저 정보 보기", notes = "user_id 로 다른 유저의 정보를 조회합니다.")
 	@ApiImplicitParam(name = "userId", value = "user_id", required = true, paramType = "path", dataTypeClass = Long.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 404, message = "해당 유저를 찾을 수 없습니다.")
-	})
+	@ApiResponse(code = 404, message = "해당 유저를 찾을 수 없습니다.")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<UserBriefResponse> getUserInfo(@PathVariable(value = "userId") Long userId)
 		throws BaseException {
@@ -255,7 +223,6 @@ public class UserController {
 	@ApiOperation(value = "회원탈퇴")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 403, message = "회원탈퇴가 불가능합니다. 진행중인 여행이 존재하거나, 미납금이 존재합니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Access Token 입니다."),

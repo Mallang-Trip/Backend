@@ -48,8 +48,6 @@ public class ArticleController {
 	@PostMapping
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 403, message = "정지된 사용자입니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
@@ -68,8 +66,6 @@ public class ArticleController {
 		@ApiImplicitParam(name = "article_id", value = "article_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 403, message = "수정 권한이 없거나, 정지된 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다."),
@@ -90,8 +86,6 @@ public class ArticleController {
 		@ApiImplicitParam(name = "article_id", value = "article_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 403, message = "삭제 권한이 없는 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다."),
@@ -111,11 +105,7 @@ public class ArticleController {
 		@ApiImplicitParam(name = "access-token", value = "Access Token", required = false, paramType = "header", dataTypeClass = String.class),
 		@ApiImplicitParam(name = "article_id", value = "article_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
-		@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다.")
-	})
+	@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다.")
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<ArticleDetailsResponse> viewDetails(
 		@PathVariable(value = "article_id") Long articleId) throws BaseException {
@@ -125,10 +115,6 @@ public class ArticleController {
 	@GetMapping("/search")
 	@ApiOperation(value = "키워드 검색", notes = "제목이나 내용에 키워드가 포함된 게시글 목록을 조회합니다.")
 	@ApiImplicitParam(name = "keyword", value = "키워드", required = true, paramType = "query", dataTypeClass = String.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다.")
-	})
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<Page<ArticleBriefResponse>> searchArticles(@RequestParam String keyword,
 		@PageableDefault(size = 6) Pageable pageable) throws BaseException {
@@ -138,10 +124,6 @@ public class ArticleController {
 	@GetMapping()
 	@ApiOperation(value = "게시글 리스트 조회", notes = "게시판 별 게시글 목록을 조회합니다.")
 	@ApiImplicitParam(name = "type", value = "게시판 타입 (all | FIND_PARTNER | FREE_BOARD | FEEDBACK 중 하나)", required = true, paramType = "query", dataTypeClass = String.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다.")
-	})
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<Page<ArticleBriefResponse>> getArticles(@RequestParam String type,
 		@PageableDefault(size = 6) Pageable pageable) throws BaseException {
@@ -152,8 +134,6 @@ public class ArticleController {
 	@ApiOperation(value = "내가 쓴 글 리스트 조회", notes = "내가 작성한 게시글 목록을 조회합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
@@ -168,8 +148,6 @@ public class ArticleController {
 	@ApiOperation(value = "내 댓글 & 대댓글 조회", notes = "내가 작성한 댓글 & 대댓글 목록을 조회합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
@@ -184,8 +162,6 @@ public class ArticleController {
 	@ApiOperation(value = "게시글 좋아요", notes = "article_id에 해당되는 게시글에 좋아요를 설정합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
@@ -202,8 +178,6 @@ public class ArticleController {
 	@ApiOperation(value = "게시글 좋아요 취소", notes = "article_id에 해당되는 게시글에 좋아요를 취소합니다.")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
@@ -223,8 +197,6 @@ public class ArticleController {
 		@ApiImplicitParam(name = "article_id", value = "article_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자이거나 정지된 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 게시글을 찾을 수 없습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
@@ -244,8 +216,6 @@ public class ArticleController {
 		@ApiImplicitParam(name = "comment_id", value = "comment_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자이거나 정지된 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 댓글을 찾을 수 없습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
@@ -265,8 +235,6 @@ public class ArticleController {
 		@ApiImplicitParam(name = "comment_id", value = "comment_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자이거나 삭제 권한이 없는 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 댓글을 찾을 수 없습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
@@ -286,8 +254,6 @@ public class ArticleController {
 		@ApiImplicitParam(name = "reply_id", value = "reply_id", required = true, paramType = "path", dataTypeClass = Long.class)
 	})
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "요청에 성공했습니다."),
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자이거나 삭제 권한이 없는 사용자입니다."),
 		@ApiResponse(code = 404, message = "해당 대댓글을 찾을 수 없습니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),

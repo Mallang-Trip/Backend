@@ -25,6 +25,12 @@ public class SwaggerConfig {
     @Bean
     public Docket api() {
         ArrayList<Response> globalResponse = new ArrayList<>();
+        globalResponse.add(new ResponseBuilder().code("200")
+            .description("요청에 성공했습니다.").build()
+        );
+        globalResponse.add(new ResponseBuilder().code("400")
+            .description("잘못된 요청입니다.").build()
+        );
         globalResponse.add(new ResponseBuilder().code("500")
             .description("알 수 없는 오류.").build()
         );
