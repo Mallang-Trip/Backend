@@ -9,7 +9,6 @@ import mallang_trip.backend.domain.user.entity.User;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class MyCommentResponse {
 
     private Long articleId;

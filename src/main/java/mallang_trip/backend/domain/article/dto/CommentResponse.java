@@ -9,7 +9,6 @@ import mallang_trip.backend.domain.article.entity.Comment;
 import mallang_trip.backend.domain.user.entity.User;
 
 @Getter
-@Setter
 @Builder
 public class CommentResponse {
 
