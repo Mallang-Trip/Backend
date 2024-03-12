@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import mallang_trip.backend.domain.article.entity.Comment;
 import mallang_trip.backend.domain.user.entity.User;
 

@@ -1,7 +1,6 @@
 package mallang_trip.backend.domain.article.dto;
 
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.article.entity.Article;

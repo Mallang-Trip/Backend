@@ -12,7 +12,6 @@ import mallang_trip.backend.domain.article.entity.Reply;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.notification.service.NotificationService;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

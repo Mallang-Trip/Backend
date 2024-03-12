@@ -22,7 +22,6 @@ import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.admin.service.SuspensionService;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
