@@ -21,7 +21,6 @@ import org.hibernate.annotations.SQLDelete;
 @Entity
 @Table(name = "article_reply")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
