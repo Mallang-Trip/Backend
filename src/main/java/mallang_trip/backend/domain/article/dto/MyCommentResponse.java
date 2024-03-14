@@ -21,6 +21,15 @@ public class MyCommentResponse {
     private LocalDateTime createdAt;
     private Integer commentsCount;
 
+    /**
+     * MyCommentResponse 객체를 생성하는 메소드입니다.
+     *
+     * @param article 댓글이나 답글이 달린 Article 객체
+     * @param content 댓글이나 답글의 내용 값
+     * @param createdAt 댓글이나 답글의 생성시간 값
+     * @param commentsCount 댓글이나 답글이 달린 Article의 댓글과 답글의 총 개수
+     * @return 생성된 MyCommentResponse 객체
+     */
     public static MyCommentResponse of(Article article, String content, LocalDateTime createdAt,
         Integer commentsCount) {
         User user = article.getUser();

@@ -24,7 +24,13 @@ public class ArticleNotificationService {
 	private final ReplyRepository replyRepository;
 	private final CurrentUserService currentUserService;
 
-	// 1. 새 댓글 알림
+	/**
+	 * 새 댓글이 작성되었을 때 알림을 전송하는 메소드입니다.
+	 * <p>
+	 * 새 댓글이 작성되었을 때 게시글의 작성자에게 "[게시글 제목] 게시글에 새 댓글이 추가되었습니다." 알림을 전송합니다.
+	 *
+	 * @param article 새 댓글이 작성된 Article 객체
+	 */
 	public void newComment(Article article) {
 		String content = new StringBuilder()
 			.append("[")
@@ -34,7 +40,13 @@ public class ArticleNotificationService {
 		notificationService.create(article.getUser(), content, ARTICLE, article.getId());
 	}
 
-	// 2. 새 답글 알림
+	/**
+	 * 새 답글이 작성되었을 때 알림을 전송하는 메소드입니다.
+	 * <p>
+	 * 댓글의 작성자와 댓글의 하위 답글 작성자들에게 "내 댓글에 새 답글이 추가되었습니다." 알림을 전송합니다. 현재 유저는 제외합니다.
+	 *
+	 * @param comment 새 답글이 작성된 Comment 객체
+	 */
 	public void newReply(Comment comment) {
 		String content = new StringBuilder()
 			.append("내 댓글에 새 답글이 추가되었습니다.")
@@ -45,7 +57,12 @@ public class ArticleNotificationService {
 	}
 
 	/**
-	 * 답글 작성자 + 답글에 대댓글 단 유저 조회 (현재 유저 제외)
+	 * 새 답글 알림을 전송할 유저들을 조회하는 메소드입니다.
+	 * <p>
+	 * 댓글의 작성자와 댓글의 하위에 있는 답글들의 작성자들을 조회합니다. 현재 유저는 제외합니다.
+	 *
+	 * @param comment
+	 * @return 대상 유저들의 목록을 담은 List<User> 객체
 	 */
 	private List<User> getRepliedUsers(Comment comment) {
 		// 댓글에 대한 대댓글 작성자 목록 조회

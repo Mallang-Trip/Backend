@@ -44,7 +44,11 @@ public class ArticleCommentService {
     private final ReplyRepository replyRepository;
 
     /**
-     * 댓글(Comment) 등록
+     * 댓글(Comment)을 등록하는 메소드입니다.
+     *
+     * @param articleId 댓글을 등록할 게시글의 ID 값
+     * @param content 댓글 내용 값
+     * @throws BaseException 정지된 사용자이거나 articleId에 해당하는 게시글을 찾지 못할 경우 발생하는 예외
      */
     public void createComment(Long articleId, String content) {
         Article article = articleRepository.findByDeletedAndId(false, articleId)
@@ -65,7 +69,11 @@ public class ArticleCommentService {
     }
 
     /**
-     * 대댓글(Reply) 작성
+     * 답글(Reply)을 등록하는 메소드입니다.
+     *
+     * @param commentId 답글을 등록할 댓글의 ID 값
+     * @param content 답글 내용 값
+     * @throws BaseException 정지된 사용자이거나 commentId에 해당하는 댓글을 찾지 못할 경우 발생하는 예외
      */
     public void createReply(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId)
@@ -81,12 +89,17 @@ public class ArticleCommentService {
             .user(user)
             .content(content)
             .build());
-        // 새 대댓글 알림
+        // 새 답글 알림
         articleNotificationService.newReply(comment);
     }
 
     /**
-     * 댓글(Comment) 삭제
+     * 댓글(Comment)을 삭제하는 메소드입니다.
+     * <p>
+     * 해당하는 댓글을 soft delete(deleted = ture) 처리합니다.
+     *
+     * @param commentId 삭제할 댓글의 ID 값
+     * @throws BaseException 작성자또는 관리자가 아닐 경우나 commentId에 해당하는 댓글을 찾지 못할 경우 발생하는 예외
      */
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
@@ -101,7 +114,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 대댓글(Reply) 삭제
+     * 답글(Reply)을 삭제하는 메소드입니다.
+     * <p>
+     * 해당하는 답글을 soft delete(deleted = ture) 처리합니다.
+     *
+     * @param replyId 삭제할 답글의 ID 값
+     * @throws BaseException 작성자또는 관리자가 아닐 경우나 replyId에 해당하는 답글을 찾지 못할 경우 발생하는 예외
      */
     public void deleteReply(Long replyId) {
         Reply reply = replyRepository.findById(replyId)
@@ -115,7 +133,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 댓글 + 대댓글 조회
+     * 게시글의 모든 댓글과 답글을 조회하는 메소드입니다.
+     * <p>
+     * soft delete 처리된 댓글인 경우, content = "[삭제된 댓글]" 인 상태로 조회됩니다.
+     *
+     * @param article 조회할 게시글 객체
+     * @return 댓글과 답글 정보를 담은 List<CommentResponse> 객체
      */
     public List<CommentResponse> getCommentsAndReplies(Article article) {
         return commentRepository.findByArticle(article).stream()
@@ -124,7 +147,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 댓글에 대한 대댓글 조회
+     * 댓글에 달린 모든 답글들을 조회하는 메소드입니다.
+     * <p>
+     * soft delete 처리된 답글인 경우, content = "[삭제된 댓글]" 인 상태로 조회됩니다.
+     *
+     * @param comment 조회할 댓글 객체
+     * @return 답글 정보를 담은 List<ReplyResponse> 객체
      */
     private List<ReplyResponse> getRepliesByComment(Comment comment) {
         return replyRepository.findByComment(comment).stream()
@@ -133,7 +161,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 댓글 + 대댓글 수 조회
+     * 게시글에 달린 댓글과 답글의 총 개수을 계산합니다.
+     * <p>
+     * soft delete 처리된 댓글과 답글도 계산에 포함됩니다.
+     *
+     * @param article 조회할 게시글 객체
+     * @return 댓글과 답글의 총 개수 값
      */
     public Integer countCommentsAndReplies(Article article) {
         int count = 0;
@@ -145,7 +178,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 내가 댓글 or 대댓글 단 게시글 조회
+     * 내가 작성한 댓글과 답글을 조회합니다.
+     * <p>
+     * 작성 시간이 최신인 순서로 조회합니다. soft delete 처리된 댓글과 답글은 조회되지 않습니다.
+     *
+     * @param pageable 페이징 정보를 담은 Pageable 객체
+     * @return 내 댓글과 답글 정보와 페이징 정보를 담은 Page<MyCommentResponse> 객체
      */
     public Page<MyCommentResponse> getMyComments(Pageable pageable) {
         User user = currentUserService.getCurrentUser();
@@ -164,7 +202,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 내 댓글 조회
+     * 내가 작성한 댓글들을 조회합니다.
+     * <p>
+     * soft delete 처리된 댓글은 조회되지 않습니다.
+     *
+     * @param user 조회할 User 객체
+     * @return 내 댓글 정보를 담은 List<MyCommentResponse> 객체
      */
     private List<MyCommentResponse> getMyComments(User user) {
         return commentRepository.findByDeletedAndUser(false, user).stream()
@@ -174,7 +217,12 @@ public class ArticleCommentService {
     }
 
     /**
-     * 내 대댓글 조회
+     * 내가 작성한 답글들을 조회합니다.
+     * <p>
+     * soft delete 처리된 답글은 조회되지 않습니다.
+     *
+     * @param user 조회할 User 객체
+     * @return 내 답글 정보를 담은 List<MyCommentResponse> 객체
      */
     private List<MyCommentResponse> getMyReplies(User user) {
         return replyRepository.findByDeletedAndUser(false, user).stream()

@@ -20,6 +20,13 @@ public class ArticleBriefResponse {
     private LocalDateTime updatedAt;
     private Integer commentsCount;
 
+    /**
+     * Article 객체로 ArticleBriefResponse 객체를 생성합니다.
+     *
+     * @param article 사용할 Article 객체
+     * @param commentsCount Article의 댓글과 답글의 총 개수
+     * @return 생성된 ArticleBriefResponse 객체
+     */
     public static ArticleBriefResponse of(Article article, Integer commentsCount){
         return ArticleBriefResponse.builder()
             .articleId(article.getId())
