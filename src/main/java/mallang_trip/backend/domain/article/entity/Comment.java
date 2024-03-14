@@ -38,7 +38,7 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "article_id", nullable = false, updatable = false)
     private Article article;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private String content;
 
 }

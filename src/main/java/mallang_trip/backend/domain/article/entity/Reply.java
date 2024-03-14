@@ -38,6 +38,6 @@ public class Reply extends BaseEntity {
     @JoinColumn(name = "comment_id", nullable = false, updatable = false)
     private Comment comment;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private String content;
 }
