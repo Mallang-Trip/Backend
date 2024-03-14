@@ -3,7 +3,6 @@ package mallang_trip.backend.domain.article.constant;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public enum ArticleType {
 
 	FIND_PARTNER,
