@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 import org.hibernate.annotations.SQLDelete;
@@ -21,7 +20,6 @@ import org.hibernate.annotations.SQLDelete;
 @Entity
 @Table(name = "article_comment")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,7 +38,7 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "article_id", nullable = false, updatable = false)
     private Article article;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private String content;
 
 }

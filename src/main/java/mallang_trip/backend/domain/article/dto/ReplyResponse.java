@@ -18,6 +18,14 @@ public class ReplyResponse {
     private LocalDateTime createdAt;
     private Boolean deleted;
 
+    /**
+     * Reply 객체로 ReplyResponse 객체를 생성합니다.
+     * <p>
+     * soft delete 처리된 답글의 경우, content = "[삭제된 댓글]" 로 설정합니다.
+     *
+     * @param reply 사용할 Reply 객체
+     * @return 생성된 ReplyResponse 객체
+     */
     public static ReplyResponse of(Reply reply) {
         User user = reply.getUser();
         String content = reply.getDeleted() ? "[삭제된 댓글]" : reply.getContent();
