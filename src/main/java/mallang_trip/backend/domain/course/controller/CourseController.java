@@ -1,8 +1,10 @@
 package mallang_trip.backend.domain.course.controller;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
+
 import javax.validation.Valid;
+
+import io.swagger.annotations.ApiImplicitParam;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.course.service.CourseService;
 import mallang_trip.backend.global.io.BaseException;
@@ -27,9 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class CourseController {
 
 	private final CourseService courseService;
-
+	
 	@PostMapping
 	@ApiOperation(value = "(드라이버)코스 생성")
+	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<CourseIdResponse> createCourse(@RequestBody @Valid CourseRequest request)
 		throws BaseException {
@@ -38,6 +47,17 @@ public class CourseController {
 
 	@PutMapping("/{course_id}")
 	@ApiOperation(value = "(드라이버)코스 수정")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+			@ApiImplicitParam(name = "course_id", value = "course_id", required = true, paramType = "path", dataTypeClass = Long.class)
+	})
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+			@ApiResponse(code = 404, message = "코스를 찾을 수 없습니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<String> changeCourse(@PathVariable(value = "course_id") Long courseId,
 		@RequestBody @Valid CourseRequest request) throws BaseException {
@@ -47,6 +67,17 @@ public class CourseController {
 
 	@DeleteMapping("/{course_id}")
 	@ApiOperation(value = "(드라이버)코스 삭제")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+			@ApiImplicitParam(name = "course_id", value = "course_id", required = true, paramType = "path", dataTypeClass = Long.class)
+	})
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "삭제 권한이 없는 사용자입니다."),
+			@ApiResponse(code = 404, message = "코스를 찾을 수 없습니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<String> deleteCourse(@PathVariable(value = "course_id") Long courseId)
 		throws BaseException {
@@ -56,6 +87,10 @@ public class CourseController {
 
 	@GetMapping("/{course_id}")
 	@ApiOperation(value = "코스 상세 조회")
+	@ApiImplicitParam(name = "course_id", value = "course_id", required = true, paramType = "path", dataTypeClass = Long.class)
+	@ApiResponses({
+			@ApiResponse(code = 404, message = "코스를 찾을 수 없습니다.")
+	})
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<CourseDetailsResponse> getCourseDetails(
 		@PathVariable(value = "course_id") Long courseId) throws BaseException {
