@@ -36,7 +36,17 @@ public class CourseService {
 	private final DestinationRepository destinationRepository;
 
 	/**
-	 * 코스 생성
+	 * (드라이버) 코스 생성
+	 *
+	 * @param request 코스 생성 요청
+	 *                images: 코스 이미지 URL 배열
+	 *                totalDays: 총 일수
+	 *                name: 코스 이름
+	 *                capacity: 최대 수용인원
+	 *                totalPrice: 총 가격
+	 *                days: 코스 일자 배열
+	 * @return 생성된 코스
+	 * @throws BaseException Unauthorized 유저
 	 */
 	public Course createCourse(CourseRequest request) {
 		Course course = courseRepository.save(Course.builder()
@@ -61,6 +71,16 @@ public class CourseService {
 
 	/**
 	 * (드라이버) 내 코스 수정
+	 * @param courseId 코스 ID
+	 *                 images: 코스 이미지 URL 배열
+	 *                 totalDays: 총 일수
+	 *                 name: 코스 이름
+	 *                 capacity: 최대 수용인원
+	 *                 totalPrice: 총 가격
+	 *                 days: 코스 일자 배열
+	 *
+	 * @throws BaseException Not_Found 코스를 찾을 수 없는 경우
+	 * @throws BaseException Forbidden 코스의 소유자가 아닌 경우
 	 */
 	public void changeCourseByDriver(Long courseId, CourseRequest request) {
 		Course course = courseRepository.findById(courseId)
@@ -78,6 +98,9 @@ public class CourseService {
 
 	/**
 	 * 코스 상세 조회 (by course_id)
+	 * @param courseId 코스 ID
+	 * @return 코스 상세 정보
+	 * @throws BaseException Not_Found 코스를 찾을 수 없는 경우
 	 */
 	public CourseDetailsResponse getCourseDetails(Long courseId) {
 		Course course = courseRepository.findById(courseId)
@@ -87,10 +110,13 @@ public class CourseService {
 
 	/**
 	 * 코스 상세 조회 (Course -> CourseDetailsResponse)
+	 * @param course 코스
+	 * @return 코스 상세 정보
+	 *
 	 */
 	public CourseDetailsResponse getCourseDetails(Course course) {
 		List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
-			.stream()
+			.parallelStream()// 병렬 처리
 			.map(courseDay -> courseDayToResponse(courseDay))
 			.collect(Collectors.toList());
 
@@ -110,7 +136,7 @@ public class CourseService {
 	 * CourseDay -> CourseDayResponse
 	 */
 	private CourseDayResponse courseDayToResponse(CourseDay courseDay){
-		List<DestinationResponse> destinations = courseDay.getDestinations().stream()
+		List<DestinationResponse> destinations = courseDay.getDestinations().parallelStream() // 병렬 처리
 			.map(destinationId ->
 				destinationRepository.findById(destinationId)
 				.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION))
@@ -130,6 +156,10 @@ public class CourseService {
 
 	/**
 	 * 코스 삭제 (by course_id)
+	 * @param courseId 코스 ID
+	 * @throws BaseException Not_Found 코스를 찾을 수 없는 경우
+	 * @throws BaseException Forbidden 코스의 소유자가 아닌 경우
+	 * @throws BaseException Forbidden 코스가 삭제된 경우
 	 */
 	public void deleteCourse(Long courseId) {
 		Course course = courseRepository.findById(courseId)
@@ -144,10 +174,12 @@ public class CourseService {
 
 	/**
 	 * 드라이버의 코스 목록 조회
+	 * @param user 유저
+	 * @return 코스 목록
 	 */
 	public List<CourseBriefResponse> getDriversCourses(User user) {
 		return courseRepository.findAllByOwnerAndDeleted(user, false)
-				.stream()
+				.parallelStream()// 병렬 처리
 				.map(CourseBriefResponse::of)
 				.collect(Collectors.toList());
 	}
