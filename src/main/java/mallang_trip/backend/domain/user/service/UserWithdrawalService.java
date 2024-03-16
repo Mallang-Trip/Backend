@@ -45,12 +45,10 @@ public class UserWithdrawalService {
 	/**
 	 * 진행 중이거나 가입 신청중인 파티가 있는지 유무
 	 */
-	private Boolean isOngoingPartyExists(User user) {
-		if (partyRepository.isOngoingPartyExists(user.getId())
-			|| partyProposalRepository.existsByProposerAndTypeAndStatus(user,
-			ProposalType.JOIN_WITH_COURSE_CHANGE, ProposalStatus.WAITING)) {
-			return true;
-		} else return false;
+	private boolean isOngoingPartyExists(User user) {
+		return partyRepository.isOngoingPartyExists(user.getId())
+				|| partyProposalRepository.existsByProposerAndTypeAndStatus(user,
+				ProposalType.JOIN_WITH_COURSE_CHANGE, ProposalStatus.WAITING);
 	}
 
 	private void deletePersonalInformation(User user){

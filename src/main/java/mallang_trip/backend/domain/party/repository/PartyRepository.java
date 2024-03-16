@@ -51,7 +51,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	List<Party> findByDriver(Driver driver);
 
-	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END\n"
+	@Query(value = "SELECT COUNT(*) > 0\n"
 		+ "FROM party p JOIN party_member m\n"
 		+ "ON p.id = m.party_id\n"
 		+ "WHERE m.user_id = :user_id\n"
@@ -61,7 +61,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 		+ "   OR p.status = 'SEALED'\n"
 		+ "   OR p.status = 'WAITING_COURSE_CHANGE_APPROVAL'\n"
 		+ "   OR p.status = 'DAY_OF_TRAVEL')", nativeQuery = true)
-	Boolean isOngoingPartyExists(@Param(value = "user_id") Long userId);
+	boolean isOngoingPartyExists(@Param(value = "user_id") Long userId);
 
 	Integer countByDriverAndStatus(Driver driver, PartyStatus status);
 }
