@@ -13,6 +13,11 @@ public class CourseBriefResponse {
     private String courseName;
     private String courseImg;
 
+    /**
+     * Course 객체로 CourseBriefResponse 객체를 생성합니다.
+     * @param course Course 객체
+     * @return CourseBriefResponse 객체
+     */
     public static CourseBriefResponse of(Course course){
         List<String> images = course.getImages();
         return CourseBriefResponse.builder()
