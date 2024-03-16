@@ -1,5 +1,6 @@
 package mallang_trip.backend.global.config.security;
 
+import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.EXPIRED_JWT;
 import static mallang_trip.backend.global.io.BaseResponseStatus.INVALID_JWT;
 
@@ -196,6 +197,10 @@ public class TokenProvider implements InitializingBean {
 
     public String getRefreshToken() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        return request.getHeader("REFRESH-TOKEN").substring(7);
+        try{
+            return request.getHeader("REFRESH-TOKEN").substring(7);
+        } catch(NullPointerException | StringIndexOutOfBoundsException e){
+            throw new BaseException(Bad_Request);
+        }
     }
 }

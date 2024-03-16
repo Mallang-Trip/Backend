@@ -1,6 +1,6 @@
 package mallang_trip.backend.domain.sms.service;
 
-import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_Error;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,138 +34,150 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class SmsService {
 
-    private final SmsCertification smsCertification;
+	private final SmsCertification smsCertification;
 
-    @Value("${naver-cloud-sms.accessKey}")
-    private String accessKey;
+	@Value("${naver-cloud-sms.accessKey}")
+	private String accessKey;
 
-    @Value("${naver-cloud-sms.secretKey}")
-    private String secretKey;
+	@Value("${naver-cloud-sms.secretKey}")
+	private String secretKey;
 
-    @Value("${naver-cloud-sms.serviceId}")
-    private String serviceId;
+	@Value("${naver-cloud-sms.serviceId}")
+	private String serviceId;
 
-    @Value("${naver-cloud-sms.senderPhone}")
-    private String phone;
+	@Value("${naver-cloud-sms.senderPhone}")
+	private String phone;
 
-     /** 인증번호 문자 발송  */
-    public void sendSmsCertification(String phoneNumber)
-        throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
-        // 인증코드 생성
-        String code = createCode();
-        // redis 저장
-        smsCertification.createSmsCertification(phoneNumber, code);
-        // sens 발송
-        String content = createCertificationContent(code);
-        SmsResponse response = sendSms(phoneNumber, content);
-        // 발송 실패 시
-        if (!response.getStatusCode().equals("202")) {
-            throw new BaseException(Bad_Request);
-        }
-    }
+	/**
+	 * 인증번호 문자 발송
+	 */
+	public void sendSmsCertification(String phoneNumber) {
+		// 인증코드 생성
+		String code = createCode();
+		// redis 저장
+		smsCertification.createSmsCertification(phoneNumber, code);
+		// sens 발송
+		sendSms(phoneNumber, createCertificationContent(code));
+	}
 
-    /** 인증번호 일치 확인 -> 일치 시 인증번호 삭제 */
-    public Boolean verifyAndDeleteCode(String phoneNumber, String code) {
-        if (smsCertification.hasKey(phoneNumber) && smsCertification.getSmsCertification(
-            phoneNumber).equals(code)) {
-            smsCertification.removeSmsCertification(phoneNumber);
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * 인증번호 일치 확인 -> 일치 시 인증번호 삭제
+	 */
+	public Boolean verifyAndDeleteCode(String phoneNumber, String code) {
+		if (smsCertification.hasKey(phoneNumber) && smsCertification.getSmsCertification(
+			phoneNumber).equals(code)) {
+			smsCertification.removeSmsCertification(phoneNumber);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    /** 인증번호 일치 확인 -> 일치 시 인증번호 연장 */
-    public Boolean verifyAndExtendCode(String phoneNumber, String code) {
-        if (smsCertification.hasKey(phoneNumber) && smsCertification.getSmsCertification(
-            phoneNumber).equals(code)) {
-            smsCertification.extendSmsCertification(phoneNumber);
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/**
+	 * 인증번호 일치 확인 -> 일치 시 인증번호 연장
+	 */
+	public Boolean verifyAndExtendCode(String phoneNumber, String code) {
+		if (smsCertification.hasKey(phoneNumber) && smsCertification.getSmsCertification(
+			phoneNumber).equals(code)) {
+			smsCertification.extendSmsCertification(phoneNumber);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-     /** SMS content 생성 */
-    private String createCertificationContent(String code) {
-        String content = "[말랑트립] " + code + " 인증 번호입니다.";
-        return content;
-    }
+	/**
+	 * SMS content 생성
+	 */
+	private String createCertificationContent(String code) {
+		String content = "[말랑트립] " + code + " 인증 번호입니다.";
+		return content;
+	}
 
-     /** 인증코드 생성  */
-    private String createCode() {
-        StringBuffer code = new StringBuffer();
-        Random rnd = new Random();
-        for (int i = 0; i < 6; i++) {
-            code.append((rnd.nextInt(10)));
-        }
-        return code.toString();
-    }
+	/**
+	 * 인증코드 생성
+	 */
+	private String createCode() {
+		StringBuffer code = new StringBuffer();
+		Random rnd = new Random();
+		for (int i = 0; i < 6; i++) {
+			code.append((rnd.nextInt(10)));
+		}
+		return code.toString();
+	}
 
-    /** SENS API 형식 */
-    private String makeSignature(Long time)
-        throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
-        String space = " ";
-        String newLine = "\n";
-        String method = "POST";
-        String url = "/sms/v2/services/" + this.serviceId + "/messages";
-        String timestamp = time.toString();
-        String accessKey = this.accessKey;
-        String secretKey = this.secretKey;
+	/**
+	 * SENS API 형식
+	 */
+	private String makeSignature(Long time) {
+		String space = " ";
+		String newLine = "\n";
+		String method = "POST";
+		String url = "/sms/v2/services/" + this.serviceId + "/messages";
+		String timestamp = time.toString();
+		String accessKey = this.accessKey;
+		String secretKey = this.secretKey;
 
-        String message = new StringBuilder()
-            .append(method)
-            .append(space)
-            .append(url)
-            .append(newLine)
-            .append(timestamp)
-            .append(newLine)
-            .append(accessKey)
-            .toString();
+		String message = new StringBuilder()
+			.append(method)
+			.append(space)
+			.append(url)
+			.append(newLine)
+			.append(timestamp)
+			.append(newLine)
+			.append(accessKey)
+			.toString();
+		try {
+			SecretKeySpec signingKey = new SecretKeySpec(secretKey.getBytes("UTF-8"), "HmacSHA256");
+			Mac mac = Mac.getInstance("HmacSHA256");
+			mac.init(signingKey);
 
-        SecretKeySpec signingKey = new SecretKeySpec(secretKey.getBytes("UTF-8"), "HmacSHA256");
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(signingKey);
+			byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
+			String encodeBase64String = Base64.encodeBase64String(rawHmac);
 
-        byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
-        String encodeBase64String = Base64.encodeBase64String(rawHmac);
+			return encodeBase64String;
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException e) {
+			throw new BaseException(Internal_Server_Error);
+		}
+	}
 
-        return encodeBase64String;
-    }
+	/**
+	 * SENS 문자 발송 API 요청
+	 */
+	private SmsResponse sendSms(String to, String content) {
+		Long time = System.currentTimeMillis();
 
-    /** SENS 문자 발송 API 요청 */
-    private SmsResponse sendSms(String to, String content)
-        throws JsonProcessingException, RestClientException, URISyntaxException, InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
-        Long time = System.currentTimeMillis();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.set("x-ncp-apigw-timestamp", time.toString());
+		headers.set("x-ncp-iam-access-key", accessKey);
+		headers.set("x-ncp-apigw-signature-v2", makeSignature(time));
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-ncp-apigw-timestamp", time.toString());
-        headers.set("x-ncp-iam-access-key", accessKey);
-        headers.set("x-ncp-apigw-signature-v2", makeSignature(time));
+		List<SmsMessage> messages = new ArrayList<>();
+		messages.add(SmsMessage.builder().to(to).content(content).build());
 
-        List<SmsMessage> messages = new ArrayList<>();
-        messages.add(SmsMessage.builder().to(to).content(content).build());
+		SmsRequest request = SmsRequest.builder()
+			.type("SMS")
+			.contentType("COMM")
+			.countryCode("82")
+			.from(phone)
+			.content(content)
+			.messages(messages)
+			.build();
+		try{
+			ObjectMapper objectMapper = new ObjectMapper();
+			String body = objectMapper.writeValueAsString(request);
+			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
 
-        SmsRequest request = SmsRequest.builder()
-            .type("SMS")
-            .contentType("COMM")
-            .countryCode("82")
-            .from(phone)
-            .content(content)
-            .messages(messages)
-            .build();
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+			SmsResponse response = restTemplate.postForObject(
+				new URI("https://sens.apigw.ntruss.com/sms/v2/services/" + serviceId + "/messages"),
+				httpBody, SmsResponse.class);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String body = objectMapper.writeValueAsString(request);
-        HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
-
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
-        SmsResponse response = restTemplate.postForObject(
-            new URI("https://sens.apigw.ntruss.com/sms/v2/services/" + serviceId + "/messages"),
-            httpBody, SmsResponse.class);
-
-        return response;
-    }
+			return response;
+		} catch (JsonProcessingException | RestClientException | URISyntaxException e){
+			throw new BaseException(Internal_Server_Error);
+		}
+	}
 }

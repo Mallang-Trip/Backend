@@ -22,7 +22,6 @@ import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.admin.service.SuspensionService;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +41,11 @@ public class ArticleService {
 	private final ArticleRepository articleRepository;
 
 	/**
-	 * 게시글 생성
+	 * 게시글 생성을 처리하는 메소드입니다.
+	 *
+	 * @param request 게시글 요청 객체
+	 * @return 생성된 게시글 ID를 담은 ArticleIdResponse 객체
+	 * @throws BaseException 정지된 사용자인 경우 발생하는 예외
 	 */
 	public ArticleIdResponse create(ArticleRequest request) {
 		User user = currentUserService.getCurrentUser();
@@ -69,7 +72,11 @@ public class ArticleService {
 	}
 
 	/**
-	 * 게시글 수정
+	 * 게시글 수정을 처리하는 메소드입니다.
+	 *
+	 * @param articleId 수정할 게시글의 ID 값
+	 * @param request   게시글 요청 객체
+	 * @throws BaseException 정지된 사용자이거나 작성자가 아닌 경우 발생하는 예외
 	 */
 	public void modify(Long articleId, ArticleRequest request) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
@@ -86,11 +93,17 @@ public class ArticleService {
 		// 수정
 		Party party = request.getPartyId() == null ? null
 			: partyRepository.findById(request.getPartyId()).orElse(null);
+
 		article.modify(party, request);
 	}
 
 	/**
-	 * 게시글 삭제
+	 * 게시글 삭제를 처리하는 메소드입니다.
+	 * <p>
+	 * 해당하는 게시글을 soft delete(deleted = ture) 처리합니다.
+	 *
+	 * @param articleId 삭제할 게시글의 ID 값
+	 * @throws BaseException 작성자나 관리자가 아닌 경우 발생하는 예외
 	 */
 	public void delete(Long articleId) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
@@ -100,11 +113,16 @@ public class ArticleService {
 		if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(article.getUser())) {
 			throw new BaseException(DELETION_FORBIDDEN);
 		}
+
 		articleRepository.delete(article);
 	}
 
 	/**
-	 * 게시글 상세보기
+	 * 게시글의 상세 정보를 조회하는 메소드입니다.
+	 *
+	 * @param articleId 조회할 게시글의 ID 값
+	 * @throws BaseException articleId에 해당하는 게시글을 찾지 못할 경우 발생하는 예외
+	 * @return 게시글의 상세 정보를 담은 ArticleDetailsResponse 객체
 	 */
 	public ArticleDetailsResponse view(Long articleId) {
 		Article article = articleRepository.findByDeletedAndId(false, articleId)
@@ -131,7 +149,13 @@ public class ArticleService {
 	}
 
 	/**
-	 * 키워드 검색
+	 * 키워드가 포함된 게시글 목록을 조회하는 메소드입니다.
+	 * <p>
+	 * 제목이나 내용에 키워드가 포함된 게시글들을 수정시간이 최신인 순서로 정렬하여 조회합니다.
+	 *
+	 * @param keyword  검색 키워드 값
+	 * @param pageable 페이징 정보를 담은 Pageable 객체
+	 * @return 게시글들의 요약 정보와 페이징 정보를 담은 Page<ArticleBriefResponse> 객체
 	 */
 	public Page<ArticleBriefResponse> getArticlesByKeyword(String keyword, Pageable pageable) {
 		Page<Article> articles = articleRepository.findByDeletedAndTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByUpdatedAtDesc(
@@ -142,19 +166,27 @@ public class ArticleService {
 	}
 
 	/**
-	 * 카테고리 별 조회
+	 * 게시판 별로 게시글 목록을 조회하는 메소드입니다.
+	 *
+	 * @param type     게시판 종류 값 (all, free_board, find_partner, feedback)
+	 * @param pageable 페이징 정보를 담은 Pageable 객체
+	 * @return 게시글들의 요약 정보와 페이징 정보를 담은 Page<ArticleBriefResponse> 객체
 	 */
 	public Page<ArticleBriefResponse> getArticlesByType(String type, Pageable pageable) {
 		Page<Article> articles = type.equals("all") ?
 			articleRepository.findByDeletedOrderByUpdatedAtDesc(false, pageable)
-			: articleRepository.findByDeletedAndTypeOrderByUpdatedAtDesc(false, ArticleType.from(type), pageable);
+			: articleRepository.findByDeletedAndTypeOrderByUpdatedAtDesc(false,
+				ArticleType.from(type), pageable);
 		List<ArticleBriefResponse> responses = getArticleBriefResponses(articles);
 
 		return new PageImpl<>(responses, pageable, articles.getTotalElements());
 	}
 
 	/**
-	 * 내가 작성한 글 조회
+	 * 내가 작성한 게시글 목록을 조회하는 메소드입니다.
+	 *
+	 * @param pageable 페이징 정보를 담은 Pageable 객체
+	 * @return 게시글들의 요약 정보와 페이징 정보를 담은 Page<ArticleBriefResponse> 객체
 	 */
 	public Page<ArticleBriefResponse> getMyArticles(Pageable pageable) {
 		User user = currentUserService.getCurrentUser();
@@ -166,7 +198,10 @@ public class ArticleService {
 	}
 
 	/**
-	 * List<Article> -> List<ArticleBriefResponse> 변환
+	 * Page<Article>으로 List<ArticleBriefResponse>를 생성하는 메소드입니다.
+	 *
+	 * @param articles 사용할 Page<Article> 객체
+	 * @return 생성된 List<ArticleBriefResponse> 객체
 	 */
 	private List<ArticleBriefResponse> getArticleBriefResponses(Page<Article> articles) {
 		List<ArticleBriefResponse> responses = articles.stream()

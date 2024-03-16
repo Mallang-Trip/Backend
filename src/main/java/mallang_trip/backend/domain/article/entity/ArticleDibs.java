@@ -12,13 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @Table(name = "article_dibs")
 @AllArgsConstructor
