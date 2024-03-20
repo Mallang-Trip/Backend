@@ -18,6 +18,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mallang_trip.backend.global.entity.BaseEntity;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -25,6 +28,8 @@ import mallang_trip.backend.global.entity.BaseEntity;
 @Table(name = "course_day")
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE course_day SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
 public class CourseDay extends BaseEntity {
 
     @Id
@@ -53,4 +58,10 @@ public class CourseDay extends BaseEntity {
     @ElementCollection
     @OrderColumn
     private List<Long> destinations;
+
+    // For soft delete
+    @Builder.Default
+    @ColumnDefault("false")
+    @Column(nullable = false)
+    private boolean isDeleted;
 }
