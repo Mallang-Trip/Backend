@@ -2,6 +2,7 @@ package mallang_trip.backend.domain.user.service;
 
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Unauthorized;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
@@ -52,8 +53,14 @@ public class UserService {
 		if (isDuplicate(request)) {
 			throw new BaseException(Conflict);
 		}
+
 		IdentificationResultResponse.CertificationAnnotation response =
 			portOneIdentificationService.get(request.getImpUid()).getResponse();
+
+		if(!response.getName().equals(request.getName()) || !response.getPhone().equals(request.getPhone())){
+			throw new BaseException(Forbidden);
+		}
+
 		userRepository.save(User.builder()
 			.loginId(request.getId())
 			.password(passwordEncoder.encode(request.getPassword()))
@@ -127,7 +134,8 @@ public class UserService {
 	private Boolean isDuplicate(SignupRequest request) {
 		if (userRepository.existsByLoginId(request.getId())
 			|| userRepository.existsByEmail(request.getEmail())
-			|| userRepository.existsByNickname(request.getNickname())) {
+			|| userRepository.existsByNickname(request.getNickname())
+			|| userRepository.existsByPhoneNumber(request.getPhone())) {
 			return true;
 		} else {
 			return false;

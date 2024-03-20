@@ -39,6 +39,14 @@ public class SignupRequest {
     @ApiModelProperty(value = "본인인증 imp_uid", required = true)
     private String impUid;
 
+    @NotBlank
+    @ApiModelProperty(value = "이름(본명)", required = true)
+    private String name;
+
+    @NotBlank
+    @ApiModelProperty(value = "휴대폰 번호", required = true)
+    private String phone;
+
     @ApiModelProperty(value = "자기소개", required = false)
     private String introduction;
 
