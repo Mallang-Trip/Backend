@@ -28,8 +28,8 @@ import org.hibernate.annotations.Where;
 @Table(name = "course_day")
 @AllArgsConstructor
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE course_day SET is_deleted = true WHERE id = ?")
-@Where(clause = "is_deleted = false")
+@SQLDelete(sql = "UPDATE course_day SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class CourseDay extends BaseEntity {
 
     @Id
@@ -58,10 +58,4 @@ public class CourseDay extends BaseEntity {
     @ElementCollection
     @OrderColumn
     private List<Long> destinations;
-
-    // For soft delete
-    @Builder.Default
-    @ColumnDefault("false")
-    @Column(nullable = false)
-    private boolean isDeleted;
 }
