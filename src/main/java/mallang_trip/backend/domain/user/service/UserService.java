@@ -47,7 +47,10 @@ public class UserService {
 	private final PortOneIdentificationService portOneIdentificationService;
 
 	/**
-	 * 회원가입
+	 * 회원 가입을 처리하는 메소드입니다.
+	 *
+	 * @param request 회원 가입 요청 객체
+	 * @throws BaseException 중복된 회원 정보가 있을 경우 발생하는 예외
 	 */
 	public void signup(SignupRequest request) {
 		if (isDuplicate(request)) {
@@ -78,7 +81,10 @@ public class UserService {
 	}
 
 	/**
-	 * 로그인
+	 * 로그인 요청에 대한 토큰 정보를 반환하는 메소드입니다.
+	 *
+	 * @param request 로그인 요청 객체
+	 * @return 토큰 정보를 담은 TokensDto 객체
 	 */
 	public TokensDto login(LoginRequest request) {
 		UsernamePasswordAuthenticationToken token = request.toAuthentication();
@@ -103,7 +109,11 @@ public class UserService {
 	}
 
 	/**
-	 * 가입 정보 중복 확인
+	 * 중복 체크를 수행하는 메서드입니다.
+	 *
+	 * @param type  중복 체크할 유형 (phoneNumber, loginId, email, nickname)
+	 * @param value 중복 체크할 값
+	 * @throws BaseException 중복이 발생한 경우 예외를 던집니다.
 	 */
 	public void checkDuplication(String type, String value) {
 		boolean isDuplicate;
@@ -129,7 +139,10 @@ public class UserService {
 	}
 
 	/**
-	 * User table unique check
+	 * 중복 여부를 확인하는 메소드입니다.
+	 *
+	 * @param request 회원가입 요청 객체
+	 * @return 중복이 있는 경우 true, 없는 경우 false를 반환합니다.
 	 */
 	private Boolean isDuplicate(SignupRequest request) {
 		if (userRepository.existsByLoginId(request.getId())
@@ -143,7 +156,16 @@ public class UserService {
 	}
 
 	/**
-	 * 인증 코드 보내기 (아이디 찾기, 비밀번호 찾기 공통)
+	 * 휴대폰 번호를 인증하기 위해 SMS를 전송하는 메소드입니다.
+	 * (아이디 찾기, 비밀번호 찾기 공통)
+	 *
+	 * @param phoneNumber 인증할 휴대폰 번호
+	 * @throws UnsupportedEncodingException 인코딩이 지원되지 않을 때 발생하는 예외
+	 * @throws URISyntaxException 잘못된 URI 문법이 있을 때 발생하는 예외
+	 * @throws NoSuchAlgorithmException 암호화 알고리즘이 지원되지 않을 때 발생하는 예외
+	 * @throws InvalidKeyException 잘못된 키가 제공되었을 때 발생하는 예외
+	 * @throws JsonProcessingException JSON 처리 중 오류가 발생한 경우 발생하는 예외
+	 * @throws BaseException 사용자를 찾을 수 없을 때 발생하는 예외
 	 */
 	public void sendSmsCertification(String phoneNumber) {
 		if (!userRepository.existsByPhoneNumber(phoneNumber)) {
@@ -169,7 +191,12 @@ public class UserService {
 	}
 
 	/**
-	 * 비밀번호 찾기 (인증코드 확인)
+	 * 비밀번호를 찾는 메서드입니다.
+	 *
+	 * @param phoneNumber 전화번호
+	 * @param code 인증 코드
+	 * @return 비밀번호 찾기 성공 시 "성공" 문자열 반환
+	 * @throws BaseException 인증 실패 시 Unauthorized 예외 발생
 	 */
 	public void findPassword(String phoneNumber, String code) {
 		if (!smsService.verifyAndExtendCode(phoneNumber, code)) {
@@ -179,6 +206,9 @@ public class UserService {
 
 	/**
 	 * 비밀번호 초기화 (인증코드 확인 성공 시)
+	 *
+	 * @param request 비밀번호 재설정 요청 객체
+	 * @throws BaseException 인증되지 않은 사용자일 경우 예외가 발생합니다.
 	 */
 	public void resetPassword(ResetPasswordRequest request) {
 		if (!smsService.verifyAndDeleteCode(request.getPhoneNumber(), request.getCode())) {
@@ -191,7 +221,10 @@ public class UserService {
 	}
 
 	/**
-	 * 비밀번호 변경
+	 * 비밀번호를 변경하는 메서드입니다.
+	 *
+	 * @param request 비밀번호 변경 요청 객체
+	 * @throws BaseException 이전 비밀번호가 일치하지 않을 경우 발생하는 예외
 	 */
 	public void changePassword(ChangePasswordRequest request) {
 		User user = currentUserService.getCurrentUser();
@@ -202,7 +235,9 @@ public class UserService {
 	}
 
 	/**
-	 * 프로필 변경
+	 * 프로필을 변경하는 메소드입니다.
+	 *
+	 * @param request 프로필 변경 요청 객체
 	 */
 	public void changeProfile(ChangeProfileRequest request) {
 		User user = currentUserService.getCurrentUser();
