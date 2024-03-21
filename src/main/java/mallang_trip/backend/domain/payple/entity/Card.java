@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.payment.entity;
+package mallang_trip.backend.domain.payple.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -7,12 +7,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.global.entity.BaseEntity;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -22,31 +22,24 @@ import org.hibernate.annotations.Where;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE payment SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE card SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
 public class Card extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", nullable = false)
-    private Payment payment;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false, updatable = false)
+	private User user;
 
-    @Column
-    private String issuerCode;
+	@Column(nullable = false)
+	private String billingKey;
 
-    @Column
-    private String acquirerCode;
+	@Column(nullable = false, updatable = false)
+	private String cardNumber;
 
-    @Column
-    private String number;
-
-    @Column
-    private String cardType;
-
-    @Column
-    private String ownerType;
+	@Column(nullable = false, updatable = false)
+	private String cardName;
 }

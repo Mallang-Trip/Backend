@@ -18,10 +18,8 @@ import mallang_trip.backend.domain.reservation.entity.Reservation;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.party.repository.PartyMemberRepository;
 import mallang_trip.backend.domain.party.service.PartyMemberService;
-import mallang_trip.backend.domain.payment.service.PaymentService;
 import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
 	private final PartyMemberService partyMemberService;
-	private final PaymentService paymentService;
+	//private final PaymentService paymentService;
 	private final CurrentUserService currentUserService;
 	private final ReservationNotificationService reservationNotificationService;
 	private final ReservationRepository reservationRepository;
@@ -53,7 +51,7 @@ public class ReservationService {
 			.member(member)
 			.paymentAmount(calculatePaymentAmount(member))
 			.build());
-		paymentService.pay(reservation);
+		//paymentService.pay(reservation);
 	}
 
 	/**
@@ -66,7 +64,7 @@ public class ReservationService {
 		if (paymentComplete.isPresent()) {
 			Reservation reservation = paymentComplete.get();
 			Integer refundAmount = calculateRefundAmount(reservation);
-			paymentService.cancel(reservation, refundAmount);
+			//paymentService.cancel(reservation, refundAmount);
 			return reservation.getPaymentAmount() - refundAmount;
 		}
 
@@ -92,7 +90,7 @@ public class ReservationService {
 	public void freeRefund(PartyMember member) {
 		reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE)
 			.ifPresent(reservation -> {
-				paymentService.cancel(reservation, reservation.getPaymentAmount());
+				//paymentService.cancel(reservation, reservation.getPaymentAmount());
 				reservation.setRefundAmount(reservation.getPaymentAmount());
 			});
 		reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED)
