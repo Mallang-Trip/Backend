@@ -26,11 +26,11 @@ import org.springframework.web.client.RestTemplate;
 @Transactional
 public class PartnerAuthService {
 
-	@Value("${payple.cstId}")
-	private final String cstId;
+	@Value("${payple.cst-id}")
+	private String cstId;
 
 	@Value("${payple.custKey}")
-	private final String custKey;
+	private String custKey;
 
 	private final String hostname = "https://cpay.payple.kr/php/auth.php";
 
