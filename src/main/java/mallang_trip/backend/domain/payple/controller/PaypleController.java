@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.payple.dto.CardRequest;
 import mallang_trip.backend.domain.payple.dto.CardResponse;
@@ -37,7 +38,7 @@ public class PaypleController {
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<CardResponse> register(@RequestBody CardRequest request) throws BaseException {
+	public BaseResponse<CardResponse> register(@RequestBody @Valid CardRequest request) throws BaseException {
 		return new BaseResponse<>(paypleService.register(request));
 	}
 

@@ -24,7 +24,7 @@ public class PaypleService {
 	private final CardRepository cardRepository;
 
 	/**
-	 * 카드등록 요청 결과를 확인하고 카드정보를 저장합니다.
+	 * 카드정보를 저장합니다.
 	 * <p>
 	 * 기존 등록된 카드가 있다면 삭제 후 새로운 카드를 저장합니다.
 	 *
@@ -34,10 +34,7 @@ public class PaypleService {
 	 */
 	public CardResponse register(CardRequest request){
 		User currentUser = currentUserService.getCurrentUser();
-		if(!request.getPCD_PAY_RST().equals("success")){
-			throw new BaseException(Forbidden);
-		}
-		if(!currentUser.getId().equals(Long.valueOf(request.getPCD_PAYER_NO()))){
+		if(!currentUser.getId().equals(Long.valueOf(request.getUserId()))){
 			throw new BaseException(Forbidden);
 		}
 		// 기존 카드정보 삭제
@@ -45,9 +42,9 @@ public class PaypleService {
 		// 카드정보 저장
 		Card card = cardRepository.save(Card.builder()
 			.user(currentUser)
-			.billingKey(request.getPCD_PAYER_ID())
-			.cardNumber(request.getPCD_PAY_CARDNUM())
-			.cardName(request.getPCD_PAY_CARDNAME())
+			.billingKey(request.getBillingKey())
+			.cardNumber(request.getCardNumber())
+			.cardName(request.getCardName())
 			.build());
 
 		return CardResponse.of(card);
