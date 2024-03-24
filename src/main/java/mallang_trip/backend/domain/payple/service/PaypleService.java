@@ -1,14 +1,18 @@
 package mallang_trip.backend.domain.payple.service;
 
 import static mallang_trip.backend.domain.payple.exception.PaypleExceptionStatus.CANNOT_FOUND_CARD;
+import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
+import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.payple.dto.BillingResponse;
 import mallang_trip.backend.domain.payple.dto.CardRequest;
 import mallang_trip.backend.domain.payple.dto.CardResponse;
 import mallang_trip.backend.domain.payple.entity.Card;
 import mallang_trip.backend.domain.payple.repository.CardRepository;
+import mallang_trip.backend.domain.reservation.entity.Reservation;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -22,6 +26,7 @@ public class PaypleService {
 
 	private final CurrentUserService currentUserService;
 	private final CardRepository cardRepository;
+	private final BillingService billingService;
 
 	/**
 	 * 카드정보를 저장합니다.
@@ -84,8 +89,34 @@ public class PaypleService {
 	}
 
 	/**
-	 * 자동결제
+	 * 자동결제를 진행합니다.
+	 *
+	 * @param reservation 결제를 진행할 Reservation 객체
 	 */
+	public void billing(Reservation reservation){
+		User user = reservation.getMember().getUser();
+		Card card = cardRepository.findByUser(user).orElse(null);
+		int amount = reservation.getPaymentAmount();
+		String goods = reservation.getMember().getParty().getCourse().getName();
+
+		// 등록된 카드가 없는 경우
+		if(card == null){
+			return;
+		}
+		// 빌링 승인 요청
+		BillingResponse response = billingService.billing(card.getBillingKey(), goods, amount, user);
+		// 빌링이 승인이 되었을 경우
+		if(response != null){
+			reservation.saveBillingResult(
+				response.getPCD_PAY_OID(),
+				response.getPCD_PAY_CARDRECEIPT(),
+				response.getPCD_PAY_TIME()
+			);
+			reservation.changeStatus(PAYMENT_COMPLETE);
+		} else {
+			reservation.changeStatus(PAYMENT_REQUIRED);
+		}
+	}
 
 	/**
 	 * 결제 재시도(수동결제)

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.payple.service.PaypleService;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.reservation.dto.ReservationResponse;
 import mallang_trip.backend.domain.party.entity.Party;
@@ -29,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
 	private final PartyMemberService partyMemberService;
-	//private final PaymentService paymentService;
+	private final PaypleService paypleService;
 	private final CurrentUserService currentUserService;
 	private final ReservationNotificationService reservationNotificationService;
 	private final ReservationRepository reservationRepository;
@@ -51,7 +52,7 @@ public class ReservationService {
 			.member(member)
 			.paymentAmount(calculatePaymentAmount(member))
 			.build());
-		//paymentService.pay(reservation);
+		paypleService.billing(reservation);
 	}
 
 	/**
