@@ -99,6 +99,7 @@ public class PaypleService {
 	 * 자동결제를 진행합니다.
 	 *
 	 * @param reservation 결제를 진행할 Reservation 객체
+	 * @return 결제 승인 시 true 를, 실패 시 false 를 반환합니다.
 	 */
 	public boolean billing(Reservation reservation){
 		User user = reservation.getMember().getUser();
@@ -129,12 +130,16 @@ public class PaypleService {
 	}
 
 	/**
-	 * 결제 재시도 (수동결제)
+	 * 결제가 실패한 예약에 대해 결제를 재시도합니다.
+	 *
+	 * @param reservationId 실패한 예약에 해당되는 reservation_id 값
+	 * @throws BaseException Forbidden 결제가 필요하지 않은 상태일 경우 발생하는 예외
+	 * @throws BaseException BILLING_FAIL 결제가 실패했을 경우 발생하는 예외
 	 */
 	public void retry(Long reservationId){
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if(reservation.getStatus().equals(PAYMENT_REQUIRED)){
+		if(!reservation.getStatus().equals(PAYMENT_REQUIRED)){
 			throw new BaseException(Forbidden);
 		}
 		boolean success = billing(reservation);
@@ -144,7 +149,10 @@ public class PaypleService {
 	}
 
 	/**
-	 * 결제 취소
+	 * 결제 취소룰 진행합니다.
+	 *
+	 * @param reservation 취소할 예약에 해당하는 Reservation 객체
+	 * @param refundAmount 취소 금액 값
 	 */
 	public void cancel(Reservation reservation, Integer refundAmount){
 		reservation.setRefundAmount(refundAmount);
