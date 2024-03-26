@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.gmail.service.GmailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.user.constant.Role;
@@ -77,6 +78,8 @@ public class PartyService {
     private final PartyMemberRepository partyMemberRepository;
     private final PartyMemberCompanionRepository partyMemberCompanionRepository;
     private final PartyProposalRepository partyProposalRepository;
+
+    private final GmailService gmailService;
 
     /**
      * 파티 생성 신청
@@ -299,6 +302,7 @@ public class PartyService {
         }
         partyNotificationService.allReady(party);
         reservationService.reserveParty(party);
+        gmailService.sendEmailParty(party, true);
         party.setStatus(SEALED);
     }
 
@@ -426,6 +430,7 @@ public class PartyService {
         }
         chatService.leavePrivateChatWhenLeavingParty(currentUserService.getCurrentUser(), party);
         partyMemberService.setReadyAllMembers(party, false);
+        gmailService.sendEmailParty(party, false);
     }
 
     /**
