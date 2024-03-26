@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.payple.dto.PartnerAuthRequest;
 import mallang_trip.backend.domain.payple.dto.PartnerAuthResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientResponseException;
@@ -20,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PartnerAuthService {
 
 	@Value("${payple.cst-id}")
@@ -28,9 +31,11 @@ public class PartnerAuthService {
 	@Value("${payple.custKey}")
 	private String custKey;
 
+	//test
 	private final String hostname = "https://democpay.payple.kr/php/auth.php";
 
-	private final RestTemplate restTemplate;
+	//real
+	//private final String hostname = "https://cpay.payple.kr/php/auth.php";
 
 	/**
 	 * 페이플 POST 요청에 사용될 헤더를 생성합니다.
@@ -57,6 +62,9 @@ public class PartnerAuthService {
 			String body = objectMapper.writeValueAsString(request);
 			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
 
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
 			ResponseEntity<PartnerAuthResponse> responseEntity = restTemplate.postForEntity(
 				new URI(hostname),
 				httpBody,
@@ -67,6 +75,7 @@ public class PartnerAuthService {
 			if (response.getResult().equals("success")) {
 				return response;
 			} else {
+				log.info("파트너 인증 실패: {}", response.getResult_msg());
 				return null;
 			}
 
@@ -76,43 +85,43 @@ public class PartnerAuthService {
 	}
 
 	/**
-	 * 결제 요청을 위해 페이플 파트너 인증을 진행하고, auth_key 를 조회합니다.
+	 * 결제 요청을 위해 페이플 파트너 인증을 진행합니다.
 	 *
-	 * @return 인증 성공 시, 페이플 서버로부터 받은 auth_key 를 반환합니다. 인증 실패 시, null 을 반환합니다.
+	 * @return 인증 성공 시, 페이플 서버로부터 받은 인증결과를 담은 PartnerAuthResponse 객체를 반환합니다. 인증 실패 시, null 을 반환합니다.
 	 */
-	public String authBeforeBilling() {
+	public PartnerAuthResponse authBeforeBilling() {
 		PartnerAuthRequest request = PartnerAuthRequest.builder()
 			.cst_id(cstId)
 			.custKey(custKey)
-			.PCD_PAY_TYPE("card")
-			.PCD_SIMPLE_FLAG("Y")
+			.pcd_PAY_TYPE("card")
+			.pcd_SIMPLE_FLAG("Y")
 			.build();
 
 		PartnerAuthResponse response = postPartnerAuthRequest(request);
 		if (response == null) {
 			return null;
 		} else {
-			return response.getAuthKey();
+			return response;
 		}
 	}
 
 	/**
-	 * 결제 취소을 위해 페이플 파트너 인증을 진행하고, auth_key 를 조회합니다.
+	 * 결제 취소을 위해 페이플 파트너 인증을 진행합니다.
 	 *
-	 * @return 인증 성공 시, 페이플 서버로부터 받은 auth_key 를 반환합니다. 인증 실패 시, null 을 반환합니다.
+	 * @return 인증 성공 시, 페이플 서버로부터 받은 인증결과를 담은 PartnerAuthResponse 객체를 반환합니다. 인증 실패 시, null 을 반환합니다.
 	 */
-	public String authBeforeCancel() {
+	public PartnerAuthResponse authBeforeCancel() {
 		PartnerAuthRequest request = PartnerAuthRequest.builder()
 			.cst_id(cstId)
 			.custKey(custKey)
-			.PCD_PAYCANCEL_FLAG("Y")
+			.pcd_PAYCANCEL_FLAG("Y")
 			.build();
 
 		PartnerAuthResponse response = postPartnerAuthRequest(request);
 		if (response == null) {
 			return null;
 		} else {
-			return response.getAuthKey();
+			return response;
 		}
 	}
 

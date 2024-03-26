@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.reservation.service;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_REQUIRED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
@@ -7,7 +8,6 @@ import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.payple.service.PaypleService;
@@ -65,7 +65,7 @@ public class ReservationService {
 		if (paymentComplete.isPresent()) {
 			Reservation reservation = paymentComplete.get();
 			Integer refundAmount = calculateRefundAmount(reservation);
-			//paymentService.cancel(reservation, refundAmount);
+			paypleService.cancel(reservation, refundAmount);
 			return reservation.getPaymentAmount() - refundAmount;
 		}
 
@@ -91,7 +91,7 @@ public class ReservationService {
 	public void freeRefund(PartyMember member) {
 		reservationRepository.findByMemberAndStatus(member, PAYMENT_COMPLETE)
 			.ifPresent(reservation -> {
-				//paymentService.cancel(reservation, reservation.getPaymentAmount());
+				paypleService.cancel(reservation, reservation.getPaymentAmount());
 				reservation.setRefundAmount(reservation.getPaymentAmount());
 			});
 		reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED)
@@ -124,8 +124,8 @@ public class ReservationService {
 	 */
 	public int calculateRefundAmount(Reservation reservation) {
 		Party party = reservation.getMember().getParty();
-		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
-		if (dDay <= 2) {
+		long dDay = DAYS.between(LocalDate.now(), party.getStartDate());
+/*		if (dDay <= 2) {
 			return 0;
 		} else if (dDay == 3) {
 			return (int) (reservation.getPaymentAmount() * 0.1);
@@ -139,7 +139,8 @@ public class ReservationService {
 			return (int) (reservation.getPaymentAmount() * 0.90);
 		} else {
 			return reservation.getPaymentAmount();
-		}
+		}*/
+		return reservation.getPaymentAmount();
 	}
 
 	public void savePenaltyToDriver(Party party) {
@@ -149,7 +150,7 @@ public class ReservationService {
 
 	public int calculatePenaltyToDriver(Party party) {
 		int totalPrice = party.getCourse().getTotalPrice();
-		int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
+		long dDay = DAYS.between(LocalDate.now(), party.getStartDate());
 		if (dDay == 0) {
 			return (int) (totalPrice * 0.4);
 		} else if (dDay == 1) {

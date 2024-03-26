@@ -46,6 +46,9 @@ public class Reservation extends BaseEntity {
 	private String receiptUrl;
 
 	@Column
+	private String cancelReceiptUrl;
+
+	@Column
 	private String payTime;
 
 	@Column
@@ -59,6 +62,10 @@ public class Reservation extends BaseEntity {
 		this.orderId = orderId;
 		this.receiptUrl = receiptUrl;
 		this.payTime = payTime;
+	}
+
+	public void saveCancelReceipt(String cancelReceiptUrl){
+		this.cancelReceiptUrl = cancelReceiptUrl;
 	}
 
 	public void changeStatus(ReservationStatus status){

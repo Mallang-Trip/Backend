@@ -5,16 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.payple.dto.BillingRequest;
 import mallang_trip.backend.domain.payple.dto.BillingResponse;
 import mallang_trip.backend.domain.payple.dto.CancelRequest;
 import mallang_trip.backend.domain.payple.dto.CancelResponse;
+import mallang_trip.backend.domain.payple.dto.PartnerAuthResponse;
 import mallang_trip.backend.domain.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientResponseException;
@@ -23,20 +26,14 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BillingService {
-
-	@Value("${payple.cst-id}")
-	private String cstId;
-
-	@Value("${payple.custKey}")
-	private String custKey;
 
 	@Value("${payple.cancel-key}")
 	private String cancelKey;
 
 	private final String hostname = "https://democpay.payple.kr/php";
 
-	private final RestTemplate restTemplate;
 	private final PartnerAuthService partnerAuthService;
 
 	/**
@@ -61,23 +58,24 @@ public class BillingService {
 	 * @return 결제 성공 시, 결제 정보가 담긴 BillingResponse 객체를 반환합니다. 결제 실패 시, null 을 반환합니다.
 	 */
 	public BillingResponse billing(String billingKey, String goods, int amount, User user) {
-		String authKey = partnerAuthService.authBeforeBilling();
-		if (authKey == null) {
+		PartnerAuthResponse authResponse = partnerAuthService.authBeforeBilling();
+		if (authResponse == null) {
+			log.info("결제 실패: 파트너 인증 실패, user_id: {}", user.getId());
 			return null;
 		}
 
 		BillingRequest request = BillingRequest.builder()
-			.PCD_CST_ID(cstId)
-			.PCD_CUST_KEY(custKey)
-			.PCD_AUTH_KEY(authKey)
-			.PCD_PAY_TYPE("card")
-			.PCD_PAYER_ID(billingKey)
-			.PCD_PAY_GOODS(goods)
-			.PCD_SIMPLE_FLAG("Y")
-			.PCD_PAY_TOTAL(amount)
-			.PCD_PAYER_NO(user.getId())
-			.PCD_PAYER_NAME(user.getName())
-			.PCD_PAYER_HP(user.getPhoneNumber())
+			.pcd_CST_ID(authResponse.getCst_id())
+			.pcd_CUST_KEY(authResponse.getCustKey())
+			.pcd_AUTH_KEY(authResponse.getAuthKey())
+			.pcd_PAY_TYPE("card")
+			.pcd_PAYER_ID(billingKey)
+			.pcd_PAY_GOODS(goods)
+			.pcd_SIMPLE_FLAG("Y")
+			.pcd_PAY_TOTAL(amount)
+			.pcd_PAYER_NO(user.getId())
+			.pcd_PAYER_NAME(user.getName())
+			.pcd_PAYER_HP(user.getPhoneNumber())
 			.build();
 
 		try {
@@ -85,6 +83,9 @@ public class BillingService {
 			ObjectMapper objectMapper = new ObjectMapper();
 			String body = objectMapper.writeValueAsString(request);
 			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 
 			ResponseEntity<BillingResponse> responseEntity = restTemplate.postForEntity(
 				new URI(hostname + "/SimplePayCardAct.php?ACT_=PAYM"),
@@ -94,9 +95,10 @@ public class BillingService {
 
 			BillingResponse response = responseEntity.getBody();
 
-			if (response.getPCD_PAY_RST().equals("success")) {
+			if (response.getPcd_PAY_RST().equals("success")) {
 				return response;
 			} else {
+				log.info("결제 실패: {}, user_id: {}", response.getPcd_PAY_MSG(), user.getId());
 				return null;
 			}
 
@@ -114,20 +116,21 @@ public class BillingService {
 	 * @return 취소 성공 시, 취소 정보가 담긴 CancelResponse 객체를 반환합니다. 취소에 실패하면 null 을 반환합니다.
 	 */
 	public CancelResponse cancel(String oid, String date, String amount) {
-		String authKey = partnerAuthService.authBeforeCancel();
-		if (authKey == null) {
+		PartnerAuthResponse authResponse = partnerAuthService.authBeforeCancel();
+		if (authResponse == null) {
+			log.info("결제 취소 실패: 파트너 인증 오류, order_id: {}", oid);
 			return null;
 		}
 
 		CancelRequest request = CancelRequest.builder()
-			.PCD_CST_ID(cstId)
-			.PCD_CUST_KEY(custKey)
-			.PCD_AUTH_KEY(authKey)
-			.PCD_REFUND_KEY(cancelKey)
-			.PCD_PAYCANCEL_FLAG("Y")
-			.PCD_PAY_OID(oid)
-			.PCD_PAY_DATE(date)
-			.PCD_REFUND_TOTAL(amount)
+			.pcd_CST_ID(authResponse.getCst_id())
+			.pcd_CUST_KEY(authResponse.getCustKey())
+			.pcd_AUTH_KEY(authResponse.getAuthKey())
+			.pcd_REFUND_KEY(cancelKey)
+			.pcd_PAYCANCEL_FLAG("Y")
+			.pcd_PAY_OID(oid)
+			.pcd_PAY_DATE(date)
+			.pcd_REFUND_TOTAL(amount)
 			.build();
 
 		try {
@@ -136,6 +139,9 @@ public class BillingService {
 			String body = objectMapper.writeValueAsString(request);
 			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
 
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
 			ResponseEntity<CancelResponse> responseEntity = restTemplate.postForEntity(
 				new URI(hostname + "/account/api/cPayCAct.php"),
 				httpBody,
@@ -143,9 +149,10 @@ public class BillingService {
 			);
 
 			CancelResponse response = responseEntity.getBody();
-			if (response.getPCD_PAY_RST().equals("success")) {
+			if (response.getPcd_PAY_RST().equals("success")) {
 				return response;
 			} else {
+				log.info("결제 취소 실패: {}, order_id: {}",response.getPcd_PAY_MSG() , oid);
 				return null;
 			}
 

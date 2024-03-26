@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.payple.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,9 +14,15 @@ public class PartnerAuthResponse {
 	private String result_msg;
 	private String cst_id;
 	private String custKey;
-	private String AuthKey;
-	private String PCD_PAY_HOST;
-	private String PCD_PAY_URL;
 	private String return_url;
+
+	@JsonProperty("AuthKey")
+	private String authKey;
+
+	@JsonProperty("PCD_PAY_HOST")
+	private String pcd_PAY_HOST;
+
+	@JsonProperty("PCD_PAY_URL")
+	private String pcd_PAY_URL;
 
 }
