@@ -1,15 +1,13 @@
 package mallang_trip.backend.domain.payple.service;
 
-import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_Error;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.payple.dto.PartnerAuthRequest;
 import mallang_trip.backend.domain.payple.dto.PartnerAuthResponse;
-import mallang_trip.backend.global.io.BaseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PartnerAuthService {
 
 	@Value("${payple.cst-id}")
@@ -32,44 +31,32 @@ public class PartnerAuthService {
 	@Value("${payple.custKey}")
 	private String custKey;
 
-	private final String hostname = "https://cpay.payple.kr/php/auth.php";
+	//test
+	private final String hostname = "https://democpay.payple.kr/php/auth.php";
+
+	//real
+	//private final String hostname = "https://cpay.payple.kr/php/auth.php";
 
 	/**
-	 * 파트너 인증 요청에 사용될 헤더를 생성합니다.
+	 * 페이플 POST 요청에 사용될 헤더를 생성합니다.
 	 *
 	 * @return 생성된 HttpHeaders 객체
 	 */
-	private HttpHeaders setHeaders(){
+	private HttpHeaders setHeaders() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Referer", "https://www.mallangtrip.com");
+		headers.set("Referer", "https://mallangtrip.com");
 		return headers;
 	}
 
 	/**
-	 * 파트너 인증 요청에 사용될 Body 정보를 담은 DTO 객체를 생성합니다.
+	 * 페이플 파트너 인증 요청(POST)을 보내는 함수입니다.
 	 *
-	 * @return 생성된 PartnerAuthRequest 객체
+	 * @param request 인증 요청에 사용할 body 정보를 담은 PartnerAuthRequest 객체
+	 * @return 인증 성공 시, 페이플 서버로부터 받은 인증 정보를 담은 PartnerAuthResponse 객체를 반환합니다. 인증 실패 시, null 을 반환합니다.
 	 */
-	private PartnerAuthRequest createPartnerAuthRequest(){
-		return PartnerAuthRequest.builder()
-			.cst_id(cstId)
-			.custKey(custKey)
-			.PCD_PAY_TYPE("card")
-			.PCD_SIMPLE_FLAG("Y")
-			.build();
-	}
-
-	/**
-	 * 파트너 인증 요청을 보냅니다.
-	 *
-	 * @throws BaseException Internal_Server_Error 인증에 실패하거나 인증 과정에서 오류가 발생한 경우 발생하는 예외
-	 * @return 인증 성공 시 페이플 서버로부터 받은 인증 정보를 담은 PartnerAuthResponse 객체를 반환합니다.
-	 */
-	public PartnerAuthResponse postPartnerAuthRequest(){
-		PartnerAuthRequest request = createPartnerAuthRequest();
-
-		try{
+	private PartnerAuthResponse postPartnerAuthRequest(PartnerAuthRequest request) {
+		try {
 			HttpHeaders headers = setHeaders();
 			ObjectMapper objectMapper = new ObjectMapper();
 			String body = objectMapper.writeValueAsString(request);
@@ -84,14 +71,57 @@ public class PartnerAuthService {
 				PartnerAuthResponse.class
 			);
 
-			if(!responseEntity.getBody().getResult().equals("success")){
-				throw new BaseException(Internal_Server_Error);
+			PartnerAuthResponse response = responseEntity.getBody();
+			if (response.getResult().equals("success")) {
+				return response;
+			} else {
+				log.info("파트너 인증 실패: {}", response.getResult_msg());
+				return null;
 			}
 
-			return responseEntity.getBody();
-
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
-			throw new BaseException(Internal_Server_Error);
+			return null;
+		}
+	}
+
+	/**
+	 * 결제 요청을 위해 페이플 파트너 인증을 진행합니다.
+	 *
+	 * @return 인증 성공 시, 페이플 서버로부터 받은 인증결과를 담은 PartnerAuthResponse 객체를 반환합니다. 인증 실패 시, null 을 반환합니다.
+	 */
+	public PartnerAuthResponse authBeforeBilling() {
+		PartnerAuthRequest request = PartnerAuthRequest.builder()
+			.cst_id(cstId)
+			.custKey(custKey)
+			.pcd_PAY_TYPE("card")
+			.pcd_SIMPLE_FLAG("Y")
+			.build();
+
+		PartnerAuthResponse response = postPartnerAuthRequest(request);
+		if (response == null) {
+			return null;
+		} else {
+			return response;
+		}
+	}
+
+	/**
+	 * 결제 취소을 위해 페이플 파트너 인증을 진행합니다.
+	 *
+	 * @return 인증 성공 시, 페이플 서버로부터 받은 인증결과를 담은 PartnerAuthResponse 객체를 반환합니다. 인증 실패 시, null 을 반환합니다.
+	 */
+	public PartnerAuthResponse authBeforeCancel() {
+		PartnerAuthRequest request = PartnerAuthRequest.builder()
+			.cst_id(cstId)
+			.custKey(custKey)
+			.pcd_PAYCANCEL_FLAG("Y")
+			.build();
+
+		PartnerAuthResponse response = postPartnerAuthRequest(request);
+		if (response == null) {
+			return null;
+		} else {
+			return response;
 		}
 	}
 

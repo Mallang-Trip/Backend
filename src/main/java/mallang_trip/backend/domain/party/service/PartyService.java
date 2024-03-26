@@ -56,6 +56,7 @@ import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.reservation.service.ReservationService;
 import mallang_trip.backend.domain.chat.service.ChatService;
 import org.springframework.stereotype.Service;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
 @RequiredArgsConstructor
@@ -467,7 +468,7 @@ public class PartyService {
      */
     private void cancelReservationByNotLastMember(PartyMember member) {
         Party party = member.getParty();
-        int dDay = Period.between(LocalDate.now(), party.getStartDate()).getDays();
+        long dDay = DAYS.between(LocalDate.now(), party.getStartDate());
         // 취소자 환불 진행
         Integer penaltyAmount = reservationService.refund(member);
         // 멤버 삭제

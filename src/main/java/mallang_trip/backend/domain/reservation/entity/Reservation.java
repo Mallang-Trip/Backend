@@ -40,10 +40,16 @@ public class Reservation extends BaseEntity {
 	private Integer paymentAmount;
 
 	@Column
-	private String paymentKey;
+	private String orderId;
 
 	@Column
 	private String receiptUrl;
+
+	@Column
+	private String cancelReceiptUrl;
+
+	@Column
+	private String payTime;
 
 	@Column
 	@Builder.Default()
@@ -52,9 +58,14 @@ public class Reservation extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private ReservationStatus status;
 
-	public void savePaymentKeyAndReceiptUrl(String paymentKey, String url){
-		this.paymentKey = paymentKey;
-		this.receiptUrl = url;
+	public void saveBillingResult(String orderId, String receiptUrl, String payTime){
+		this.orderId = orderId;
+		this.receiptUrl = receiptUrl;
+		this.payTime = payTime;
+	}
+
+	public void saveCancelReceipt(String cancelReceiptUrl){
+		this.cancelReceiptUrl = cancelReceiptUrl;
 	}
 
 	public void changeStatus(ReservationStatus status){
