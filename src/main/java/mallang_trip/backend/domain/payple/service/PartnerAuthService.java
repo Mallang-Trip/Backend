@@ -32,10 +32,10 @@ public class PartnerAuthService {
 	private String custKey;
 
 	//test
-	private final String hostname = "https://democpay.payple.kr/php/auth.php";
+	//private final String hostname = "https://democpay.payple.kr/php/auth.php";
 
 	//real
-	//private final String hostname = "https://cpay.payple.kr/php/auth.php";
+	private final String hostname = "https://cpay.payple.kr/php/auth.php";
 
 	/**
 	 * 페이플 POST 요청에 사용될 헤더를 생성합니다.

@@ -32,7 +32,11 @@ public class BillingService {
 	@Value("${payple.cancel-key}")
 	private String cancelKey;
 
-	private final String hostname = "https://democpay.payple.kr/php";
+	// test
+	//private final String hostname = "https://democpay.payple.kr/php";
+
+	// real
+	private final String hostname = "https://cpay.payple.kr/php";
 
 	private final PartnerAuthService partnerAuthService;
 
