@@ -2,6 +2,7 @@ package mallang_trip.backend.global.io;
 
 import java.time.DateTimeException;
 import javax.validation.ConstraintViolationException;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
@@ -62,5 +63,12 @@ public class ExceptionController {
     @ResponseBody
     public ExceptionResponse invalidRequest(DateTimeException e) {
         return ExceptionResponse.builder().message("잘못된 날짜 형식입니다.").build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(SizeLimitExceededException.class)
+    @ResponseBody
+    public ExceptionResponse invalidRequest(SizeLimitExceededException e) {
+        return ExceptionResponse.builder().message("업로드 가능한 최대 용량을 초과했습니다.").build();
     }
 }
