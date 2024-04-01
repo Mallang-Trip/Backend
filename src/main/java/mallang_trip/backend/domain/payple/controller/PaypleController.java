@@ -88,7 +88,7 @@ public class PaypleController {
 	})
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
 	public BaseResponse<String> retry(@PathVariable(value = "reservation_id") Long reservationId) throws BaseException{
-		paypleService.retry(reservationId);
+		paypleService.manualBilling(reservationId);
 		return new BaseResponse<>("성공");
 	}
 }

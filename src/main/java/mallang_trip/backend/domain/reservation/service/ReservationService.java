@@ -52,7 +52,7 @@ public class ReservationService {
 			.member(member)
 			.paymentAmount(calculatePaymentAmount(member))
 			.build());
-		paypleService.billing(reservation);
+		paypleService.autoBilling(reservation);
 	}
 
 	/**
