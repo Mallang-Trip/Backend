@@ -34,6 +34,7 @@ public class PaypleService {
 	private final CardRepository cardRepository;
 	private final ReservationRepository reservationRepository;
 	private final BillingService billingService;
+	private final PaymentNotificationService paymentNotificationService;
 
 	/**
 	 * 카드정보를 저장합니다.
@@ -96,12 +97,12 @@ public class PaypleService {
 	}
 
 	/**
-	 * 자동결제를 진행합니다.
+	 * 결제를 요청합니다.
 	 *
 	 * @param reservation 결제를 진행할 Reservation 객체
 	 * @return 결제 승인 시 true 를, 실패 시 false 를 반환합니다.
 	 */
-	public boolean billing(Reservation reservation){
+	private boolean billing(Reservation reservation){
 		User user = reservation.getMember().getUser();
 		Card card = cardRepository.findByUser(user).orElse(null);
 		int amount = reservation.getPaymentAmount();
@@ -130,13 +131,26 @@ public class PaypleService {
 	}
 
 	/**
+	 * 자동 결제를 진행하고, 성공 여부에 따라 알림을 생성합니다.
+	 *
+	 * @param reservation 자동 결제를 진행할 Reservation 객체
+	 */
+	public void autoBilling(Reservation reservation){
+		if(billing(reservation)){
+			paymentNotificationService.paymentSuccess(reservation);
+		} else {
+			paymentNotificationService.paymentFail(reservation);
+		}
+	}
+	
+	/**
 	 * 결제가 실패한 예약에 대해 결제를 재시도합니다.
 	 *
 	 * @param reservationId 실패한 예약에 해당되는 reservation_id 값
 	 * @throws BaseException Forbidden 결제가 필요하지 않은 상태일 경우 발생하는 예외
 	 * @throws BaseException BILLING_FAIL 결제가 실패했을 경우 발생하는 예외
 	 */
-	public void retry(Long reservationId){
+	public void manualBilling(Long reservationId){
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		if(!reservation.getStatus().equals(PAYMENT_REQUIRED)){
@@ -169,6 +183,7 @@ public class PaypleService {
 		if(response != null){
 			reservation.saveCancelReceipt(response.getPcd_PAY_CARDRECEIPT());
 			reservation.changeStatus(REFUND_COMPLETE);
+			paymentNotificationService.refundSuccess(reservation);
 		} else {
 			reservation.changeStatus(REFUND_FAILED);
 		}
