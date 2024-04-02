@@ -87,8 +87,7 @@ public class DestinationService {
 	 * 여행지 상세 조회
 	 */
 	public DestinationDetailsResponse view(Long destinationId) {
-		Destination destination = destinationRepository.findByIdAndTypeAndDeleted(destinationId,
-				BY_ADMIN, false)
+		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION));
 		// 조회수 ++
 		destination.increaseViews();
