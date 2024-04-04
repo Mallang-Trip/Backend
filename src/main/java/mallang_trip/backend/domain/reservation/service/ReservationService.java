@@ -125,7 +125,7 @@ public class ReservationService {
 	public int calculateRefundAmount(Reservation reservation) {
 		Party party = reservation.getMember().getParty();
 		long dDay = DAYS.between(LocalDate.now(), party.getStartDate());
-/*		if (dDay <= 2) {
+		if (dDay <= 2) {
 			return 0;
 		} else if (dDay == 3) {
 			return (int) (reservation.getPaymentAmount() * 0.1);
@@ -139,8 +139,7 @@ public class ReservationService {
 			return (int) (reservation.getPaymentAmount() * 0.90);
 		} else {
 			return reservation.getPaymentAmount();
-		}*/
-		return reservation.getPaymentAmount();
+		}
 	}
 
 	public void savePenaltyToDriver(Party party) {
