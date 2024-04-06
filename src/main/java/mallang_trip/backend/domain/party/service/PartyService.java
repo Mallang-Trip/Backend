@@ -24,12 +24,12 @@ import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.P
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_NOT_RECRUITING;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.gmail.service.GmailService;
+import mallang_trip.backend.domain.mail.constant.MailStatus;
+import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.user.constant.Role;
@@ -79,7 +79,7 @@ public class PartyService {
     private final PartyMemberCompanionRepository partyMemberCompanionRepository;
     private final PartyProposalRepository partyProposalRepository;
 
-    private final GmailService gmailService;
+    private final MailService mailService;
 
     /**
      * 파티 생성 신청
@@ -269,11 +269,13 @@ public class PartyService {
             partyNotificationService.joinAcceptedAndCourseChanged(proposer, party);
             joinParty(party, proposer, proposal.getHeadcount(), companionRequests);
             partyNotificationService.joinAccepted(proposer, party);
+            mailService.sendEmailParty(party, MailStatus.MODIFIED_JOIN,"Join and accepted?");
         }
         if (proposal.getType().equals(COURSE_CHANGE)) {
             partyMemberService.setReadyAllMembers(party, false);
             party.setStatus(SEALED);
             partyNotificationService.courseChangeAccepted(proposal);
+            mailService.sendEmailParty(party, MailStatus.MODIFIED,"코스 변경을 모두 수락했습니다.");
         }
     }
 
@@ -302,7 +304,7 @@ public class PartyService {
         }
         partyNotificationService.allReady(party);
         reservationService.reserveParty(party);
-        gmailService.sendEmailParty(party, true);
+        mailService.sendEmailParty(party, MailStatus.SEALED,null);
         party.setStatus(SEALED);
     }
 
@@ -406,6 +408,7 @@ public class PartyService {
      * 예약 취소 (SEALED, WAITING_COURSE_CHANGE_APPROVAL 상태)
      */
     public void cancelReservation(Long partyId) {
+        StringBuilder reason = new StringBuilder();
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
         // 권한 CHECK
@@ -425,12 +428,14 @@ public class PartyService {
         Role role = currentUserService.getCurrentUser().getRole();
         if (role.equals(Role.ROLE_DRIVER)) {
             cancelReservationByDriver(party);
+            reason.append("드라이버가 예약을 취소했습니다.");
         } else if (role.equals(Role.ROLE_USER)) {
             cancelReservationByMember(party);
+            reason.append("파티원이 예약을 취소했습니다.");
         }
         chatService.leavePrivateChatWhenLeavingParty(currentUserService.getCurrentUser(), party);
         partyMemberService.setReadyAllMembers(party, false);
-        gmailService.sendEmailParty(party, false);
+        mailService.sendEmailParty(party, MailStatus.CANCELLED,reason.toString());
     }
 
     /**
