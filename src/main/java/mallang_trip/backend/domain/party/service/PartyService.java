@@ -203,6 +203,7 @@ public class PartyService {
             partyNotificationService.partyFulled(party);
             reservationService.reserveParty(party);
             party.setStatus(SEALED);
+            mailService.sendEmailParty(party, MailStatus.SEALED,null);
         } else {
             partyMemberService.setReadyAllMembers(party, false);
             party.setStatus(RECRUITING);
@@ -269,7 +270,7 @@ public class PartyService {
             partyNotificationService.joinAcceptedAndCourseChanged(proposer, party);
             joinParty(party, proposer, proposal.getHeadcount(), companionRequests);
             partyNotificationService.joinAccepted(proposer, party);
-            mailService.sendEmailParty(party, MailStatus.MODIFIED_JOIN,"Join and accepted?");
+            mailService.sendEmailParty(party, MailStatus.MODIFIED_JOIN,"새 파티원의 코스 변경 신청을 모두 수락하였습니다.");
         }
         if (proposal.getType().equals(COURSE_CHANGE)) {
             partyMemberService.setReadyAllMembers(party, false);

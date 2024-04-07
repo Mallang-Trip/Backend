@@ -10,6 +10,7 @@ import mallang_trip.backend.domain.party.service.PartyMemberService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
@@ -82,6 +83,7 @@ public class MailService {
      * @param mailStatus 예약완료, 취소, 변경 등
      * @param reason 세부 내용
      */
+    @Async
     public void sendEmailParty(Party party, MailStatus mailStatus,String reason) {
         StringBuilder peopleNameBuilder = new StringBuilder();
         HashMap<String,String> mailContents= new HashMap<>();
