@@ -94,7 +94,7 @@ public class MailService {
             for (PartyMember member : members) {
                 peopleNameBuilder.append(member.getUser().getName());
             }
-            mailContents.put("party_region",party.getRegion());
+            mailContents.put("party_name",party.getCourse().getName());
             StringBuilder date = new StringBuilder();
             date.append(party.getStartDate().toString());
             date.append(" ~ ");
