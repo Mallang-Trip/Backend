@@ -3,24 +3,25 @@ package mallang_trip.backend.domain.admin.dto;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.admin.constant.ReportStatus;
-import mallang_trip.backend.domain.admin.entity.Report;
+import mallang_trip.backend.domain.admin.constant.ObjectionStatus;
+import mallang_trip.backend.domain.admin.entity.Objection;
+
 
 @Getter
 @Builder
 public class ObjectionBriefResponse {
 
-    private Long reportId;
-    private String reporteeNickname;
-    private ReportStatus status;
+    private Long objectionId;
+    private String objectorNickname;
+    private ObjectionStatus status;
     private LocalDateTime createdAt;
 
-    public static ReportBriefResponse of(Report report){
-        return ReportBriefResponse.builder()
-                .reportId(report.getId())
-                .reporteeNickname(report.getReportee().getNickname())
-                .status(report.getStatus())
-                .createdAt(report.getCreatedAt())
+    public static ObjectionBriefResponse of(Objection objection){
+        return ObjectionBriefResponse.builder()
+                .objectionId(objection.getId())
+                .objectorNickname(objection.getObjector().getNickname())
+                .status(objection.getStatus())
+                .createdAt(objection.getCreatedAt())
                 .build();
     }
 }

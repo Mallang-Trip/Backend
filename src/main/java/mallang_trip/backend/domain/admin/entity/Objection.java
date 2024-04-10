@@ -41,9 +41,9 @@ public class Objection extends BaseEntity {
     @JoinColumn(name = "objector_id", nullable = false)
     private User objector;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_id", nullable = false)
-    private Report report;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "report_id", nullable = false)
+//    private Report report;
 
     @Column
     private String content;

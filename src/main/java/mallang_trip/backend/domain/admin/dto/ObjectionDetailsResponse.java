@@ -3,37 +3,29 @@ package mallang_trip.backend.domain.admin.dto;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-import mallang_trip.backend.domain.admin.constant.ReportStatus;
-import mallang_trip.backend.domain.admin.constant.ReportType;
-import mallang_trip.backend.domain.admin.entity.Report;
+import mallang_trip.backend.domain.admin.constant.ObjectionStatus;
+import mallang_trip.backend.domain.admin.entity.Objection;
+
 
 @Getter
 @Builder
 public class ObjectionDetailsResponse {
 
-    private Long reportId;
-    private Long targetId;
-    private Long reporterId;
-    private Long reporteeId;
-    private String reporterNickname;
-    private String reporteeNickname;
+    private Long objectionId;
+    private Long objectorId;
+    private String objectorNickname;
     private String content;
-    private ReportStatus status;
-    private ReportType type;
+    private ObjectionStatus status;
     private LocalDateTime createdAt;
 
-    public static ReportDetailsResponse of(Report report){
-        return ReportDetailsResponse.builder()
-                .reportId(report.getId())
-                .targetId(report.getTargetId())
-                .reporterId(report.getReporter().getId())
-                .reporteeId(report.getReportee().getId())
-                .reporterNickname(report.getReporter().getNickname())
-                .reporteeNickname(report.getReportee().getNickname())
-                .content(report.getContent())
-                .status(report.getStatus())
-                .type(report.getType())
-                .createdAt(report.getCreatedAt())
+    public static ObjectionDetailsResponse of(Objection objection){
+        return ObjectionDetailsResponse.builder()
+                .objectionId(objection.getId())
+                .objectorId(objection.getObjector().getId())
+                .objectorNickname(objection.getObjector().getNickname())
+                .content(objection.getContent())
+                .status(objection.getStatus())
+                .createdAt(objection.getCreatedAt())
                 .build();
     }
 }
