@@ -16,4 +16,7 @@ public interface SuspensionRepository extends JpaRepository<Suspension, Long> {
 	Optional<Suspension> findByUserAndStatus(User user, SuspensionStatus status);
 
 	List<Suspension> findByStatus(SuspensionStatus status);
+
+	// report_id로 suspension 조회
+	Optional<Suspension> findByReportId(Long reportId);
 }

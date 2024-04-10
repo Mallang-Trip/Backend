@@ -5,12 +5,15 @@ import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.CANCEL
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.EXPIRED;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.SUSPENDING;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.admin.entity.Report;
 import mallang_trip.backend.domain.admin.exception.AdminExceptionStatus;
+import mallang_trip.backend.domain.admin.repository.ReportRepository;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.SuspendingUserResponse;
 import mallang_trip.backend.domain.admin.dto.SuspensionRequest;
@@ -34,16 +37,22 @@ public class SuspensionService {
 	private final NotificationService notificationService;
 	private final ChatRoomService chatRoomService;
 
+	private final ReportRepository reportRepository;
+
 	/**
 	 * 유저 정지
 	 */
 	public void suspend(Long userId, SuspensionRequest request) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
+
+		Report report = reportRepository.findById(request.getReportId())
+			.orElseThrow(() -> new BaseException(Not_Found));
 		if(isSuspending(user)){
 			cancelSuspension(user);
 		}
 		suspensionRepository.save(Suspension.builder()
+			.report(report)
 			.user(user)
 			.content(request.getContent())
 			.duration(request.getDuration())
