@@ -49,7 +49,7 @@ public class SuspensionService {
 			.duration(request.getDuration())
 			.build());
 		chatRoomService.leaveAllChatExceptMyParty(user);
-		notifySuspend(user, request.getDuration());
+		notifySuspend(user, request.getContent(), request.getDuration());
 	}
 
 	/**
@@ -71,11 +71,14 @@ public class SuspensionService {
 	/**
 	 * 정지 알림 전송
 	 */
-	private void notifySuspend(User user, Integer duration) {
+	private void notifySuspend(User user, String reason, Integer duration) {
 		String content = new StringBuilder()
-			.append("신고자로부터 제보를 받아 귀하께서는 ")
-			.append(duration == -1 ? duration + "일" : "영구")
-			.append(" 사용 제재되었습니다. 이에 대해 궁금한 사항은 말랑트립 고객센터를 방문해주세요. ")
+				.append(user.getNickname())
+				.append("님은 ")
+				.append(reason)
+				.append("로 인하여 ")
+				.append(duration == -1 ? duration + "일" : "영구")
+				.append(" 정지 처리되었습니다. 이의 제기를 하시려면 고객센터를 통해서 내용을 전달해주세요. 허위 사실을 기재할 경우 제재가 추가될 수 있습니다.")
 			//.append("14일 전까지 이의제기가 가능하며 이의 제기를 원하시면 여기를 눌러주세요.")
 			.toString();
 		notificationService.create(user, content, SUSPEND, null);
