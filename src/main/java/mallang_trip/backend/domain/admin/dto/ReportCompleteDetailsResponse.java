@@ -24,7 +24,7 @@ public class ReportCompleteDetailsResponse {
     private ReportType type;
     private LocalDateTime createdAt;
 
-    private boolean suspensionExist;
+    private Boolean suspensionExist;
     private String suspensionContent;
 
     // Suspension이 null이면 suspensionExist를 false로 설정 및 suspensionContent를 null로 설정

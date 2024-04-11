@@ -19,6 +19,6 @@ public class SuspensionRequest {
 	private String content;
 
 	@NotBlank
-	@ApiModelProperty(value = "정지 기간", required = true)
-	private int duration;
+	@ApiModelProperty(value = "정지 기간 (영구정지: -1)", required = true)
+	private Integer duration;
 }

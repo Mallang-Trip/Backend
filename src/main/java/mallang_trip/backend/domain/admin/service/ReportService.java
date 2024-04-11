@@ -49,20 +49,17 @@ public class ReportService {
 	}
 
 	/**
-	 * 신고 목록 조회
+	 * 신고 대기 목록 조회
 	 */
 	public List<ReportBriefResponse> getReports() {
-		List<Report> reports = Stream.concat(
-				reportRepository.findByStatusOrderByCreatedAtDesc(WAITING).stream(),
-				reportRepository.findByStatusOrderByCreatedAtDesc(COMPLETE).stream())
-			.collect(Collectors.toList());
-		return reports.stream()
+		return reportRepository.findByStatusOrderByCreatedAtDesc(WAITING)
+			.parallelStream()
 			.map(ReportBriefResponse::of)
 			.collect(Collectors.toList());
 	}
 
 	/**
-	 * 신고 상세 조회
+	 * 대기중인 신고 상세 조회
 	 */
 	public ReportDetailsResponse viewReport(Long reportId) {
 		Report report = reportRepository.findById(reportId)

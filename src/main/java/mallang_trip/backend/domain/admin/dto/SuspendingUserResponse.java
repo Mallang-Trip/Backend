@@ -11,7 +11,7 @@ public class SuspendingUserResponse {
 
 	private Long userId;
 	private String userNickname;
-	private int duration;
+	private Integer duration;
 	private LocalDateTime createdAt;
 
 	public static SuspendingUserResponse of(Suspension suspension){
