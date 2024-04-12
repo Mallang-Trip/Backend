@@ -53,7 +53,7 @@ public class ReportService {
 	 */
 	public List<ReportBriefResponse> getReports() {
 		return reportRepository.findByStatusOrderByCreatedAtDesc(WAITING)
-			.parallelStream()
+			.stream()
 			.map(ReportBriefResponse::of)
 			.collect(Collectors.toList());
 	}
@@ -82,7 +82,7 @@ public class ReportService {
 	public List<ReportCompleteBriefResponse> getCompleteReports() {
 		List<Report> reports = reportRepository.findByStatusOrderByCreatedAtDesc(COMPLETE);
 
-		return reports.parallelStream() // 병렬 처리로 성능 향상
+		return reports.stream()
 			.map(report-> {
 				Suspension suspension = suspensionRepository.findByReportId(report.getId())
 					.orElse(null);
