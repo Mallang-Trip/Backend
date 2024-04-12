@@ -59,7 +59,7 @@ public class IncomeService {
 		Driver driver = driverService.getCurrentDriver();
 
 		return incomeRepository.findByDriver(driver.getId())
-			.stream()
+			.parallelStream()
 			.map(IncomeResponse::of)
 			.collect(Collectors.toList());
 	}
@@ -71,7 +71,7 @@ public class IncomeService {
 		Driver driver = driverService.getCurrentDriver();
 
 		return incomeRepository.findRemittedIncomesByDriver(driver.getId())
-			.stream()
+			.parallelStream()
 			.map(IncomeResponse::of)
 			.collect(Collectors.toList());
 	}
