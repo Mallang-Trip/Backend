@@ -115,7 +115,7 @@ public class MailService {
             mailContents.put("title","파티 코스 수정 안내드립니다.");
         }
 
-        partyMemberService.getMembers(party).parallelStream()
+        partyMemberService.getMembers(party).stream()
                 .forEach(member -> {
                     try {
                         if(mailStatus.equals(MailStatus.SEALED)){

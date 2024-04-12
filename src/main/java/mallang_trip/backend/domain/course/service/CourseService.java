@@ -116,8 +116,8 @@ public class CourseService {
 	 */
 	public CourseDetailsResponse getCourseDetails(Course course) {
 		List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
-			.parallelStream()// 병렬 처리
-			.map(courseDay -> courseDayToResponse(courseDay))
+			.stream()// 병렬 처리
+			.map(this::courseDayToResponse)
 			.collect(Collectors.toList());
 
 		return CourseDetailsResponse.builder()
@@ -136,7 +136,7 @@ public class CourseService {
 	 * CourseDay -> CourseDayResponse
 	 */
 	private CourseDayResponse courseDayToResponse(CourseDay courseDay){
-		List<DestinationResponse> destinations = courseDay.getDestinations().parallelStream() // 병렬 처리
+		List<DestinationResponse> destinations = courseDay.getDestinations().stream() // 병렬 처리
 			.map(destinationId ->
 				destinationRepository.findById(destinationId)
 				.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION))
@@ -179,7 +179,7 @@ public class CourseService {
 	 */
 	public List<CourseBriefResponse> getDriversCourses(User user) {
 		return courseRepository.findAllByOwnerAndDeleted(user, false)
-				.parallelStream()// 병렬 처리
+				.stream()
 				.map(CourseBriefResponse::of)
 				.collect(Collectors.toList());
 	}
