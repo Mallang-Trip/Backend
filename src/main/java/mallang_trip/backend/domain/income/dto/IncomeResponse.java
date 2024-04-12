@@ -21,6 +21,7 @@ public class IncomeResponse {
 	private Integer afterCommission;
 
 	public static IncomeResponse of(Income income){
+		System.out.println(income.getParty().getId() + (income.getParty().getCourse() == null? "null" : "not null"));
 		return IncomeResponse.builder()
 			.incomeId(income.getId())
 			.partyId(income.getParty().getId())

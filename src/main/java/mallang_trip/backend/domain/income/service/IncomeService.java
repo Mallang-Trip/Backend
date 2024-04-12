@@ -45,9 +45,14 @@ public class IncomeService {
 			.build());
 	}
 
-	public void createPenaltyIncome(Party party){
+	/**
+	 * 파티의 위약금을 드라이버의 수익으로 등록합니다.
+	 *
+	 * @param party 수익으로 등록할 Party 객체
+	 */
+	public void createPenaltyIncome(Party party) {
 		int penalty = party.getCourse().getDiscountPrice();
-		if(penalty > 0){
+		if (penalty > 0) {
 			create(party, PENALTY_INCOME, penalty);
 		}
 	}
@@ -55,11 +60,11 @@ public class IncomeService {
 	/**
 	 * 전체 수익 내역을 조회합니다.
 	 */
-	public List<IncomeResponse> getIncomes() {
+	private List<IncomeResponse> getIncomes() {
 		Driver driver = driverService.getCurrentDriver();
 
 		return incomeRepository.findByDriver(driver.getId())
-			.parallelStream()
+			.stream()
 			.map(IncomeResponse::of)
 			.collect(Collectors.toList());
 	}
@@ -71,19 +76,23 @@ public class IncomeService {
 		Driver driver = driverService.getCurrentDriver();
 
 		return incomeRepository.findRemittedIncomesByDriver(driver.getId())
-			.parallelStream()
+			.stream()
 			.map(IncomeResponse::of)
 			.collect(Collectors.toList());
 	}
 
 	/**
-	 * 월 별 총 수익금을 조회합니다.
+	 * 월 별 수익금 내역을 조회합니다.
 	 *
-	 * @param month 조회할 날짜 (format: YYYY-MM)
+	 * @param month 조회할 날짜 (YYYY-MM: 월 별 조회, all: 전체 기간 조회)
 	 */
-	public MonthlyIncomeResponse getMonthlyIncome(String month) {
+	public List<IncomeResponse> getMonthlyIncomes(String month) {
+		// 전체 조회 시
+		if(month.equalsIgnoreCase("ALL")){
+			return getIncomes();
+		}
 		// YYYY-MM format check
-		if(!Pattern.matches("\\d{4}-\\d{2}", month)){
+		if (!Pattern.matches("\\d{4}-\\d{2}", month)) {
 			throw new BaseException(Bad_Request);
 		}
 
@@ -91,13 +100,11 @@ public class IncomeService {
 		LocalDate startDate = LocalDate.parse(month + "-01");
 		LocalDate endDate = startDate.plusMonths(1);
 
-		int income = incomeRepository.findByDriverAndPeriod(driver.getId(),
-			startDate.toString(), endDate.toString());
-
-		return MonthlyIncomeResponse.builder()
-			.month(month)
-			.income(income)
-			.build();
+		return incomeRepository.findByDriverAndPeriod(
+			driver.getId(), startDate.toString(), endDate.toString())
+			.stream()
+			.map(IncomeResponse::of)
+			.collect(Collectors.toList());
 	}
 
 	/**

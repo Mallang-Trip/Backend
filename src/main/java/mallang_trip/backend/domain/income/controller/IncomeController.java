@@ -34,17 +34,21 @@ public class IncomeController {
 
 	private final IncomeService incomeService;
 
-	@ApiOperation(value = "(드라이버)전체 수익금 내역 조회")
-	@GetMapping
-	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
+	@ApiOperation(value = "(드라이버)월 별 수익금 내역 조회")
+	@GetMapping("/monthly")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+		@ApiImplicitParam(name = "month", value = "YYYY-MM: 월 별 조회, ALL: 전체 기간 조회", required = true, paramType = "query", dataTypeClass = String.class)
+	})
 	@ApiResponses({
+		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<List<IncomeResponse>> getIncomes() throws BaseException {
-		return new BaseResponse<>(incomeService.getIncomes());
+	public BaseResponse<List<IncomeResponse>> getMonthlyIncome(@RequestParam("month") String month) throws BaseException {
+		return new BaseResponse<>(incomeService.getMonthlyIncomes(month));
 	}
 
 	@ApiOperation(value = "(드라이버)송금된 수익금 내역 조회")
@@ -58,23 +62,6 @@ public class IncomeController {
 	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
 	public BaseResponse<List<IncomeResponse>> getRemittedIncomes() throws BaseException {
 		return new BaseResponse<>(incomeService.getRemittedIncomes());
-	}
-
-	@ApiOperation(value = "(드라이버)월 별 총 수익금 조회")
-	@GetMapping("/monthly")
-	@ApiImplicitParams({
-		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-		@ApiImplicitParam(name = "month", value = "YYYY-MM", required = true, paramType = "query", dataTypeClass = String.class)
-	})
-	@ApiResponses({
-		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
-		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
-		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
-		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
-	})
-	@PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
-	public BaseResponse<MonthlyIncomeResponse> getMonthlyIncome(@RequestParam("month") String month) throws BaseException {
-		return new BaseResponse<>(incomeService.getMonthlyIncome(month));
 	}
 
 	@ApiOperation(value = "(관리자)송금 완료 처리")
