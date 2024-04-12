@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.income.service.IncomeService;
 import mallang_trip.backend.domain.mail.constant.MailStatus;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
@@ -80,6 +81,7 @@ public class PartyService {
     private final PartyProposalRepository partyProposalRepository;
 
     private final MailService mailService;
+    private final IncomeService incomeService;
 
     /**
      * 파티 생성 신청
@@ -262,6 +264,7 @@ public class PartyService {
         Party party = proposal.getParty();
         User proposer = proposal.getProposer();
         proposal.setStatus(ProposalStatus.ACCEPTED);
+        proposal.getCourse().increaseDiscountPrice(party.getCourse().getDiscountPrice());
         party.setCourse(proposal.getCourse());
         if (proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)) {
             List<PartyMemberCompanionRequest> companionRequests = partyMemberCompanionRepository.findByProposal(
@@ -358,6 +361,8 @@ public class PartyService {
         party.setStatus(CANCELED_BY_DRIVER_QUIT);
         // 드라이버 탈퇴로 인한 파티 취소 알림
         partyNotificationService.cancelByDriverQuit(party);
+        // 위약금 수익 등록
+        incomeService.createPenaltyIncome(party);
     }
 
     /**
@@ -386,6 +391,8 @@ public class PartyService {
         party.setStatus(CANCELED_BY_ALL_QUIT);
         partyNotificationService.lastMemberQuit(currentUserService.getCurrentUser(), party);
         partyNotificationService.cancelByAllQuit(party);
+        // 위약금 수익 등록
+        incomeService.createPenaltyIncome(party);
     }
 
     /**
@@ -447,6 +454,8 @@ public class PartyService {
         reservationService.savePenaltyToDriver(party);
         reservationService.refundAllMembers(party);
         party.setStatus(CANCELED_BY_DRIVER_QUIT);
+        // 위약금 수익 등록
+        incomeService.createPenaltyIncome(party);
     }
 
     /**
@@ -471,7 +480,8 @@ public class PartyService {
         Integer penaltyAmount = reservationService.refund(member);
         member.getParty().getCourse().increaseDiscountPrice(penaltyAmount);
         member.getParty().setStatus(CANCELED_BY_ALL_QUIT);
-        // TODO: 위약금 드라이버에게 송금 후 알림
+        // 위약금 수익 등록
+        incomeService.createPenaltyIncome(member.getParty());
     }
 
     /**
