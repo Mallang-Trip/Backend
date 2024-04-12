@@ -13,7 +13,6 @@ import mallang_trip.backend.domain.driver.service.DriverService;
 import mallang_trip.backend.domain.income.constant.IncomeType;
 import mallang_trip.backend.domain.income.dto.IncomeResponse;
 import mallang_trip.backend.domain.driver.entity.Driver;
-import mallang_trip.backend.domain.income.dto.MonthlyIncomeResponse;
 import mallang_trip.backend.domain.income.dto.RemittanceCompleteRequest;
 import mallang_trip.backend.domain.income.repository.IncomeRepository;
 import mallang_trip.backend.domain.party.entity.Party;
