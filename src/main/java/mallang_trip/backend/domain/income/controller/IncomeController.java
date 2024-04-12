@@ -78,7 +78,7 @@ public class IncomeController {
 	}
 
 	@ApiOperation(value = "(관리자)송금 완료 처리")
-	@PostMapping("/remmitance/{income_id}")
+	@PostMapping("/remittance/{income_id}")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
 		@ApiImplicitParam(name = "income_id", value = "income_id", required = true, paramType = "path", dataTypeClass = String.class)

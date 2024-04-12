@@ -1,5 +1,7 @@
 package mallang_trip.backend.domain.party.service;
 
+import static mallang_trip.backend.domain.income.constant.IncomeType.PARTY_INCOME;
+import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_EXPIRATION;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
@@ -8,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.income.service.IncomeService;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
@@ -26,6 +29,7 @@ public class PartySchedulerService {
 	private final PartyProposalService partyProposalService;
 	private final PartyNotificationService partyNotificationService;
 	private final CourseDayRepository courseDayRepository;
+	private final IncomeService incomeService;
 
 	/**
 	 * 24시간 초과된 제안 만료 (1분마다 반복 실행)
@@ -58,7 +62,8 @@ public class PartySchedulerService {
 				partyProposalService.expireWaitingProposalByParty(party);
 				party.setStatus(CANCELED_BY_EXPIRATION);
 				partyNotificationService.cancelByExpiration(party);
-				// TODO: discountPrice(위약금) 존재 시 드라이버에게 송금 후 알림
+				// 위약금 수익 등록
+				incomeService.createPenaltyIncome(party);
 			});
 	}
 
@@ -78,7 +83,10 @@ public class PartySchedulerService {
 	 */
 	private void FinishingParties(String today){
 		partyRepository.findFinishingParties(today).stream()
-			.forEach(party -> party.setStatus(FINISHED));
+			.forEach(party -> {
+				party.setStatus(FINISHED);
+				incomeService.create(party, PARTY_INCOME, party.getCourse().getTotalPrice());
+			});
 	}
 
 	/**

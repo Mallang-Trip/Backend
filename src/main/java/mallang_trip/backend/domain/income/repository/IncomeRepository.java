@@ -11,32 +11,31 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IncomeRepository extends JpaRepository<Income, Long> {
 
-	@Query(value = "SELECT di.*\n"
-		+ "FROM driver_income di \n"
-		+ "		JOIN party p ON di.party_id = p.id\n"
+	@Query(value = "SELECT i.*\n"
+		+ "FROM income i \n"
+		+ "		JOIN party p ON i.party_id = p.id\n"
 		+ "WHERE p.driver_id = :driver_id\n"
-		+ "		AND di.deleted = false\n"
+		+ "		AND i.deleted = false\n"
 		+ "ORDER BY p.end_date DESC;", nativeQuery = true)
 	List<Income> findByDriver(@Param("driver_id") Long driverId);
 
-	@Query(value = "SELECT di.*\n"
-		+ "FROM driver_income di\n"
-		+ "		JOIN party p ON di.party_id = p.id\n"
+	@Query(value = "SELECT i.*\n"
+		+ "FROM income i\n"
+		+ "		JOIN party p ON i.party_id = p.id\n"
 		+ "WHERE p.driver_id = :driver_id\n"
-		+ "		AND di.deleted = false\n"
-		+ "		AND di.remitted = true\n"
+		+ "		AND i.deleted = false\n"
+		+ "		AND i.remitted = true\n"
 		+ "ORDER BY p.end_date DESC;", nativeQuery = true)
 	List<Income> findRemittedIncomesByDriver(@Param("driver_id") Long driverId);
 
-	@Query(value = "SELECT di.amount - di.commission\n"
-		+ "FROM driver_income di\n"
-		+ "    JOIN party p ON di.party_id = p.id\n"
+	@Query(value = "SELECT SUM(i.amount - i.commission)\n"
+		+ "FROM income i\n"
+		+ "    JOIN party p ON i.party_id = p.id\n"
 		+ "WHERE p.driver_id = :driver_id\n"
-		+ "    AND di.deleted = false\n"
+		+ "    AND i.deleted = false\n"
 		+ "    AND p.end_date >= :start_date\n"
-		+ "    AND p.end_date < :end_date\n"
-		+ "ORDER BY p.end_date DESC;", nativeQuery = true)
-	List<Integer> findByDriverAndPeriod(@Param("driver_id") Long driverId,
-		@Param("start_date") LocalDate startDate, @Param("end_date") LocalDate endDate);
+		+ "    AND p.end_date < :end_date ;", nativeQuery = true)
+	Integer findByDriverAndPeriod(@Param("driver_id") Long driverId,
+		@Param("start_date") String startDate, @Param("end_date") String endDate);
 
 }

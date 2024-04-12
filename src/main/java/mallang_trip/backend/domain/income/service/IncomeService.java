@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.income.service;
 
+import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
@@ -44,6 +45,13 @@ public class IncomeService {
 			.build());
 	}
 
+	public void createPenaltyIncome(Party party){
+		int penalty = party.getCourse().getDiscountPrice();
+		if(penalty > 0){
+			create(party, PENALTY_INCOME, penalty);
+		}
+	}
+
 	/**
 	 * 전체 수익 내역을 조회합니다.
 	 */
@@ -84,8 +92,7 @@ public class IncomeService {
 		LocalDate endDate = startDate.plusMonths(1);
 
 		int income = incomeRepository.findByDriverAndPeriod(driver.getId(),
-			startDate, endDate).stream()
-			.mapToInt(Integer::intValue).sum();
+			startDate.toString(), endDate.toString());
 
 		return MonthlyIncomeResponse.builder()
 			.month(month)
