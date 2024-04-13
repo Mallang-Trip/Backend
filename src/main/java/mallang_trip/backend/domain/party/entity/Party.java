@@ -72,6 +72,9 @@ public class Party extends BaseEntity {
 	@Builder.Default()
 	private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
 
+	@Column
+	private Integer driverPenalty;
+
 	public void increaseHeadcount(int headcount) {
 		this.headcount += headcount;
 	}
@@ -105,5 +108,14 @@ public class Party extends BaseEntity {
 	 */
 	public Boolean checkMaxPrice(Integer maxPrice) {
 		return this.course.getTotalPrice() / capacity <= maxPrice ? true : false;
+	}
+
+	/**
+	 * 드라이버 예약 취소로 인한 위약금 발생 시, 위약금을 저장
+	 *
+	 * @param penalty 위약금 금액
+	 */
+	public void setDriverPenalty(Integer penalty){
+		this.driverPenalty = penalty;
 	}
 }

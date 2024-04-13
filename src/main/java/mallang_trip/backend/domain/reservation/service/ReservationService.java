@@ -142,11 +142,16 @@ public class ReservationService {
 		}
 	}
 
+	/**
+	 * 드라이버의 예약 취소로 인한 위약금을 저장
+	 */
 	public void savePenaltyToDriver(Party party) {
-		int penalty = calculatePenaltyToDriver(party);
-		//TODO: 드라이버 패널티 금액 저장
+		party.setDriverPenalty(calculatePenaltyToDriver(party));
 	}
 
+	/**
+	 * 드라이버의 예약 취소로 인한 위약금을 계산
+	 */
 	public int calculatePenaltyToDriver(Party party) {
 		int totalPrice = party.getCourse().getTotalPrice();
 		long dDay = DAYS.between(LocalDate.now(), party.getStartDate());
