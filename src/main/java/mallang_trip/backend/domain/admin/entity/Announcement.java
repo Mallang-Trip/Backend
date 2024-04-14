@@ -1,22 +1,16 @@
 package mallang_trip.backend.domain.admin.entity;
 
 import java.util.List;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OrderColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.admin.constant.AnnouncementType;
+import mallang_trip.backend.domain.admin.dto.AnnouncementRequest;
+import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.global.entity.BaseEntity;
 
 @Entity
@@ -44,4 +38,15 @@ public class Announcement extends BaseEntity {
 	@ElementCollection
 	@OrderColumn
 	private List<String> images;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false, updatable = false)
+	private User user;
+
+	public void modify(AnnouncementRequest request){
+		this.title=request.getTitle();
+		this.content=request.getContent();
+		this.images=request.getImages();
+		this.type=request.getType();
+	}
 }
