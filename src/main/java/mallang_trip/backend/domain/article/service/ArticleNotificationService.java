@@ -9,6 +9,7 @@ import mallang_trip.backend.domain.article.repository.ReplyRepository;
 import mallang_trip.backend.domain.article.entity.Article;
 import mallang_trip.backend.domain.article.entity.Comment;
 import mallang_trip.backend.domain.article.entity.Reply;
+import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.notification.service.NotificationService;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
@@ -24,6 +25,8 @@ public class ArticleNotificationService {
 	private final ReplyRepository replyRepository;
 	private final CurrentUserService currentUserService;
 
+	private final MailService mailService;
+
 	/**
 	 * 새 댓글이 작성되었을 때 알림을 전송하는 메소드입니다.
 	 * <p>
@@ -38,6 +41,8 @@ public class ArticleNotificationService {
 			.append("] 게시글에 새 댓글이 추가되었습니다.")
 			.toString();
 		notificationService.create(article.getUser(), content, ARTICLE, article.getId());
+		//mailService.sendEmailNotification(article.getUser().getEmail(),article.getUser().getName(),content,"새 댓글이 추가되었습니다.");
+
 	}
 
 	/**
@@ -54,6 +59,7 @@ public class ArticleNotificationService {
 		getRepliedUsers(comment).stream()
 			.forEach(user ->
 				notificationService.create(user, content, ARTICLE, comment.getArticle().getId()));
+		//mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"새 댓글이 추가되었습니다.");
 	}
 
 	/**

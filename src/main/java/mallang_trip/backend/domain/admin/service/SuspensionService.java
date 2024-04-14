@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.entity.Report;
 import mallang_trip.backend.domain.admin.exception.AdminExceptionStatus;
 import mallang_trip.backend.domain.admin.repository.ReportRepository;
+import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.SuspendingUserResponse;
 import mallang_trip.backend.domain.admin.dto.SuspensionRequest;
@@ -38,6 +39,8 @@ public class SuspensionService {
 	private final ChatRoomService chatRoomService;
 
 	private final ReportRepository reportRepository;
+
+	private final MailService mailService;
 
 	/**
 	 * 유저 정지
@@ -91,6 +94,8 @@ public class SuspensionService {
 			//.append("14일 전까지 이의제기가 가능하며 이의 제기를 원하시면 여기를 눌러주세요.")
 			.toString();
 		notificationService.create(user, content, SUSPEND, null);
+		mailService.sendEmailNotification(user.getEmail(), user.getNickname(), content,"말랑트립에서 중요한 안내 말씀드립니다.");
+
 	}
 
 	/**
