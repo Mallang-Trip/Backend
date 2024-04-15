@@ -9,17 +9,9 @@ import io.swagger.annotations.ApiResponses;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.dto.*;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
-import mallang_trip.backend.domain.user.dto.TokensDto;
-import mallang_trip.backend.domain.user.dto.AuthResponse;
-import mallang_trip.backend.domain.user.dto.ChangePasswordRequest;
-import mallang_trip.backend.domain.user.dto.ChangeProfileRequest;
-import mallang_trip.backend.domain.user.dto.LoginIdResponse;
-import mallang_trip.backend.domain.user.dto.LoginRequest;
-import mallang_trip.backend.domain.user.dto.ResetPasswordRequest;
-import mallang_trip.backend.domain.user.dto.SignupRequest;
-import mallang_trip.backend.domain.user.dto.UserBriefResponse;
 import mallang_trip.backend.domain.user.service.UserSearchService;
 import mallang_trip.backend.domain.user.service.UserService;
 import mallang_trip.backend.domain.user.service.UserWithdrawalService;
@@ -342,4 +334,86 @@ public class UserController {
 		userWithdrawalService.withdrawal();
 		return new BaseResponse<>("성공");
 	}
+
+	/**
+	 * (관리자) 회원 정보 목록 조회
+	 *
+	 */
+	@GetMapping("/admin/user/list")
+	@ApiOperation(value = "(관리자) 회원 정보 목록 조회")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+			@ApiImplicitParam(name = "nicknameOrId", value = "닉네임 또는 아이디", required = false, paramType = "query", dataTypeClass = String.class)
+	})
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<List<UserInfoBriefResponse>> getUserList(@RequestParam(required = false) String nicknameOrId) throws BaseException {
+		return new BaseResponse<>(userSearchService.getUserList(nicknameOrId));
+	}
+
+	/**
+	 * (관리자) 관리자 권한 회원 목록 조회
+	 *
+	 */
+	@GetMapping("/admin/role")
+	@ApiOperation(value = "(관리자) 관리자 권한 회원 목록 조회")
+	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<List<UserInfoBriefResponse>> getAdminList() throws BaseException {
+		return new BaseResponse<>(userSearchService.getAdminList());
+	}
+
+	/**
+	 * (관리자) 회원 관리자 권한 부여
+	 *
+	 */
+	@PostMapping("/admin/role")
+	@ApiOperation(value = "(관리자) 회원 관리자 권한 부여")
+	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+			@ApiResponse(code = 404, message = "해당 유저를 찾을 수 없습니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<String> grantAdminRole(@RequestBody @Valid GrantAdminRoleRequest request) throws BaseException {
+		userService.grantAdminRole(request);
+		return new BaseResponse<>("성공");
+	}
+
+	/**
+	 * (관리자) 회원 관리자 권한 해제
+	 */
+	@DeleteMapping("/admin/role/{userId}")
+	@ApiOperation(value = "(관리자) 회원 관리자 권한 해제")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+			@ApiImplicitParam(name = "userId", value = "user_id", required = true, paramType = "path", dataTypeClass = Long.class)
+	})
+	@ApiResponses({
+			@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+			@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+			@ApiResponse(code = 404, message = "해당 유저를 찾을 수 없습니다."),
+			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<String> revokeAdminRole(@PathVariable(value = "userId") Long userId) throws BaseException {
+		userService.revokeAdminRole(userId);
+		return new BaseResponse<>("성공");
+	}
+
 }

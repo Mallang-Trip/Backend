@@ -72,9 +72,11 @@ public class SuspensionService {
 	 * 유저의 정지 일 수 확인
 	 */
 	public Integer getSuspensionDuration(User user) {
-		return suspensionRepository.findByUserAndStatus(user, SUSPENDING)
+		// duration 합 구하기
+		// duration -1이 있으면 영구정지
+		return suspensionRepository.findByUserAndStatus(user, SUSPENDING).stream()
 			.map(Suspension::getDuration)
-			.orElse(null);
+			.reduce(0, (a, b) -> a == -1 || b == -1 ? -1 : a + b);
 	}
 
 	/**
@@ -86,7 +88,7 @@ public class SuspensionService {
 				.append("님은 ")
 				.append(reason)
 				.append("로 인하여 ")
-				.append(duration == -1 ? duration + "일" : "영구")
+				.append(duration == -1 ? "영구" : duration + "일" )
 				.append(" 정지 처리되었습니다. 이의 제기를 하시려면 고객센터를 통해서 내용을 전달해주세요. 허위 사실을 기재할 경우 제재가 추가될 수 있습니다.")
 			//.append("14일 전까지 이의제기가 가능하며 이의 제기를 원하시면 여기를 눌러주세요.")
 			.toString();

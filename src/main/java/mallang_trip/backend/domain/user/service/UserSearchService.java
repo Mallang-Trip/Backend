@@ -1,10 +1,12 @@
 package mallang_trip.backend.domain.user.service;
 
+import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.dto.UserInfoBriefResponse;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.user.dto.UserBriefResponse;
 import mallang_trip.backend.domain.user.entity.User;
@@ -44,5 +46,29 @@ public class UserSearchService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		return UserBriefResponse.of(user);
+	}
+
+	/**
+	 * (관리자) 회원 정보 목록 조회
+	 */
+	public List<UserInfoBriefResponse> getUserList(String nicknameOrId){
+		if(nicknameOrId == null){
+			return userRepository.findAll().stream()
+				.map(user->UserInfoBriefResponse.of(user,suspensionService.getSuspensionDuration(user)))
+				.collect(Collectors.toList());
+		}
+		return userRepository.findByNicknameContainingIgnoreCaseOrLoginIdContainingIgnoreCase(nicknameOrId,nicknameOrId).stream()
+			.map(user->UserInfoBriefResponse.of(user,suspensionService.getSuspensionDuration(user)))
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * (관리자) 관리자 권한 회원 목록 조회
+	 *
+	 */
+	public List<UserInfoBriefResponse> getAdminList(){
+		return userRepository.findByRole(ROLE_ADMIN).stream()
+			.map(user->UserInfoBriefResponse.of(user,0))
+			.collect(Collectors.toList());
 	}
 }
