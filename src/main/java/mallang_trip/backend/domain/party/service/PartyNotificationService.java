@@ -5,6 +5,7 @@ import static mallang_trip.backend.domain.notification.constant.NotificationType
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.driver.entity.Driver;
+import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.entity.PartyMember;
 import mallang_trip.backend.domain.party.entity.PartyProposal;
@@ -20,6 +21,7 @@ public class PartyNotificationService {
 
 	private final NotificationService notificationService;
 	private final PartyMemberService partyMemberService;
+	private final MailService mailService;
 
 	private String getPartyName(Party party) {
 		return party.getCourse().getName();
@@ -34,6 +36,8 @@ public class PartyNotificationService {
 			.append("새로운 여행 신청이 존재합니다. 24시간 내에 수락/거절을 선택해주세요.")
 			.toString();
 		notificationService.create(driver, content, PARTY, party.getId());
+		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.");
+
 	}
 
 	// 2. 내 파티 생성 신청을 드라이버가 수락했을 경우
@@ -45,7 +49,9 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembers(party).stream()
 			.forEach(user ->
-				notificationService.create(user.getUser(), content, PARTY, party.getId()));
+					{notificationService.create(user.getUser(), content, PARTY, party.getId());
+					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 승인되었습니다.");}
+					);
 	}
 
 	// 3. 내 파티 생성 신청을 드라이버가 거절했을 경우
@@ -57,7 +63,9 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembers(party).stream()
 			.forEach(user ->
-				notificationService.create(user.getUser(), content, PARTY, party.getId()));
+					{notificationService.create(user.getUser(), content, PARTY, party.getId());
+					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 거절되었습니다.");}
+					);
 	}
 
 	// 4. 새로운 파티원이 가입했을 경우
@@ -70,7 +78,8 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
-				notificationService.create(user, content, PARTY, party.getId()));
+					{notificationService.create(user, content, PARTY, party.getId());
+					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티에 새로운 멤버가 가입했습니다.");});
 	}
 
 	// 5. 새로운 여행자가 코스 변경 제안과 함께 가입을 신청했을 경우
@@ -81,7 +90,10 @@ public class PartyNotificationService {
 			.append("] 참여 승인을 기다리고 있습니다. 24시간 내에 수락/거절을 선택해주세요.")
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"신규 여행자가 참여 승인을 기다리고 있습니다.");
+			}
+			);
 	}
 
 	// 6. 외부인 변경 제안으로 코스 제안이 만장일치 수락되었을 경우
@@ -122,6 +134,7 @@ public class PartyNotificationService {
 			.toString();
 		notificationService.create(proposal.getProposer(), content, PARTY,
 			proposal.getParty().getId());
+		mailService.sendEmailNotification(proposal.getProposer().getEmail(), proposal.getProposer().getName(), content,"변경안 및 가입 신청이 거절되었습니다.");
 	}
 
 	// 7-2. 기존 가입자
@@ -135,7 +148,9 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
-				notificationService.create(user, content, PARTY, party.getId()));
+					{notificationService.create(user, content, PARTY, party.getId());
+					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"변경안 및 가입 신청이 거절되었습니다.");
+			});
 	}
 
 	// 8. 기존 파티원이 코스 변경을 제안했을 경우
@@ -148,7 +163,9 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
 			.filter(user -> !proposal.getProposer().equals(user))
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"새로운 코스 변경 제안이 존재합니다.");
+			});
 	}
 
 	// 9. 기존 파티원 변경 제안이 만장일치로 코스가 변경 승인되었을 경우
@@ -174,7 +191,9 @@ public class PartyNotificationService {
 			.append("] 코스 변경 신청이 거절되었습니다.")
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"코스 변경 신청이 거절되었습니다.");
+			});
 	}
 
 	// 11. H.003 Overlap에서 ‘보내주세요’ 버튼 클릭한 후 예약 or 제안 가능해졌을 경우
@@ -193,7 +212,10 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
 			.filter(user -> !runner.equals(user))
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {
+				notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"말랑레디가 전원 OFF로 변경되었습니다.");
+			});
 	}
 
 	// 1-2. 마지막 멤버인 경우
@@ -205,6 +227,7 @@ public class PartyNotificationService {
 			.append("]을/를 탈퇴하였습니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.");
 	}
 
 	// 2. 드라이버가 파티를 탈퇴한 경우
@@ -217,7 +240,10 @@ public class PartyNotificationService {
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
 			.forEach(user ->
-				notificationService.create(user, content, PARTY, party.getId()));
+			{
+				notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 완전히 취소되었습니다.");
+			});
 	}
 
 	// 3. 파티원 전원 탈퇴로 파티가 취소되었을 경우
@@ -228,6 +254,7 @@ public class PartyNotificationService {
 			.append("]이/가 완전히 취소되었습니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
 	}
 
 	// 4. 모집기간 만료로 파티가 취소되었을 경우
@@ -239,7 +266,9 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
-				notificationService.create(user, content, PARTY, party.getId()));
+					{notificationService.create(user, content, PARTY, party.getId());
+						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 자동 취소되었습니다.");
+					});
 	}
 
 	/**
@@ -260,7 +289,10 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {
+				notificationService.create(user, content, PARTY, party.getId());
+				//mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"결제를 진행합니다.");
+			});
 	}
 
 	// 1-2. 드라이버
@@ -271,6 +303,7 @@ public class PartyNotificationService {
 			.append("]의 인원 4명이 최종 확정되어 파티원들의 결제가 완료되었습니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다."); // party의 driver에게 이메일
 	}
 
 	// 2. 파티원 전원이 레디를 완료했을 경우
@@ -299,6 +332,7 @@ public class PartyNotificationService {
 			.append("] 모든 멤버들이 말랑레디를 확정하여 파티원들의 결제가 완료되었습니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
 	}
 
 	/**
@@ -326,7 +360,10 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {
+				notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"드라이버의 정보를 확인해주세요.");
+			});
 	}
 
 	// 1-2. 드라이버
@@ -337,6 +374,7 @@ public class PartyNotificationService {
 			.append("]의 여행자 명단을 확인하고 대면할 때 승객의 신분증을 확인하여 신원을 철저히 검증해주세요.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행자를 확인해주세요!");
 	}
 
 	// 2. 여행 당일 시작 시간
@@ -354,7 +392,10 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
-			.forEach(user -> notificationService.create(user, content, PARTY, party.getId()));
+			.forEach(user -> {
+				notificationService.create(user, content, PARTY, party.getId());
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 시작되었습니다!");
+			});
 	}
 
 	// 2-2. 드라이버
@@ -367,6 +408,7 @@ public class PartyNotificationService {
 			.append("원이 익월 10일까지 입금될 예정입니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!");
 	}
 
 	// 3. 여행 다음 날
@@ -378,7 +420,11 @@ public class PartyNotificationService {
 			.toString();
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
-				notificationService.create(user, content, FEEDBACK, null));
+					{
+						notificationService.create(user, content, FEEDBACK, null);
+						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 끝났습니다. 피드백을 남겨주세요!");
+					}
+					);
 	}
 
 	/**
@@ -414,6 +460,7 @@ public class PartyNotificationService {
 			.append("] 예약 취소로 파티원을 재모집합니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.");
 	}
 
 	// 2. 예약 취소 -> 전액 위약금이 발생한 경우
@@ -453,5 +500,6 @@ public class PartyNotificationService {
 			.append("]이/가 완전히 취소되었습니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
 	}
 }

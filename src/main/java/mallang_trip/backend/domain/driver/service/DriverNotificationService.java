@@ -4,6 +4,7 @@ import static mallang_trip.backend.domain.notification.constant.NotificationType
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.driver.entity.DriverReview;
+import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.notification.service.NotificationService;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ public class DriverNotificationService {
 
 	private final NotificationService notificationService;
 
+	private final MailService mailService;
+
 	public void newReview(DriverReview review){
 		User driver = review.getDriver().getUser();
 		String content = new StringBuilder()
@@ -25,5 +28,7 @@ public class DriverNotificationService {
 			.append("님에게 리뷰를 작성하였습니다.")
 			.toString();
 		notificationService.create(driver, content, DRIVER, driver.getId());
+		mailService.sendEmailNotification(driver.getEmail(),driver.getName(),content,"새 리뷰가 작성되었습니다.");
+
 	}
 }
