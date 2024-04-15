@@ -352,7 +352,7 @@ public class UserController {
 			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
 	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-	public BaseResponse<List<UserInfoBriefResponse>> getUserList(@RequestParam(required = false) String nicknameOrId) throws BaseException {
+	public BaseResponse<List<UserInfoForAdminResponse>> getUserList(@RequestParam(required = false) String nicknameOrId) throws BaseException {
 		return new BaseResponse<>(userSearchService.getUserList(nicknameOrId));
 	}
 
@@ -370,7 +370,7 @@ public class UserController {
 			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
 	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-	public BaseResponse<List<UserInfoBriefResponse>> getAdminList() throws BaseException {
+	public BaseResponse<List<UserInfoForAdminResponse>> getAdminList() throws BaseException {
 		return new BaseResponse<>(userSearchService.getAdminList());
 	}
 
