@@ -1,6 +1,5 @@
 package mallang_trip.backend.domain.user.service;
 
-import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
@@ -9,7 +8,6 @@ import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.user.dto.*;
@@ -252,33 +250,5 @@ public class UserService {
 		}
 		user.setProfileImage(request.getProfileImg());
 		user.setIntroduction(request.getIntroduction());
-	}
-
-	/**
-	 * (관리자) 회원 관리자 권한 부여
-	 *
-	 */
-	public void grantAdminRole(GrantAdminRoleRequest request) {
-		// List<Integer> userIds
-		List<Long> userIds = request.getUserIds();
-		for (Long userId : userIds) {
-			User user = userRepository.findById(userId)
-					.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-			if (!user.getRole().equals(ROLE_ADMIN)) {
-				user.setRole(ROLE_ADMIN);
-			}
-		}
-	}
-
-	/**
-	 * (관리자) 회원 관리자 권한 해제
-	 *
-	 */
-	public void revokeAdminRole(Long userId){
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		if(user.getRole().equals(ROLE_ADMIN)){
-			user.setRole(ROLE_USER);
-		}
 	}
 }

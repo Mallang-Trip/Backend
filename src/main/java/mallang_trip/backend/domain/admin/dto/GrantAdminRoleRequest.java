@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.user.dto;
+package mallang_trip.backend.domain.admin.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Getter

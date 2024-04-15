@@ -1,4 +1,4 @@
-package mallang_trip.backend.domain.user.dto;
+package mallang_trip.backend.domain.admin.dto;
 
 import lombok.Builder;
 import lombok.Getter;
