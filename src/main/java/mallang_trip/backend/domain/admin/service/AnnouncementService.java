@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.constant.AnnouncementType;
+import mallang_trip.backend.domain.user.constant.Role;
+import mallang_trip.backend.domain.user.entity.User;
+import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.AnnouncementBriefResponse;
 import mallang_trip.backend.domain.admin.dto.AnnouncementDetailsResponse;
@@ -13,6 +16,7 @@ import mallang_trip.backend.domain.admin.dto.AnnouncementIdResponse;
 import mallang_trip.backend.domain.admin.dto.AnnouncementRequest;
 import mallang_trip.backend.domain.admin.entity.Announcement;
 import mallang_trip.backend.domain.admin.repository.AnnouncementRepository;
+import mallang_trip.backend.global.io.BaseResponseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +34,7 @@ public class AnnouncementService {
 	 * (관리자)작성
 	 */
 	public AnnouncementIdResponse create(AnnouncementRequest request) {
+
 		Announcement announcement = announcementRepository.save(Announcement.builder()
 			.title(request.getTitle())
 			.content(request.getContent())
@@ -37,6 +42,16 @@ public class AnnouncementService {
 			.type(request.getType())
 			.build());
 		return AnnouncementIdResponse.builder().announcementId(announcement.getId()).build();
+	}
+
+	/**
+	 * (관리자)수정
+	 */
+	public void modify(Long announcementId, AnnouncementRequest request) {
+		Announcement announcement = announcementRepository.findById(announcementId)
+			.orElseThrow(() -> new BaseException(Not_Found));
+
+		announcement.modify(request);
 	}
 
 	/**
