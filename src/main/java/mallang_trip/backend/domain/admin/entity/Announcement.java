@@ -39,10 +39,6 @@ public class Announcement extends BaseEntity {
 	@OrderColumn
 	private List<String> images;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false, updatable = false)
-	private User user;
-
 	public void modify(AnnouncementRequest request){
 		this.title=request.getTitle();
 		this.content=request.getContent();

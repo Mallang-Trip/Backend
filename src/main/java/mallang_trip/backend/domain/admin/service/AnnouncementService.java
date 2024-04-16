@@ -29,21 +29,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnnouncementService {
 
 	private final AnnouncementRepository announcementRepository;
-	private final CurrentUserService currentUserService;
 
 	/**
 	 * (관리자)작성
 	 */
 	public AnnouncementIdResponse create(AnnouncementRequest request) {
-		User admin=currentUserService.getCurrentUser();
-		if(!admin.getRole().equals(Role.ROLE_ADMIN))
-			throw new BaseException(BaseResponseStatus.Forbidden);
 
 		Announcement announcement = announcementRepository.save(Announcement.builder()
 			.title(request.getTitle())
 			.content(request.getContent())
 			.images(request.getImages())
-			.type(request.getType()).user(admin)
+			.type(request.getType())
 			.build());
 		return AnnouncementIdResponse.builder().announcementId(announcement.getId()).build();
 	}
@@ -54,12 +50,6 @@ public class AnnouncementService {
 	public void modify(Long announcementId, AnnouncementRequest request) {
 		Announcement announcement = announcementRepository.findById(announcementId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-
-		User admin=currentUserService.getCurrentUser();
-
-		// 권한 확인
-		if(!admin.equals(announcement.getUser()))
-			throw new BaseException(BaseResponseStatus.Forbidden);
 
 		announcement.modify(request);
 	}
