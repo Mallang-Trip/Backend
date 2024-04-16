@@ -8,21 +8,15 @@ import static mallang_trip.backend.domain.user.constant.Role.ROLE_USER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
 import java.time.LocalDate;
+
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.user.dto.*;
 import mallang_trip.backend.global.config.security.TokenProvider;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.identification.dto.IdentificationResultResponse;
 import mallang_trip.backend.domain.identification.service.PortOneIdentificationService;
 import mallang_trip.backend.domain.user.constant.Country;
 import mallang_trip.backend.domain.user.constant.Gender;
-import mallang_trip.backend.domain.user.dto.TokensDto;
-import mallang_trip.backend.domain.user.dto.AuthResponse;
-import mallang_trip.backend.domain.user.dto.ChangePasswordRequest;
-import mallang_trip.backend.domain.user.dto.ChangeProfileRequest;
-import mallang_trip.backend.domain.user.dto.LoginIdResponse;
-import mallang_trip.backend.domain.user.dto.LoginRequest;
-import mallang_trip.backend.domain.user.dto.ResetPasswordRequest;
-import mallang_trip.backend.domain.user.dto.SignupRequest;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.sms.service.SmsService;
 import mallang_trip.backend.domain.user.repository.UserRepository;
@@ -45,6 +39,8 @@ public class UserService {
 	private final CurrentUserService currentUserService;
 	private final SmsService smsService;
 	private final PortOneIdentificationService portOneIdentificationService;
+
+	private final UserSearchService userSearchService;
 
 	/**
 	 * 회원 가입을 처리하는 메소드입니다.

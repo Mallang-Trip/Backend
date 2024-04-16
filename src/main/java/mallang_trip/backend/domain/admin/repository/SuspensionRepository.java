@@ -13,7 +13,7 @@ public interface SuspensionRepository extends JpaRepository<Suspension, Long> {
 
 	Boolean existsByUserAndStatus(User user, SuspensionStatus status);
 
-	Optional<Suspension> findByUserAndStatus(User user, SuspensionStatus status);
+	List<Suspension> findByUserAndStatus(User user, SuspensionStatus status);
 
 	List<Suspension> findByStatus(SuspensionStatus status);
 
