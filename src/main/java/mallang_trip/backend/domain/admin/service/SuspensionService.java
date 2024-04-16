@@ -48,9 +48,7 @@ public class SuspensionService {
 
 		Report report = reportRepository.findById(request.getReportId())
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if(isSuspending(user)){
-			cancelSuspension(user);
-		}
+
 		suspensionRepository.save(Suspension.builder()
 			.report(report)
 			.user(user)
@@ -104,9 +102,12 @@ public class SuspensionService {
 		cancelSuspension(user);
 	}
 
+	/**
+	 * 유저에 해당하는 모든 정지 취소
+	 */
 	private void cancelSuspension(User user){
 		suspensionRepository.findByUserAndStatus(user, SUSPENDING)
-			.ifPresent(suspension -> suspension.setStatus(CANCELED));
+			.forEach(suspension -> suspension.setStatus(CANCELED));
 	}
 
 	/**
