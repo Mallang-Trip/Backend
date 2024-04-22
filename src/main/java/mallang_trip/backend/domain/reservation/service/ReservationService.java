@@ -2,7 +2,7 @@ package mallang_trip.backend.domain.reservation.service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
-import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_REQUIRED;
+import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_FAILED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
@@ -71,7 +71,7 @@ public class ReservationService {
 
 		// 결제 실패 상태인 경우
 		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(member,
-			PAYMENT_REQUIRED);
+			PAYMENT_FAILED);
 		if (paymentRequired.isPresent()) {
 			Reservation reservation = paymentRequired.get();
 			Integer penaltyAmount = reservation.getPaymentAmount() - calculateRefundAmount(reservation);
@@ -94,7 +94,7 @@ public class ReservationService {
 				paypleService.cancel(reservation, reservation.getPaymentAmount());
 				reservation.setRefundAmount(reservation.getPaymentAmount());
 			});
-		reservationRepository.findByMemberAndStatus(member, PAYMENT_REQUIRED)
+		reservationRepository.findByMemberAndStatus(member, PAYMENT_FAILED)
 			.ifPresent(reservation -> {
 				reservation.changeStatus(REFUND_COMPLETE);
 			});
@@ -189,7 +189,7 @@ public class ReservationService {
 		Optional<Reservation> paymentComplete = reservationRepository.findByMemberAndStatus(
 			member.get(), PAYMENT_COMPLETE);
 		Optional<Reservation> paymentRequired = reservationRepository.findByMemberAndStatus(
-			member.get(), PAYMENT_REQUIRED);
+			member.get(), PAYMENT_FAILED);
 
 		if (paymentComplete.isPresent()) {
 			return ReservationResponse.of(paymentComplete.get());
