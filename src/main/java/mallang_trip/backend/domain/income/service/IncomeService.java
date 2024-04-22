@@ -2,7 +2,6 @@ package mallang_trip.backend.domain.income.service;
 
 import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
-import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +12,6 @@ import mallang_trip.backend.domain.driver.service.DriverService;
 import mallang_trip.backend.domain.income.constant.IncomeType;
 import mallang_trip.backend.domain.income.dto.IncomeResponse;
 import mallang_trip.backend.domain.driver.entity.Driver;
-import mallang_trip.backend.domain.income.dto.RemittanceCompleteRequest;
 import mallang_trip.backend.domain.income.repository.IncomeRepository;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.global.io.BaseException;
@@ -104,17 +102,6 @@ public class IncomeService {
 			.stream()
 			.map(IncomeResponse::of)
 			.collect(Collectors.toList());
-	}
-
-	/**
-	 * (관리자) 송금 완료 처리합니다.
-	 *
-	 * @param incomeId 송금 완료 처리할 DriverIncome id 값
-	 */
-	public void completeRemittance(Long incomeId, RemittanceCompleteRequest request) {
-		Income income = incomeRepository.findById(incomeId)
-			.orElseThrow(() -> new BaseException(Not_Found));
-		income.completeRemittance(request);
 	}
 
 }

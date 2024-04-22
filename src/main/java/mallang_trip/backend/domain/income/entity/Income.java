@@ -3,6 +3,7 @@ package mallang_trip.backend.domain.income.entity;
 import static mallang_trip.backend.domain.income.constant.IncomeType.PARTY_INCOME;
 import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
 
+import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,7 +32,7 @@ import org.hibernate.annotations.Where;
 @AllArgsConstructor
 @NoArgsConstructor
 @Where(clause = "deleted = false")
-@SQLDelete(sql = "UPDATE driver SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE icome SET deleted = true WHERE id = ?")
 public class Income extends BaseEntity {
 
 	@Id
@@ -58,6 +59,9 @@ public class Income extends BaseEntity {
 	private Boolean remitted = false;
 
 	@Column
+	private LocalDate remittedAt;
+
+	@Column
 	private String senderBank;
 
 	@Column
@@ -73,9 +77,9 @@ public class Income extends BaseEntity {
 	 */
 	@PrePersist
 	public void calculateCommission() {
-		if(this.type.equals(PARTY_INCOME)){
+		if (this.type.equals(PARTY_INCOME)) {
 			this.commission = (int) (this.amount * 0.017);
-		} else if (this.type.equals(PENALTY_INCOME)){
+		} else if (this.type.equals(PENALTY_INCOME)) {
 			this.commission = (int) (this.amount * 0.1);
 		}
 	}
@@ -83,8 +87,9 @@ public class Income extends BaseEntity {
 	/**
 	 * 송금 완료 처리합니다.
 	 */
-	public void completeRemittance(RemittanceCompleteRequest request){
+	public void completeRemittance(RemittanceCompleteRequest request) {
 		this.remitted = true;
+		this.remittedAt = request.getRemittedAt();
 		this.senderBank = request.getSenderBank();
 		this.receiverBank = request.getReceiverBank();
 		this.receiverAccountNumber = request.getReceiverAccountNumber();
