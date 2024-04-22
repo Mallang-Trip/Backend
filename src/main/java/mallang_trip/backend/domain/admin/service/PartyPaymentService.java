@@ -4,6 +4,7 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.dto.PartyMemberPaymentResponse;
@@ -12,6 +13,7 @@ import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.entity.PartyMember;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.party.service.PartyMemberService;
+import mallang_trip.backend.domain.reservation.entity.Reservation;
 import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
 import mallang_trip.backend.global.io.BaseException;
 import org.springframework.stereotype.Service;
@@ -103,10 +105,14 @@ public class PartyPaymentService {
 	 * @return 변환된 PartyMemberPaymentResponse 객체
 	 */
 	private PartyMemberPaymentResponse toPartyMemberPaymentResponse(PartyMember member) {
+		Reservation reservation = reservationRepository.findPaymentCompletedOrFailedByMember(
+				member.getId()).orElse(null);
+
 		return PartyMemberPaymentResponse.builder()
 			.userId(member.getUser().getId())
 			.nickname(member.getUser().getNickname())
-			.status(reservationRepository.findPaymentStatusByMember(member.getId()))
+			.receiptUrl(reservation == null ? null : reservation.getReceiptUrl())
+			.status(reservation == null? null : reservation.getStatus())
 			.build();
 	}
 }

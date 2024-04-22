@@ -14,8 +14,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
 	Optional<Reservation> findByMemberAndStatus(PartyMember member, ReservationStatus status);
 
-	@Query(value = "SELECT status FROM reservation\n"
+	@Query(value = "SELECT * FROM reservation\n"
 		+ "WHERE party_member_id = :member_id\n"
 		+ "    AND (status = 'PAYMENT_FAILED' OR status = 'PAYMENT_COMPLETE');", nativeQuery = true)
-	ReservationStatus findPaymentStatusByMember(@Param(value = "member_id") Long memberId);
+	Optional<Reservation> findPaymentCompletedOrFailedByMember(@Param(value = "member_id") Long memberId);
 }
