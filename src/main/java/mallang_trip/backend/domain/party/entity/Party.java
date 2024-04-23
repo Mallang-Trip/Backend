@@ -77,7 +77,7 @@ public class Party extends BaseEntity {
 	private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
 
 	@Column
-	private Integer driverPenalty;
+	private Integer driverPenaltyAmount;
 
 	@Enumerated(EnumType.STRING)
 	@Builder.Default()
@@ -123,9 +123,9 @@ public class Party extends BaseEntity {
 	 *
 	 * @param penalty 위약금 금액
 	 */
-	public void setDriverPenalty(Integer penalty){
+	public void setDriverPenaltyAmount(Integer penalty){
 		this.driverPenaltyStatus = PENALTY_EXISTS;
-		this.driverPenalty = penalty;
+		this.driverPenaltyAmount = penalty;
 	}
 
 }

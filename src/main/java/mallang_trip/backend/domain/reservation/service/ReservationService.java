@@ -146,7 +146,7 @@ public class ReservationService {
 	 * 드라이버의 예약 취소로 인한 위약금을 저장
 	 */
 	public void savePenaltyToDriver(Party party) {
-		party.setDriverPenalty(calculatePenaltyToDriver(party));
+		party.setDriverPenaltyAmount(calculatePenaltyToDriver(party));
 	}
 
 	/**

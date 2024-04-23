@@ -110,7 +110,7 @@ public class PaymentManagementService {
 			.endDate(party.getEndDate())
 			.driverId(party.getDriver().getId())
 			.driverName(party.getDriver().getUser().getName())
-			.driverPenalty(party.getDriverPenalty())
+			.driverPenaltyAmount(party.getDriverPenaltyAmount())
 			.driverPenaltyStatus(party.getDriverPenaltyStatus())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
@@ -133,7 +133,7 @@ public class PaymentManagementService {
 			.userId(member.getUser().getId())
 			.nickname(member.getUser().getNickname())
 			.receiptUrl(reservation == null ? null : reservation.getReceiptUrl())
-			.status(reservation == null? null : reservation.getStatus())
+			.reservationStatus(reservation == null? null : reservation.getStatus())
 			.build();
 	}
 

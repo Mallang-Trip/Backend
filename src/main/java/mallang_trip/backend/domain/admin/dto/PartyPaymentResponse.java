@@ -18,7 +18,7 @@ public class PartyPaymentResponse {
 	private Long driverId;
 	private String driverName;
 	private DriverPenaltyStatus driverPenaltyStatus;
-	private Integer driverPenalty;
+	private Integer driverPenaltyAmount;
 	private Integer capacity;
 	private Integer headcount;
 	private PartyStatus status;

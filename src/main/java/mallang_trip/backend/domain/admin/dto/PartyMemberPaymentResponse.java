@@ -11,5 +11,5 @@ public class PartyMemberPaymentResponse {
 	private Long userId;
 	private String nickname;
 	private String receiptUrl;
-	private ReservationStatus status;
+	private ReservationStatus reservationStatus;
 }
