@@ -41,14 +41,15 @@ public class PaymentManagementService {
 	 * @return 결제 내역 정보를 담은 PartyPaymentResponse 객체 배열
 	 */
 	public List<PartyPaymentResponse> getPartiesByStatus(String status) {
-		if (status.equalsIgnoreCase("reserved")) {
-			return getReservedParties();
-		} else if (status.equalsIgnoreCase("canceled")){
-			return getCanceledParties();
-		} else if (status.equalsIgnoreCase("finished")) {
-			return getFinishedParties();
-		} else {
-			throw new BaseException(Bad_Request);
+		switch (status.toLowerCase()) {
+			case "reserved":
+				return getReservedParties();
+			case "canceled":
+				return getCanceledParties();
+			case "finished":
+				return getFinishedParties();
+			default:
+				throw new BaseException(Bad_Request);
 		}
 	}
 
