@@ -64,4 +64,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 	boolean isOngoingPartyExists(@Param(value = "user_id") Long userId);
 
 	Integer countByDriverAndStatus(Driver driver, PartyStatus status);
+
+	@Query(value = "SELECT * FROM party\n"
+		+ "WHERE status = 'SEALED'\n"
+		+ "   OR status = 'WAITING_COURSE_CHANGE_APPROVAL'\n"
+		+ "   OR status = 'DAY_OF_TRAVEL'\n"
+		+ "ORDER BY start_date DESC;", nativeQuery = true)
+	List<Party> findReservedParties();
 }

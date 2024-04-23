@@ -1,5 +1,8 @@
 package mallang_trip.backend.domain.party.entity;
 
+import static mallang_trip.backend.domain.party.constant.DriverPenaltyStatus.NO_PENALTY;
+import static mallang_trip.backend.domain.party.constant.DriverPenaltyStatus.PENALTY_EXISTS;
+
 import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mallang_trip.backend.domain.party.constant.DriverPenaltyStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.course.entity.Course;
@@ -72,6 +76,13 @@ public class Party extends BaseEntity {
 	@Builder.Default()
 	private PartyStatus status = PartyStatus.WAITING_DRIVER_APPROVAL;
 
+	@Column
+	private Integer driverPenaltyAmount;
+
+	@Enumerated(EnumType.STRING)
+	@Builder.Default()
+	private DriverPenaltyStatus driverPenaltyStatus = NO_PENALTY;
+
 	public void increaseHeadcount(int headcount) {
 		this.headcount += headcount;
 	}
@@ -106,4 +117,15 @@ public class Party extends BaseEntity {
 	public Boolean checkMaxPrice(Integer maxPrice) {
 		return this.course.getTotalPrice() / capacity <= maxPrice ? true : false;
 	}
+
+	/**
+	 * 드라이버 예약 취소로 인한 위약금 발생 시, 위약금을 저장하고 driverPenaltyStatus 를 변경
+	 *
+	 * @param penalty 위약금 금액
+	 */
+	public void setDriverPenaltyAmount(Integer penalty){
+		this.driverPenaltyStatus = PENALTY_EXISTS;
+		this.driverPenaltyAmount = penalty;
+	}
+
 }

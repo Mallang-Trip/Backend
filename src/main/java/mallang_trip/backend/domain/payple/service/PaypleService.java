@@ -3,7 +3,7 @@ package mallang_trip.backend.domain.payple.service;
 import static mallang_trip.backend.domain.payple.exception.PaypleExceptionStatus.BILLING_FAIL;
 import static mallang_trip.backend.domain.payple.exception.PaypleExceptionStatus.CANNOT_FOUND_CARD;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
-import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_REQUIRED;
+import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_FAILED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_FAILED;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
@@ -110,7 +110,7 @@ public class PaypleService {
 
 		// 등록된 카드가 없는 경우
 		if(card == null){
-			reservation.changeStatus(PAYMENT_REQUIRED);
+			reservation.changeStatus(PAYMENT_FAILED);
 			return false;
 		}
 		// 빌링 승인 요청
@@ -125,7 +125,7 @@ public class PaypleService {
 			reservation.changeStatus(PAYMENT_COMPLETE);
 			return true;
 		} else {
-			reservation.changeStatus(PAYMENT_REQUIRED);
+			reservation.changeStatus(PAYMENT_FAILED);
 			return false;
 		}
 	}
@@ -153,7 +153,7 @@ public class PaypleService {
 	public void manualBilling(Long reservationId){
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
-		if(!reservation.getStatus().equals(PAYMENT_REQUIRED)){
+		if(!reservation.getStatus().equals(PAYMENT_FAILED)){
 			throw new BaseException(Forbidden);
 		}
 		boolean success = billing(reservation);
