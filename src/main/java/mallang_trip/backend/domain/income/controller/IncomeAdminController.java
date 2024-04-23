@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -88,6 +89,47 @@ public class IncomeAdminController {
 		@RequestBody @Valid
 		RemittanceCompleteRequest request) throws BaseException {
 		incomeAdminService.completeRemittance(incomeId, request);
+		return new BaseResponse<>("성공");
+	}
+
+	@ApiOperation(value = "(관리자)수익 금액 변경")
+	@PutMapping("/{income_id}")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+		@ApiImplicitParam(name = "income_id", value = "income_id", required = true, paramType = "path", dataTypeClass = Long.class),
+		@ApiImplicitParam(name = "amount", value = "변경할 금액 값", required = true, paramType = "query", dataTypeClass = Integer.class)
+	})
+	@ApiResponses({
+		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
+		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+		@ApiResponse(code = 403, message = "해당 수익금 내역을 찾을 수 없습니다."),
+		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<String> changeIncome(@PathVariable("income_id") Long incomeId,
+		@RequestParam("amount") Integer amount) throws BaseException {
+		incomeAdminService.changeIncomeAmount(incomeId, amount);
+		return new BaseResponse<>("성공");
+	}
+
+	@ApiOperation(value = "(관리자)수수료 변경")
+	@PutMapping("/commission-rate")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+		@ApiImplicitParam(name = "partyCommissionRate", value = "파티 수익 수수료 비율", required = true, paramType = "query", dataTypeClass = Double.class),
+		@ApiImplicitParam(name = "penaltyCommissionRate", value = "위약금 수수료 비율", required = true, paramType = "query", dataTypeClass = Double.class)
+	})
+	@ApiResponses({
+		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
+		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+	public BaseResponse<String> changeCommissionRate(@RequestParam Double partyCommissionRate,
+		@RequestParam Double penaltyCommissionRate) throws BaseException {
+		incomeAdminService.changeCommissionRate(partyCommissionRate, penaltyCommissionRate);
 		return new BaseResponse<>("성공");
 	}
 }

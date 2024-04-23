@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.income.service;
 
+import static mallang_trip.backend.domain.income.constant.IncomeType.PARTY_INCOME;
 import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
@@ -12,6 +13,8 @@ import mallang_trip.backend.domain.driver.service.DriverService;
 import mallang_trip.backend.domain.income.constant.IncomeType;
 import mallang_trip.backend.domain.income.dto.IncomeResponse;
 import mallang_trip.backend.domain.driver.entity.Driver;
+import mallang_trip.backend.domain.income.entity.CommissionRate;
+import mallang_trip.backend.domain.income.repository.CommissionRateRepository;
 import mallang_trip.backend.domain.income.repository.IncomeRepository;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.global.io.BaseException;
@@ -26,6 +29,7 @@ public class IncomeService {
 
 	private final DriverService driverService;
 	private final IncomeRepository incomeRepository;
+	private final CommissionRateRepository commissionRateRepository;
 
 	/**
 	 * 수익금을 저장합니다.
@@ -39,7 +43,27 @@ public class IncomeService {
 			.party(party)
 			.amount(amount)
 			.type(type)
+			.commission(calculateCommission(type, amount))
 			.build());
+	}
+
+	/**
+	 * 수익의 수수료를 계산합니다.
+	 *
+	 * @param type 수익 종류
+	 * @param amount 전체 수익 금액
+	 */
+	public int calculateCommission(IncomeType type, Integer amount){
+		// 수수료 계산
+		CommissionRate rate = commissionRateRepository.findById(1L).get();
+		int commission = 0;
+		if (type.equals(PARTY_INCOME)) {
+			commission = (int) (amount * rate.getPartyCommissionRate());
+		} else if (type.equals(PENALTY_INCOME)) {
+			commission = (int) (amount * rate.getPenaltyCommissionRate());
+		}
+
+		return commission;
 	}
 
 	/**

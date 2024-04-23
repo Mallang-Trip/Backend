@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.income.dto.IncomeResponse;
 import mallang_trip.backend.domain.income.dto.RemittanceCompleteRequest;
+import mallang_trip.backend.domain.income.entity.CommissionRate;
 import mallang_trip.backend.domain.income.entity.Income;
+import mallang_trip.backend.domain.income.repository.CommissionRateRepository;
 import mallang_trip.backend.domain.income.repository.IncomeRepository;
 import mallang_trip.backend.global.io.BaseException;
 import org.springframework.stereotype.Service;
@@ -22,15 +24,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class IncomeAdminService {
 
 	private final IncomeRepository incomeRepository;
+	private final CommissionRateRepository commissionRateRepository;
+	private final IncomeService incomeService;
 
 	/**
 	 * (관리자) 월 별 수익 내역을 조회합니다.
 	 *
 	 * @param month 조회할 날짜 (YYYY-MM: 월 별 조회, all: 전체 기간 조회)
 	 */
-	public List<IncomeResponse> getIncomesByMonth(String month){
+	public List<IncomeResponse> getIncomesByMonth(String month) {
 		// 전체 조회 시
-		if(month.equalsIgnoreCase("ALL")){
+		if (month.equalsIgnoreCase("ALL")) {
 			return incomeRepository.findAllOrderByEndDateDesc().stream()
 				.map(IncomeResponse::of)
 				.collect(Collectors.toList());
@@ -53,7 +57,7 @@ public class IncomeAdminService {
 	 *
 	 * @param incomeId 삭제할 수익에 해당하는 id 값
 	 */
-	public void deleteIncome(Long incomeId){
+	public void deleteIncome(Long incomeId) {
 		Income income = incomeRepository.findById(incomeId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		incomeRepository.delete(income);
@@ -68,5 +72,28 @@ public class IncomeAdminService {
 		Income income = incomeRepository.findById(incomeId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		income.completeRemittance(request);
+	}
+
+	/**
+	 * (관리자) 수익 금액을 변경합니다.
+	 *
+	 * @param incomeId 수익 내역에 해당하는 Income id 값
+	 * @param amount 변경할 수익 금액
+	 */
+	public void changeIncomeAmount(Long incomeId, Integer amount) {
+		Income income = incomeRepository.findById(incomeId)
+			.orElseThrow(() -> new BaseException(Not_Found));
+		income.changeAmount(amount, incomeService.calculateCommission(income.getType(), amount));
+	}
+
+	/**
+	 * (관리자) 수수료 비율을 변경합니다.
+	 *
+	 * @param partyCommissionRate   변경할 파티 수수료 비율
+	 * @param penaltyCommissionRate 변경할 위약금 수수료 비율
+	 */
+	public void changeCommissionRate(double partyCommissionRate, double penaltyCommissionRate) {
+		CommissionRate rate = commissionRateRepository.findById(1L).get();
+		rate.changeCommissionRate(partyCommissionRate, penaltyCommissionRate);
 	}
 }
