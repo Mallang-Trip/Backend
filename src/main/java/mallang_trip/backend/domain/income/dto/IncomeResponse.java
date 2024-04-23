@@ -19,6 +19,10 @@ public class IncomeResponse {
 	private Integer beforeCommission;
 	private Integer commission;
 	private Integer afterCommission;
+	private LocalDate remittedAt;
+	private String senderBank;
+	private String receiverBank;
+	private String receiverAccountNumber;
 
 	public static IncomeResponse of(Income income){
 		return IncomeResponse.builder()
@@ -31,6 +35,10 @@ public class IncomeResponse {
 			.beforeCommission(income.getAmount())
 			.commission(income.getCommission())
 			.afterCommission(income.getAmount() - income.getCommission())
+			.remittedAt(income.getRemittedAt())
+			.senderBank(income.getSenderBank())
+			.receiverBank(income.getReceiverBank())
+			.receiverAccountNumber(income.getReceiverAccountNumber())
 			.build();
 	}
 }

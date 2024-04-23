@@ -3,6 +3,7 @@ package mallang_trip.backend.domain.income.entity;
 import static mallang_trip.backend.domain.income.constant.IncomeType.PARTY_INCOME;
 import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
 
+import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,7 +32,7 @@ import org.hibernate.annotations.Where;
 @AllArgsConstructor
 @NoArgsConstructor
 @Where(clause = "deleted = false")
-@SQLDelete(sql = "UPDATE driver SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE income SET deleted = true WHERE id = ?")
 public class Income extends BaseEntity {
 
 	@Id
@@ -42,7 +43,7 @@ public class Income extends BaseEntity {
 	@JoinColumn(name = "party_id", nullable = false, updatable = false)
 	private Party party;
 
-	@Column(nullable = false, updatable = false)
+	@Column(nullable = false)
 	private Integer amount;
 
 	@Column
@@ -58,6 +59,9 @@ public class Income extends BaseEntity {
 	private Boolean remitted = false;
 
 	@Column
+	private LocalDate remittedAt;
+
+	@Column
 	private String senderBank;
 
 	@Column
@@ -67,26 +71,21 @@ public class Income extends BaseEntity {
 	private String receiverAccountNumber;
 
 	/**
-	 * DB에 엔티티를 저장하기 전, 수수료를 계산합니다.
-	 * <p>
-	 * 파티 수익 수수료는 1.7%, 위약금 수익 수수료는 10%로 계산합니다.
-	 */
-	@PrePersist
-	public void calculateCommission() {
-		if(this.type.equals(PARTY_INCOME)){
-			this.commission = (int) (this.amount * 0.017);
-		} else if (this.type.equals(PENALTY_INCOME)){
-			this.commission = (int) (this.amount * 0.1);
-		}
-	}
-
-	/**
 	 * 송금 완료 처리합니다.
 	 */
-	public void completeRemittance(RemittanceCompleteRequest request){
+	public void completeRemittance(RemittanceCompleteRequest request) {
 		this.remitted = true;
+		this.remittedAt = request.getRemittedAt();
 		this.senderBank = request.getSenderBank();
 		this.receiverBank = request.getReceiverBank();
 		this.receiverAccountNumber = request.getReceiverAccountNumber();
+	}
+
+	/**
+	 * 수익 금액, 수수료 금액을 변경합니다.
+	 */
+	public void changeAmount(int amount, int commission){
+		this.amount = amount;
+		this.commission = commission;
 	}
 }
