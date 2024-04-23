@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import mallang_trip.backend.domain.party.constant.DriverPenaltyStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 
 @Getter
@@ -16,6 +17,8 @@ public class PartyPaymentResponse {
 	private LocalDate endDate;
 	private Long driverId;
 	private String driverName;
+	private DriverPenaltyStatus driverPenaltyStatus;
+	private Integer driverPenalty;
 	private Integer capacity;
 	private Integer headcount;
 	private PartyStatus status;

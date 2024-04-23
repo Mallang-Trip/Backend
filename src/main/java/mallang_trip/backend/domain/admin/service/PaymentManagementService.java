@@ -1,10 +1,12 @@
 package mallang_trip.backend.domain.admin.service;
 
+import static mallang_trip.backend.domain.party.constant.DriverPenaltyStatus.PENALTY_EXISTS;
+import static mallang_trip.backend.domain.party.constant.DriverPenaltyStatus.PENALTY_PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.dto.PartyMemberPaymentResponse;
@@ -22,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PartyPaymentService {
+public class PaymentManagementService {
 
 	private final PartyRepository partyRepository;
 	private final ReservationRepository reservationRepository;
@@ -31,7 +33,9 @@ public class PartyPaymentService {
 	/**
 	 * 파티의 결제 내역을 조회합니다.
 	 * <p>
-	 * status 값이 "reserved" 일 경우 예약된 파티를 조회하고, status 값이 "finished" 일 경우 완료된 파티를 조회합니다.
+	 * status 값이 "reserved" 일 경우 예약된 파티를 조회,
+	 * status 값이 "canceled" 일 경우 취소된 파티를 조회,
+	 * status 값이 "finished" 일 경우 완료된 파티를 조회합니다.
 	 *
 	 * @param status 조회할 파티 status 값
 	 * @return 결제 내역 정보를 담은 PartyPaymentResponse 객체 배열
@@ -39,6 +43,8 @@ public class PartyPaymentService {
 	public List<PartyPaymentResponse> getPartiesByStatus(String status) {
 		if (status.equalsIgnoreCase("reserved")) {
 			return getReservedParties();
+		} else if (status.equalsIgnoreCase("canceled")){
+			return getCanceledParties();
 		} else if (status.equalsIgnoreCase("finished")) {
 			return getFinishedParties();
 		} else {
@@ -55,6 +61,19 @@ public class PartyPaymentService {
 	 */
 	private List<PartyPaymentResponse> getReservedParties() {
 		return partyRepository.findReservedParties().stream()
+			.map(party -> toPartyPaymentResponse(party))
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * 취소된 파티의 결제 내역 정보를 조회합니다.
+	 * <p>
+	 * 완료된 파티는 status가 CANCELED_% 인 파티를 의미합니다.
+	 *
+	 * @return 파티의 결제 내역 정보를 담은 PartyPaymentResponse 객체 배열
+	 */
+	private List<PartyPaymentResponse> getCanceledParties(){
+		return partyRepository.findByStatusStartWithCanceled().stream()
 			.map(party -> toPartyPaymentResponse(party))
 			.collect(Collectors.toList());
 	}
@@ -91,6 +110,8 @@ public class PartyPaymentService {
 			.endDate(party.getEndDate())
 			.driverId(party.getDriver().getId())
 			.driverName(party.getDriver().getUser().getName())
+			.driverPenalty(party.getDriverPenalty())
+			.driverPenaltyStatus(party.getDriverPenaltyStatus())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
 			.status(party.getStatus())
@@ -114,5 +135,33 @@ public class PartyPaymentService {
 			.receiptUrl(reservation == null ? null : reservation.getReceiptUrl())
 			.status(reservation == null? null : reservation.getStatus())
 			.build();
+	}
+
+	/**
+	 * 드라이버 위약금 지불 완료 처리
+	 *
+	 * @param partyId 적용할 파티에 해당하는 Party 객체 id
+	 */
+	public void setDriverPenaltyPaymentComplete(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		if(!party.getDriverPenaltyStatus().equals(PENALTY_EXISTS)){
+			throw new BaseException(Bad_Request);
+		}
+		party.setDriverPenaltyStatus(PENALTY_PAYMENT_COMPLETE);
+	}
+
+	/**
+	 * 드라이버 위약금 지불 완료 전 처리
+	 *
+	 * @param partyId 적용할 파티에 해당하는 Party 객체 id
+	 */
+	public void setDriverPenaltyExists(Long partyId){
+		Party party = partyRepository.findById(partyId)
+			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+		if(!party.getDriverPenaltyStatus().equals(PENALTY_PAYMENT_COMPLETE)){
+			throw new BaseException(Bad_Request);
+		}
+		party.setDriverPenaltyStatus(PENALTY_EXISTS);
 	}
 }
