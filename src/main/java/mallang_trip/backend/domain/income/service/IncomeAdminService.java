@@ -27,6 +27,8 @@ public class IncomeAdminService {
 	private final CommissionRateRepository commissionRateRepository;
 	private final IncomeService incomeService;
 
+	private final Long commissionRateId = 1L;
+
 	/**
 	 * (관리자) 월 별 수익 내역을 조회합니다.
 	 *
@@ -93,7 +95,7 @@ public class IncomeAdminService {
 	 * @param penaltyCommissionRate 변경할 위약금 수수료 비율
 	 */
 	public void changeCommissionRate(double partyCommissionRate, double penaltyCommissionRate) {
-		CommissionRate rate = commissionRateRepository.findById(1L).get();
+		CommissionRate rate = commissionRateRepository.findById(commissionRateId).get();
 		rate.changeCommissionRate(partyCommissionRate, penaltyCommissionRate);
 	}
 }

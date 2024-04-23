@@ -31,6 +31,8 @@ public class IncomeService {
 	private final IncomeRepository incomeRepository;
 	private final CommissionRateRepository commissionRateRepository;
 
+	private final Long commissionRateId = 1L;
+
 	/**
 	 * 수익금을 저장합니다.
 	 *
@@ -55,7 +57,7 @@ public class IncomeService {
 	 */
 	public int calculateCommission(IncomeType type, Integer amount){
 		// 수수료 계산
-		CommissionRate rate = commissionRateRepository.findById(1L).get();
+		CommissionRate rate = commissionRateRepository.findById(commissionRateId).get();
 		int commission = 0;
 		if (type.equals(PARTY_INCOME)) {
 			commission = (int) (amount * rate.getPartyCommissionRate());
