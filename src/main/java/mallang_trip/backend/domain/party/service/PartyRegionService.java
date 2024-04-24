@@ -73,7 +73,7 @@ public class PartyRegionService {
     }
 
     /**
-     * (관리자) 가고 싶은 지역 조회
+     * 가고 싶은 지역 조회
      *
      */
     public List<PartyRegionResponse> getRegions(){
