@@ -13,15 +13,8 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_DRI
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.ALREADY_PARTY_MEMBER;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_CHANGE_COURSE;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXCEED_PARTY_CAPACITY;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXPIRED_PROPOSAL;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_CONFLICTED;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_NOT_RECRUITING;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,6 +26,8 @@ import mallang_trip.backend.domain.mail.constant.MailStatus;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
+import mallang_trip.backend.domain.party.entity.PartyRegion;
+import mallang_trip.backend.domain.party.repository.*;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -51,10 +46,6 @@ import mallang_trip.backend.domain.driver.repository.DriverRepository;
 import mallang_trip.backend.domain.course.service.CourseService;
 import mallang_trip.backend.domain.admin.service.SuspensionService;
 import mallang_trip.backend.domain.driver.service.DriverService;
-import mallang_trip.backend.domain.party.repository.PartyMemberCompanionRepository;
-import mallang_trip.backend.domain.party.repository.PartyMemberRepository;
-import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
-import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.reservation.service.ReservationService;
 import mallang_trip.backend.domain.chat.service.ChatService;
 import org.springframework.stereotype.Service;
@@ -80,6 +71,8 @@ public class PartyService {
     private final PartyMemberCompanionRepository partyMemberCompanionRepository;
     private final PartyProposalRepository partyProposalRepository;
 
+    private final PartyRegionRepository partyRegionRepository;
+
     private final MailService mailService;
     private final IncomeService incomeService;
 
@@ -101,11 +94,14 @@ public class PartyService {
         }
         // 코스 생성
         Course course = courseService.createCourse(request.getCourse());
+
+        PartyRegion region= partyRegionRepository.findByRegion(driver.getRegion())
+            .orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
         // 파티 생성
         Party party = partyRepository.save(Party.builder()
             .driver(driver)
             .course(course)
-            .region(driver.getRegion())
+            .partyRegion(region)
             .capacity(driver.getVehicleCapacity())
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())

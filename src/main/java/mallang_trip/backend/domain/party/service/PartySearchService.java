@@ -8,9 +8,8 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_COU
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOIN_APPROVAL;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.CANNOT_FOUND_PARTY;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
 
 import java.util.Comparator;
 import java.util.List;
@@ -19,6 +18,8 @@ import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
+import mallang_trip.backend.domain.party.entity.PartyRegion;
+import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
@@ -54,13 +55,17 @@ public class PartySearchService {
 	private final PartyDibsService partyDibsService;
 	private final PartyProposalRepository partyProposalRepository;
 
+	private final PartyRegionRepository partyRegionRepository;
+
 	/**
 	 * 모집중인 파티 검색 : region == "all" -> 지역 전체 검색.
 	 */
 	public List<PartyBriefResponse> searchRecruitingParties(String region, Integer headcount,
 		String startDate, String endDate, Integer maxPrice) {
+		PartyRegion partyRegion = partyRegionRepository.findByRegion(region)
+			.orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
 		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)
-			: partyRepository.findByRegionAndStatus(region, RECRUITING);
+			: partyRepository.findByPartyRegionAndStatus(partyRegion, RECRUITING);
 		return parties.stream()
 			.filter(party -> party.isHeadcountAvailable(headcount))
 			.filter(party -> party.checkDate(startDate, endDate))
@@ -237,7 +242,7 @@ public class PartySearchService {
 			.driverReady(party.getDriverReady())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
-			.region(party.getRegion())
+			.region(party.getPartyRegion().getRegion())
 			.startDate(party.getStartDate())
 			.endDate(party.getEndDate())
 			.course(courseService.getCourseDetails(party.getCourse()))
@@ -263,7 +268,7 @@ public class PartySearchService {
 			.driverReady(party.getDriverReady())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
-			.region(party.getRegion())
+			.region(party.getPartyRegion().getRegion())
 			.startDate(party.getStartDate())
 			.endDate(party.getEndDate())
 			.course(courseService.getCourseDetails(party.getCourse()))

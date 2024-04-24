@@ -4,6 +4,7 @@ import java.util.List;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.party.entity.Party;
+import mallang_trip.backend.domain.party.entity.PartyRegion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,7 +48,10 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 	@Query(value = "SELECT * FROM party WHERE status LIKE 'CANCELED_%'", nativeQuery = true)
 	List<Party> findByStatusStartWithCanceled();
 
-	List<Party> findByRegionAndStatus(String region, PartyStatus status);
+	// region와 status로 party를 찾는 쿼리
+	List<Party> findByPartyRegionAndStatus(PartyRegion partyRegion, PartyStatus status);
+
+	//List<Party> findByRegionAndStatus(String region, PartyStatus status);
 
 	List<Party> findByDriver(Driver driver);
 

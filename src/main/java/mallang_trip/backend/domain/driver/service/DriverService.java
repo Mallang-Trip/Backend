@@ -5,6 +5,7 @@ import static mallang_trip.backend.domain.driver.constant.DriverStatus.CANCELED;
 import static mallang_trip.backend.domain.driver.constant.DriverStatus.REFUSED;
 import static mallang_trip.backend.domain.driver.constant.DriverStatus.WAITING;
 import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.REGION_NOT_FOUND;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
@@ -16,6 +17,8 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.driver.constant.DriverStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
+import mallang_trip.backend.domain.party.entity.PartyRegion;
+import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.driver.repository.DriverPriceRepository;
 import mallang_trip.backend.domain.driver.repository.DriverRepository;
@@ -48,6 +51,8 @@ public class DriverService {
 	private final DriverPriceRepository driverPriceRepository;
 	private final PartyRepository partyRepository;
 
+	private final PartyRegionRepository partyRegionRepository;
+
 	/**
 	 * 드라이버 전환 신청
 	 */
@@ -73,6 +78,7 @@ public class DriverService {
 			throw new BaseException(Not_Found);
 		}
 		// 정보 수정
+
 		driver.changeRegistration(request);
 		setPrice(driver, request.getPrices());
 	}
@@ -125,6 +131,10 @@ public class DriverService {
 			driver.changeStatus(ACCEPTED);
 			driver.getUser().setRole(Role.ROLE_DRIVER);
 			driver.getUser().setRefreshToken(null);
+
+			PartyRegion partyRegion = partyRegionRepository.findByRegion(driver.getRegion())
+				.orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+			partyRegion.addCount();
 		} else {
 			driver.changeStatus(REFUSED);
 		}

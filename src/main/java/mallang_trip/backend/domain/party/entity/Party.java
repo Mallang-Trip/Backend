@@ -35,7 +35,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE party SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
-public class Party extends BaseEntity {
+public class  Party extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,8 +49,12 @@ public class Party extends BaseEntity {
 	@JoinColumn(name = "course_id", nullable = false)
 	private Course course;
 
-	@Column(nullable = false)
-	private String region;
+//	@Column(nullable = false)
+//	private String region;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "region_id", nullable = false)
+	private PartyRegion partyRegion;
 
 	@Column(nullable = false)
 	private Integer capacity;
