@@ -95,13 +95,15 @@ public class PartyService {
         // 코스 생성
         Course course = courseService.createCourse(request.getCourse());
 
-        PartyRegion region= partyRegionRepository.findByRegion(driver.getRegion())
+        // 지역 확인
+        partyRegionRepository.findByRegion(driver.getRegion())
             .orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+
         // 파티 생성
         Party party = partyRepository.save(Party.builder()
             .driver(driver)
             .course(course)
-            .partyRegion(region)
+            .region(driver.getRegion())
             .capacity(driver.getVehicleCapacity())
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())

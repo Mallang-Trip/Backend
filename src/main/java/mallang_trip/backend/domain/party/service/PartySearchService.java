@@ -62,10 +62,13 @@ public class PartySearchService {
 	 */
 	public List<PartyBriefResponse> searchRecruitingParties(String region, Integer headcount,
 		String startDate, String endDate, Integer maxPrice) {
+
+		// 지역 확인
 		PartyRegion partyRegion = partyRegionRepository.findByRegion(region)
 			.orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+
 		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)
-			: partyRepository.findByPartyRegionAndStatus(partyRegion, RECRUITING);
+			: partyRepository.findByRegionAndStatus(region, RECRUITING);
 		return parties.stream()
 			.filter(party -> party.isHeadcountAvailable(headcount))
 			.filter(party -> party.checkDate(startDate, endDate))
@@ -242,7 +245,7 @@ public class PartySearchService {
 			.driverReady(party.getDriverReady())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
-			.region(party.getPartyRegion().getRegion())
+			.region(party.getRegion())
 			.startDate(party.getStartDate())
 			.endDate(party.getEndDate())
 			.course(courseService.getCourseDetails(party.getCourse()))
@@ -268,7 +271,7 @@ public class PartySearchService {
 			.driverReady(party.getDriverReady())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
-			.region(party.getPartyRegion().getRegion())
+			.region(party.getRegion())
 			.startDate(party.getStartDate())
 			.endDate(party.getEndDate())
 			.course(courseService.getCourseDetails(party.getCourse()))
