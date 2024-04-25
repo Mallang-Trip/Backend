@@ -94,20 +94,4 @@ public class PartySearchController {
 		partyDibsService.deletePartyDibs(partyId);
 		return new BaseResponse<>("성공");
 	}
-
-	@ApiOperation(value = "(관리자) 파티 목록 조회")
-	@GetMapping("/admin")
-	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-	public BaseResponse<List<PartyBriefResponse>> getPartiesByStatusForAdmin(
-		@RequestParam(value = "status") String status) throws BaseException {
-		return new BaseResponse<>(partySearchService.getPartiesByAdmin(status));
-	}
-
-	@ApiOperation(value = "(관리자) 파티 상세 조회")
-	@GetMapping("/admin/{party_id}")
-	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-	public BaseResponse<PartyDetailsResponse> viewPartyForAdmin(
-		@PathVariable(value = "party_id") Long partyId) throws BaseException {
-		return new BaseResponse<>(partySearchService.viewPartyForAdmin(partyId));
-	}
 }

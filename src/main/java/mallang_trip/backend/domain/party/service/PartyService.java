@@ -508,4 +508,18 @@ public class PartyService {
             party.getCourse().increaseDiscountPrice(penaltyAmount);
         }
     }
+
+    /**
+     * (관리자) 드라이버 레디 조작
+     */
+    public void changeDriverReady(Long partyId, boolean ready){
+        Party party = partyRepository.findById(partyId)
+            .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+
+        if(ready){
+            party.setDriverReady(true);
+        } else {
+            party.setDriverReady(false);
+        }
+    }
 }
