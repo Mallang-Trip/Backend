@@ -64,8 +64,10 @@ public class PartySearchService {
 		String startDate, String endDate, Integer maxPrice) {
 
 		// 지역 확인
-		PartyRegion partyRegion = partyRegionRepository.findByRegion(region)
-			.orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+		if(!region.equals("all")){
+			partyRegionRepository.findByRegion(region)
+				.orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+		}
 
 		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)
 			: partyRepository.findByRegionAndStatus(region, RECRUITING);
