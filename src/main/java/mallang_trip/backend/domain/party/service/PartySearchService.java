@@ -144,14 +144,14 @@ public class PartySearchService {
 	 * (관리자) Status 별 파티 조회
 	 */
 	public List<PartyBriefResponse> getPartiesByAdmin(String status) {
-		switch (status){
-			case "CANCELED":
+		switch (status.toLowerCase()){
+			case "canceled":
 				return getCanceledParties();
-			case "BEFORE_RESERVATION":
+			case "before_reservation":
 				return getBeforeReservationParties();
-			case "AFTER_RESERVATION":
+			case "after_reservation":
 				return getReservedParties();
-			case "FINISHED":
+			case "finished":
 				return getFinishedParties();
 			default:
 				throw new BaseException(Bad_Request);
