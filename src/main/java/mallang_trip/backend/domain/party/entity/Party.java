@@ -35,7 +35,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE party SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
-public class Party extends BaseEntity {
+public class  Party extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

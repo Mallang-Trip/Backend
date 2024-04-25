@@ -4,6 +4,7 @@ import java.util.List;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.party.entity.Party;
+import mallang_trip.backend.domain.party.entity.PartyRegion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
