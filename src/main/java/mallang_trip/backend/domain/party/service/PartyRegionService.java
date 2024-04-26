@@ -76,9 +76,17 @@ public class PartyRegionService {
      * 가고 싶은 지역 조회
      *
      */
-    public List<PartyRegionResponse> getRegions(){
-        List<PartyRegion> partyRegions = partyRegionRepository.findAllByOrderByRegionAsc();
-
+    public List<PartyRegionResponse> getRegions(String region){
+        List<PartyRegion> partyRegions;
+        if(region==null)
+        {
+            partyRegions = partyRegionRepository.findAllByOrderByRegionAsc();
+        }
+        else{
+            PartyRegion partyRegion = partyRegionRepository.findByRegion(region).
+                    orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+            partyRegions = List.of(partyRegion);
+        }
         return partyRegions.stream().map(PartyRegionResponse::of).collect(Collectors.toList());
     }
 
