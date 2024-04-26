@@ -101,7 +101,8 @@ public class PartyRegionController {
     @GetMapping("/region/{region_id}")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-            @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class)
+            @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class),
+            @ApiImplicitParam(name = "driverNicknameOrId", value = "드라이버 닉네임 또는 아이디", required = true, paramType = "query", dataTypeClass = String.class)
     })
     @ApiResponses({
             @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
@@ -110,7 +111,7 @@ public class PartyRegionController {
             @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<List<PartyRegionDriversResponse>> getDrivers(@PathVariable Long region_id) throws BaseException {
-        return new BaseResponse<>(partyRegionService.getDrivers(region_id));
+    public BaseResponse<List<PartyRegionDriversResponse>> getDrivers(@PathVariable Long region_id, @RequestParam String driverNicknameOrId) throws BaseException {
+        return new BaseResponse<>(partyRegionService.getDrivers(region_id, driverNicknameOrId));
     }
 }

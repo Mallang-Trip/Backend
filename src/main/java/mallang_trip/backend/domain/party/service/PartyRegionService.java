@@ -10,6 +10,8 @@ import mallang_trip.backend.domain.party.dto.PartyRegionRequest;
 import mallang_trip.backend.domain.party.dto.PartyRegionResponse;
 import mallang_trip.backend.domain.party.entity.PartyRegion;
 import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
+import mallang_trip.backend.domain.user.entity.User;
+import mallang_trip.backend.domain.user.repository.UserRepository;
 import mallang_trip.backend.global.io.BaseException;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,8 @@ public class PartyRegionService {
     private final PartyRegionRepository partyRegionRepository;
 
     private final DriverRepository driverRepository;
+
+    private final UserRepository userRepository;
 
     private final SuspensionService suspensionService;
 
@@ -84,7 +88,7 @@ public class PartyRegionService {
         }
         else{
             PartyRegion partyRegion = partyRegionRepository.findByRegion(region).
-                    orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+                    orElse(null);
             partyRegions = List.of(partyRegion);
         }
         return partyRegions.stream().map(PartyRegionResponse::of).collect(Collectors.toList());
@@ -94,11 +98,18 @@ public class PartyRegionService {
      * (관리자) 가고 싶은 지역 드라이버 목록 페이지
      *
      */
-    public List<PartyRegionDriversResponse> getDrivers(Long region_id){
+    public List<PartyRegionDriversResponse> getDrivers(Long region_id, String driverNicknameOrId){
         PartyRegion partyRegion = partyRegionRepository.findById(region_id).
                 orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
 
-        List<Driver> driver =driverRepository.findAllByRegionAndStatus(partyRegion.getRegion(), DriverStatus.ACCEPTED);
+        List<Driver> driver;
+        if(driverNicknameOrId==null){
+            driver =driverRepository.findAllByRegionAndStatus(partyRegion.getRegion(), DriverStatus.ACCEPTED);
+        }
+        else{
+            List<User> users= userRepository.findByNicknameContainingIgnoreCaseOrLoginIdContainingIgnoreCase(driverNicknameOrId,driverNicknameOrId);
+            driver=users.stream().map(user->driverRepository.findByUser(user).orElse(null)).collect(Collectors.toList());
+        }
 
         return driver.stream().map(d->{
             Integer duration = suspensionService.getSuspensionDuration(d.getUser());

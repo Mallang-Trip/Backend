@@ -24,7 +24,7 @@ public class UserAdminController {
      * (관리자) 회원 정보 목록 조회
      *
      */
-    @GetMapping("/admin/user/list/{nicknameOrId}")
+    @GetMapping("/admin/user/list")
     @ApiOperation(value = "(관리자) 회원 정보 목록 조회")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
