@@ -28,32 +28,32 @@ public class PartyRegionController {
     @PostMapping("/region")
     @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @ApiResponses({
-            @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
-            @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
-            @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
-            @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+        @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+        @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+        @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<String> addRegion(@RequestBody PartyRegionRequest request) throws BaseException {
+    public BaseResponse<String> addRegion(@RequestBody PartyRegionRequest request)
+        throws BaseException {
         partyRegionService.addRegion(request);
         return new BaseResponse<>("성공");
     }
 
     /**
      * (관리자) 가고 싶은 지역 삭제
-     *
      */
     @ApiOperation(value = "(관리자) 가고 싶은 지역 삭제")
     @DeleteMapping("/region/{region_id}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-            @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class)
+        @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+        @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class)
     })
     @ApiResponses({
-            @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
-            @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
-            @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
-            @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+        @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+        @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+        @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
     public BaseResponse<String> deleteRegion(@PathVariable Long region_id) throws BaseException {
@@ -67,51 +67,52 @@ public class PartyRegionController {
     @ApiOperation(value = "(관리자) 가고 싶은 지역 수정")
     @PutMapping("/region/{region_id}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-            @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class)
+        @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+        @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class)
     })
     @ApiResponses({
-            @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
-            @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
-            @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
-            @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+        @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+        @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+        @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<String> updateRegion(@PathVariable Long region_id, @RequestBody PartyRegionRequest request) throws BaseException {
+    public BaseResponse<String> updateRegion(@PathVariable Long region_id,
+        @RequestBody PartyRegionRequest request) throws BaseException {
         partyRegionService.updateRegion(region_id, request);
         return new BaseResponse<>("성공");
     }
 
     /**
-     * 가고 싶은 지역 리스트 조회
-     * 관리자 , 일반 사용자 모두
+     * 가고 싶은 지역 리스트 조회 관리자 , 일반 사용자 모두
      */
     @ApiOperation(value = "가고 싶은 지역 리스트 조회 - 관리자, 일반 사용자 모두")
-    @ApiImplicitParam(name = "region", value = "지역 이름", required = false, paramType = "query", dataTypeClass = String.class)
+    @ApiImplicitParam(name = "region", value = "지역 이름 (미입력 시 전체 조회)", required = false, paramType = "query", dataTypeClass = String.class)
     @GetMapping("/region")
-    public BaseResponse<List<PartyRegionResponse>> getRegions(@RequestParam(required = false) String region) throws BaseException {
+    public BaseResponse<List<PartyRegionResponse>> getRegions(
+        @RequestParam(required = false) String region) throws BaseException {
         return new BaseResponse<>(partyRegionService.getRegions(region));
     }
 
     /**
      * (관리자) 가고 싶은 지역 드라이버 목록 페이지
-     *
      */
     @ApiOperation(value = "(관리자) 가고 싶은 지역 드라이버 목록 페이지")
     @GetMapping("/region/{region_id}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-            @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class),
-            @ApiImplicitParam(name = "driverNicknameOrId", value = "드라이버 닉네임 또는 아이디", required = true, paramType = "query", dataTypeClass = String.class)
+        @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+        @ApiImplicitParam(name = "region_id", value = "지역 ID", required = true, paramType = "path", dataTypeClass = Long.class),
+        @ApiImplicitParam(name = "driverNicknameOrId", value = "드라이버 닉네임 또는 아이디 (미입력 시 전체 조회)", required = false, paramType = "query", dataTypeClass = String.class)
     })
     @ApiResponses({
-            @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
-            @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
-            @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
-            @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+        @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+        @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+        @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<List<PartyRegionDriversResponse>> getDrivers(@PathVariable Long region_id, @RequestParam String driverNicknameOrId) throws BaseException {
+    public BaseResponse<List<PartyRegionDriversResponse>> getDrivers(@PathVariable Long region_id,
+        @RequestParam(required = false) String driverNicknameOrId) throws BaseException {
         return new BaseResponse<>(partyRegionService.getDrivers(region_id, driverNicknameOrId));
     }
 }
