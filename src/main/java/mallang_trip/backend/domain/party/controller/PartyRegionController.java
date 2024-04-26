@@ -88,7 +88,7 @@ public class PartyRegionController {
      */
     @ApiOperation(value = "가고 싶은 지역 리스트 조회 - 관리자, 일반 사용자 모두")
     @ApiImplicitParam(name = "region", value = "지역 이름", required = false, paramType = "query", dataTypeClass = String.class)
-    @GetMapping("/region/{region}")
+    @GetMapping("/region")
     public BaseResponse<List<PartyRegionResponse>> getRegions(@RequestParam(required = false) String region) throws BaseException {
         return new BaseResponse<>(partyRegionService.getRegions(region));
     }
