@@ -86,8 +86,8 @@ public class ArticleService {
 		if (suspensionService.isSuspending(user)) {
 			throw new BaseException(SUSPENDING);
 		}
-		// 작성자인지 CHECK
-		if (!user.equals(article.getUser())) {
+		// 작성자 또는 관리자인지 CHECK
+		if (!user.getRole().equals(ROLE_ADMIN) && !user.equals(article.getUser())) {
 			throw new BaseException(MODIFICATION_FORBIDDEN);
 		}
 		// 수정
