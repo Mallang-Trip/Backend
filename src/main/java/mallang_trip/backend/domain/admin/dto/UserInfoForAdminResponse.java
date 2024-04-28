@@ -16,6 +16,7 @@ public class UserInfoForAdminResponse {
     private LocalDateTime createdAt;
     private String Introduction;
     private String profileImg;
+    private String role;
 
     public static UserInfoForAdminResponse of(User user, Integer duration) {
         return UserInfoForAdminResponse.builder()
@@ -26,6 +27,7 @@ public class UserInfoForAdminResponse {
             .profileImg(user.getProfileImage())
             .Introduction(user.getIntroduction())
             .createdAt(user.getCreatedAt())
+            .role(user.getRole().toString())
             .build();
     }
 }
