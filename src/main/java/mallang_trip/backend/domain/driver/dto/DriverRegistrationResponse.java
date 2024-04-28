@@ -25,6 +25,8 @@ public class DriverRegistrationResponse {
     private String insuranceLicenceImg;
     private String introduction;
     private DriverStatus status;
+    private String profileImg;
+    private String phoneNumber;
 
     public static DriverRegistrationResponse of(Driver driver, List<DriverPriceResponse> prices){
         return DriverRegistrationResponse.builder()
@@ -43,6 +45,8 @@ public class DriverRegistrationResponse {
             .insuranceLicenceImg(driver.getInsuranceLicenceImg())
             .introduction(driver.getIntroduction())
             .status(driver.getStatus())
+            .profileImg(driver.getUser().getProfileImage())
+            .phoneNumber(driver.getUser().getPhoneNumber())
             .build();
     }
 }
