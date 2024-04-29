@@ -52,7 +52,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	List<Party> findByDriver(Driver driver);
 
-	@Query(value = "SELECT COUNT(*) > 0\n"
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END\n"
 		+ "FROM party p JOIN party_member m\n"
 		+ "ON p.id = m.party_id\n"
 		+ "WHERE m.user_id = :user_id\n"
