@@ -6,6 +6,7 @@ import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.CANCEL
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.EXPIRED;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.SUSPENDING;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.REGION_NOT_FOUND;
+import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
@@ -72,7 +73,7 @@ public class SuspensionService {
 		notifySuspend(user, request.getContent(), request.getDuration());
 
 		// 드라이버인지 확인
-		if(driverRepository.existsByUser(user)){
+		if(user.getRole().equals(ROLE_DRIVER)){
 			Driver driver=driverRepository.findByUser(user).orElseThrow(()->new BaseException(CANNOT_FOUND_DRIVER));
 			PartyRegion partyRegion=partyRegionRepository.findByRegion(driver.getRegion()).orElseThrow(()->new BaseException(REGION_NOT_FOUND));
 			partyRegion.subCount();
@@ -123,7 +124,7 @@ public class SuspensionService {
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		cancelSuspension(user);
 
-		if(driverRepository.existsByUser(user)){
+		if(user.getRole().equals(ROLE_DRIVER)){
 			Driver driver=driverRepository.findByUser(user).orElseThrow(()->new BaseException(CANNOT_FOUND_DRIVER));
 			PartyRegion partyRegion=partyRegionRepository.findByRegion(driver.getRegion()).orElseThrow(()->new BaseException(REGION_NOT_FOUND));
 			partyRegion.addCount();
@@ -150,7 +151,7 @@ public class SuspensionService {
 
 				User user=suspension.getUser();
 
-				if(driverRepository.existsByUser(user)){
+				if(user.getRole().equals(ROLE_DRIVER)){
 					Driver driver=driverRepository.findByUser(user).orElseThrow(()->new BaseException(CANNOT_FOUND_DRIVER));
 					PartyRegion partyRegion=partyRegionRepository.findByRegion(driver.getRegion()).orElseThrow(()->new BaseException(REGION_NOT_FOUND));
 					partyRegion.addCount();
