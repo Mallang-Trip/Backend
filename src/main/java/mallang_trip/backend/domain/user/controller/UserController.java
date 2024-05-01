@@ -142,11 +142,6 @@ public class UserController {
 	 * @param phoneNumber SMS 인증번호를 받을 휴대폰 번호
 	 * @return SMS 인증번호 요청 결과를 담은 BaseResponse 객체
 	 * @throws BaseException 기본 예외 클래스
-	 * @throws UnsupportedEncodingException 인코딩 예외
-	 * @throws URISyntaxException URI 문법 예외
-	 * @throws NoSuchAlgorithmException 암호화 알고리즘 예외
-	 * @throws InvalidKeyException 유효하지 않은 키 예외
-	 * @throws JsonProcessingException JSON 처리 예외
 	 */
 	@GetMapping("/certification")
 	@ApiOperation(value = "SMS 인증번호 요청", notes = "아이디/비밀번호 찾기를 위한 SMS 인증번호를 발송합니다. 인증번호의 유효시간은 5분입니다.")

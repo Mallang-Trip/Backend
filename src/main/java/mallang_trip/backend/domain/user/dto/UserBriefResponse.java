@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.user.dto;
 
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.user.entity.User;
@@ -13,6 +14,7 @@ public class UserBriefResponse {
     private String profileImg;
     private String introduction;
     private Boolean deleted;
+    private LocalDate createdAt;
     //private Boolean suspended;
 
     public static UserBriefResponse of(User user){
@@ -22,6 +24,7 @@ public class UserBriefResponse {
             .profileImg(user.getProfileImage())
             .introduction(user.getIntroduction())
             .deleted(user.getDeleted())
+            .createdAt(user.getCreatedAt().toLocalDate())
             .build();
     }
 }
