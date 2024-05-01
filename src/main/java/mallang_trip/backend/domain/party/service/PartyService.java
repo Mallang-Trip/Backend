@@ -378,6 +378,8 @@ public class PartyService {
         } else {
             quitPartyBeforeReservationByNotLastMember(party);
         }
+        // 모든 멤버 레디 해제
+        partyMemberService.setReadyAllMembers(party, false);
     }
 
     /**
@@ -468,6 +470,8 @@ public class PartyService {
         } else {
             cancelReservationByNotLastMember(member);
         }
+        // 모든 멤버 레디 해제
+        partyMemberService.setReadyAllMembers(party, false);
     }
 
     /**
