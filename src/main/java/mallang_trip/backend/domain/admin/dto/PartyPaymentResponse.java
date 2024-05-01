@@ -13,6 +13,8 @@ public class PartyPaymentResponse {
 
 	private Long partyId;
 	private String partyName;
+	private Long partyPrivateChatRoomId;
+	private Long partyPublicChatRoomId;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private Long driverId;

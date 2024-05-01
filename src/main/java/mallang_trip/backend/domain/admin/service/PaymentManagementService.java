@@ -1,5 +1,7 @@
 package mallang_trip.backend.domain.admin.service;
 
+import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PRIVATE;
+import static mallang_trip.backend.domain.chat.constant.ChatRoomType.PARTY_PUBLIC;
 import static mallang_trip.backend.domain.party.constant.DriverPenaltyStatus.PENALTY_EXISTS;
 import static mallang_trip.backend.domain.party.constant.DriverPenaltyStatus.PENALTY_PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
@@ -7,10 +9,13 @@ import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.C
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.dto.PartyMemberPaymentResponse;
 import mallang_trip.backend.domain.admin.dto.PartyPaymentResponse;
+import mallang_trip.backend.domain.chat.entity.ChatRoom;
+import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.entity.PartyMember;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
@@ -29,6 +34,7 @@ public class PaymentManagementService {
 	private final PartyRepository partyRepository;
 	private final ReservationRepository reservationRepository;
 	private final PartyMemberService partyMemberService;
+	private final ChatRoomRepository chatRoomRepository;
 
 	/**
 	 * 파티의 결제 내역을 조회합니다.
@@ -104,9 +110,16 @@ public class PaymentManagementService {
 			.map(member -> toPartyMemberPaymentResponse(member))
 			.collect(Collectors.toList());
 
+		ChatRoom publicRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PUBLIC)
+			.orElse(null);
+		ChatRoom privateRoom = chatRoomRepository.findByPartyAndType(party, PARTY_PRIVATE)
+			.orElse(null);
+
 		return PartyPaymentResponse.builder()
 			.partyId(party.getId())
 			.partyName(party.getCourse().getName())
+			.partyPrivateChatRoomId(privateRoom == null ? null : privateRoom.getId())
+			.partyPublicChatRoomId(publicRoom == null ? null : publicRoom.getId())
 			.startDate(party.getStartDate())
 			.endDate(party.getEndDate())
 			.driverId(party.getDriver().getId())
