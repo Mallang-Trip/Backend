@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.driver.constant.DriverStatus;
+import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.entity.PartyRegion;
 import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
@@ -53,6 +54,8 @@ public class DriverService {
 
 	private final PartyRegionRepository partyRegionRepository;
 
+	private final MailService mailService;
+
 	/**
 	 * 드라이버 전환 신청
 	 */
@@ -66,6 +69,10 @@ public class DriverService {
 		Driver driver = driverRepository.save(request.toDriver(currentUser));
 		// 가격 정보 저장
 		setPrice(driver, request.getPrices());
+
+		// 이메일 전송
+		String reason= request.driverInfoEmail(currentUser);
+		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청이 완료되었습니다.");
 	}
 
 	/**
@@ -81,6 +88,10 @@ public class DriverService {
 
 		driver.changeRegistration(request);
 		setPrice(driver, request.getPrices());
+
+		// 이메일 전송
+		String reason= request.driverInfoEmail(driver.getUser());
+		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청 정보가 수정되었습니다.");
 	}
 
 	/**
@@ -94,6 +105,10 @@ public class DriverService {
 		}
 		// 신청 취소
 		driver.changeStatus(CANCELED);
+
+		// 이메일 전송
+		String reason= new StringBuilder().append(driver.getUser().getName()).append("님의 드라이버 신청이 취소되었습니다.").toString();
+		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청이 취소되었습니다.");
 	}
 
 	/**

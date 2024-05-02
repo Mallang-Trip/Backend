@@ -68,4 +68,19 @@ public class DriverRegistrationRequest {
             .introduction(introduction)
             .build();
     }
+
+    public String driverInfoEmail(User user){
+
+        // newline for html email
+        String newline = "<br>";
+
+        return new StringBuilder()
+            .append("이름: ").append(user.getName()).append(newline)
+            .append("차량 모델: ").append(vehicleModel).append(newline)
+            .append("차량 번호: ").append(vehicleNumber).append(newline)
+            .append("최대 탑승 인원: ").append(vehicleCapacity).append(newline)
+            .append("활동 가능 지역: ").append(region).append(newline)
+            .append("자기소개: ").append(introduction).append(newline)
+            .toString();
+    }
 }
