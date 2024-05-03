@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.income.dto.CommissionRateResponse;
 import mallang_trip.backend.domain.income.dto.IncomeResponse;
 import mallang_trip.backend.domain.income.dto.RemittanceCompleteRequest;
 import mallang_trip.backend.domain.income.entity.CommissionRate;
@@ -102,5 +103,16 @@ public class IncomeAdminService {
         }
         CommissionRate rate = commissionRateRepository.findById(commissionRateId).get();
         rate.changeCommissionRate(partyCommissionPercent * 0.01, penaltyCommissionPercent * 0.01);
+    }
+
+    /**
+     * (관리자) 수수료 비율을 조회합니다.
+     */
+    public CommissionRateResponse getCommissionRate(){
+        CommissionRate rate = commissionRateRepository.findById(commissionRateId).get();
+        return CommissionRateResponse.builder()
+            .partyCommissionPercent(String.format("%.3f", rate.getPartyCommissionRate() * 100))
+            .penaltyCommissionPercent(String.format("%.3f", rate.getPenaltyCommissionRate() * 100))
+            .build();
     }
 }
