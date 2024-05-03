@@ -203,7 +203,7 @@ public class ChatMemberService {
 	 * 파티 멤버인지 확인
 	 */
 	public Boolean isMyParty(User user, Party party) {
-		if (user == null) {
+		if (user == null || party == null) {
 			return false;
 		}
 		if (user.equals(party.getDriver().getUser())) {
