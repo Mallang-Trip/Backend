@@ -117,8 +117,8 @@ public class IncomeAdminController {
 	@PutMapping("/commission-rate")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-		@ApiImplicitParam(name = "partyCommissionRate", value = "파티 수익 수수료 비율", required = true, paramType = "query", dataTypeClass = Double.class),
-		@ApiImplicitParam(name = "penaltyCommissionRate", value = "위약금 수수료 비율", required = true, paramType = "query", dataTypeClass = Double.class)
+		@ApiImplicitParam(name = "partyCommissionPercent", value = "파티 수익 수수료 비율(%)", required = true, paramType = "query", dataTypeClass = Double.class),
+		@ApiImplicitParam(name = "penaltyCommissionPercent", value = "위약금 수수료 비율(%)", required = true, paramType = "query", dataTypeClass = Double.class)
 	})
 	@ApiResponses({
 		@ApiResponse(code = 400, message = "잘못된 요청입니다."),
@@ -127,9 +127,9 @@ public class IncomeAdminController {
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
 	@PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-	public BaseResponse<String> changeCommissionRate(@RequestParam Double partyCommissionRate,
-		@RequestParam Double penaltyCommissionRate) throws BaseException {
-		incomeAdminService.changeCommissionRate(partyCommissionRate, penaltyCommissionRate);
+	public BaseResponse<String> changeCommissionRate(@RequestParam Double partyCommissionPercent,
+		@RequestParam Double penaltyCommissionPercent) throws BaseException {
+		incomeAdminService.changeCommissionRate(partyCommissionPercent, penaltyCommissionPercent);
 		return new BaseResponse<>("성공");
 	}
 }
