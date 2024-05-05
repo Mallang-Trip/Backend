@@ -19,6 +19,7 @@ public class PartyPaymentResponse {
 	private LocalDate endDate;
 	private Long driverId;
 	private String driverName;
+	private String driverProfileImg;
 	private DriverPenaltyStatus driverPenaltyStatus;
 	private Integer driverPenaltyAmount;
 	private Integer capacity;

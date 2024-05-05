@@ -9,6 +9,7 @@ import mallang_trip.backend.domain.reservation.constant.ReservationStatus;
 public class PartyMemberPaymentResponse {
 
 	private Long userId;
+	private String profileImg;
 	private String nickname;
 	private String receiptUrl;
 	private ReservationStatus reservationStatus;

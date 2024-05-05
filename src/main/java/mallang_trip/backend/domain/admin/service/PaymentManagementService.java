@@ -125,6 +125,7 @@ public class PaymentManagementService {
 			.driverId(party.getDriver().getId())
 			.driverName(party.getDriver().getUser().getName())
 			.driverPenaltyAmount(party.getDriverPenaltyAmount())
+			.driverProfileImg(party.getDriver().getUser().getProfileImage())
 			.driverPenaltyStatus(party.getDriverPenaltyStatus())
 			.capacity(party.getCapacity())
 			.headcount(party.getHeadcount())
@@ -146,6 +147,7 @@ public class PaymentManagementService {
 		return PartyMemberPaymentResponse.builder()
 			.userId(member.getUser().getId())
 			.nickname(member.getUser().getNickname())
+			.profileImg(member.getUser().getProfileImage())
 			.receiptUrl(reservation == null ? null : reservation.getReceiptUrl())
 			.reservationStatus(reservation == null? null : reservation.getStatus())
 			.build();
