@@ -16,6 +16,7 @@ public class ReportCompleteBriefResponse {
     private String suspensionContent;
     private Long reporteeId;
     private String reporteeNickname;
+    private String reporteeLoginId;
     private ReportStatus status;
     private LocalDateTime createdAt;
     private Boolean suspensionExist;
@@ -27,6 +28,7 @@ public class ReportCompleteBriefResponse {
                     .reportId(report.getId())
                     .reporteeId(report.getReportee().getId())
                     .reporteeNickname(report.getReportee().getNickname())
+                    .reporteeLoginId(report.getReportee().getLoginId())
                     .status(report.getStatus())
                     .createdAt(report.getCreatedAt())
                     .suspensionExist(suspension != null)
