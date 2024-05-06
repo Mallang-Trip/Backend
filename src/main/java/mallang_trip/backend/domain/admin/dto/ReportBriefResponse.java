@@ -12,6 +12,8 @@ public class ReportBriefResponse {
 
 	private Long reportId;
 	private String reporteeNickname;
+	private Long reporteeId;
+	private String reporteeLoginId;
 	private ReportStatus status;
 	private LocalDateTime createdAt;
 
@@ -19,6 +21,8 @@ public class ReportBriefResponse {
 		return ReportBriefResponse.builder()
 			.reportId(report.getId())
 			.reporteeNickname(report.getReportee().getNickname())
+			.reporteeId(report.getReportee().getId())
+			.reporteeLoginId(report.getReportee().getLoginId())
 			.status(report.getStatus())
 			.createdAt(report.getCreatedAt())
 			.build();
