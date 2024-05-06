@@ -43,6 +43,9 @@ public class UserSearchService {
 	public UserBriefResponse getUserBriefInfo(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-		return UserBriefResponse.of(user);
+
+		Integer duration = suspensionService.getSuspensionDuration(user);
+
+		return UserBriefResponse.of(user, duration);
 	}
 }

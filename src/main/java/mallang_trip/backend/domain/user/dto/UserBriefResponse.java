@@ -16,6 +16,7 @@ public class UserBriefResponse {
     private Boolean deleted;
     private LocalDate createdAt;
     //private Boolean suspended;
+    private Integer suspensionDuration;
 
     public static UserBriefResponse of(User user){
         return UserBriefResponse.builder()
@@ -25,6 +26,17 @@ public class UserBriefResponse {
             .introduction(user.getIntroduction())
             .deleted(user.getDeleted())
             .createdAt(user.getCreatedAt().toLocalDate())
+            .build();
+    }
+    public static UserBriefResponse of(User user, Integer duration) {
+        return UserBriefResponse.builder()
+            .userId(user.getId())
+            .nickname(user.getNickname())
+            .profileImg(user.getProfileImage())
+            .introduction(user.getIntroduction())
+            .deleted(user.getDeleted())
+            .createdAt(user.getCreatedAt().toLocalDate())
+            .suspensionDuration(duration)
             .build();
     }
 }
