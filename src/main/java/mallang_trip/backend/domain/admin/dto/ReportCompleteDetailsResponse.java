@@ -19,6 +19,8 @@ public class ReportCompleteDetailsResponse {
     private Long reporteeId;
     private String reporterNickname;
     private String reporteeNickname;
+    private String reporterLoginId;
+    private String reporteeLoginId;
     private String content;
     private ReportStatus status;
     private ReportType type;
@@ -36,6 +38,8 @@ public class ReportCompleteDetailsResponse {
                 .reporteeId(report.getReportee().getId())
                 .reporterNickname(report.getReporter().getNickname())
                 .reporteeNickname(report.getReportee().getNickname())
+                .reporterLoginId(report.getReporter().getLoginId())
+                .reporteeLoginId(report.getReportee().getLoginId())
                 .content(report.getContent())
                 .status(report.getStatus())
                 .type(report.getType())
