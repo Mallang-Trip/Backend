@@ -11,6 +11,7 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -71,7 +72,7 @@ public class DriverService {
 		setPrice(driver, request.getPrices());
 
 		// 이메일 전송
-		String reason= request.driverInfoEmail(currentUser);
+		HashMap<String,String> reason= request.driverInfoEmail(currentUser);
 		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청이 완료되었습니다.");
 	}
 
@@ -90,7 +91,7 @@ public class DriverService {
 		setPrice(driver, request.getPrices());
 
 		// 이메일 전송
-		String reason= request.driverInfoEmail(driver.getUser());
+		HashMap<String,String> reason= request.driverInfoEmail(driver.getUser());
 		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청 정보가 수정되었습니다.");
 	}
 

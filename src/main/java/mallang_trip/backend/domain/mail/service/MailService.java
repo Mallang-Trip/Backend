@@ -93,6 +93,25 @@ public class MailService {
         }
     }
 
+    /**
+     * 이메일 알림 전송
+     *
+     */
+    @Async
+    public void sendEmailNotification(String emailAddress, String name, HashMap<String,String> reason,String title) {
+        HashMap<String,String> mailContents= new HashMap<>();
+        mailContents.put("name",name);
+        mailContents.put("title",title);
+        reason.keySet().stream().forEach(key->{
+            mailContents.put(key,reason.get(key));
+        });
+        try {
+            sendEmail(MailTemplate.NOTIFICATION,emailAddress,name,mailContents);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.info("이메일 전송 실패 : User email : {} Error: {}", emailAddress, e.getMessage());
+        }
+    }
+
 
 
     /**
