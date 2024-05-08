@@ -3,6 +3,7 @@ package mallang_trip.backend.domain.admin.repository;
 import java.util.List;
 import java.util.Optional;
 import mallang_trip.backend.domain.admin.constant.SuspensionStatus;
+import mallang_trip.backend.domain.admin.entity.Report;
 import mallang_trip.backend.domain.admin.entity.Suspension;
 import mallang_trip.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,6 @@ public interface SuspensionRepository extends JpaRepository<Suspension, Long> {
 
 	// report_id로 suspension 조회
 	Optional<Suspension> findByReportId(Long reportId);
+
+	Boolean existsByReport(Report report);
 }

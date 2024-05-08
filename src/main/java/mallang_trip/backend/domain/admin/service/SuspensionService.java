@@ -8,6 +8,8 @@ import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.SUSPEN
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.REGION_NOT_FOUND;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
@@ -62,6 +64,10 @@ public class SuspensionService {
 
 		Report report = reportRepository.findById(request.getReportId())
 			.orElseThrow(() -> new BaseException(Not_Found));
+
+		if(suspensionRepository.existsByReport(report)){
+			throw new BaseException(Conflict);
+		}
 
 		suspensionRepository.save(Suspension.builder()
 			.report(report)
@@ -188,5 +194,13 @@ public class SuspensionService {
 		if(isSuspending(user)){
 			throw new BaseException(AdminExceptionStatus.SUSPENDING);
 		}
+	}
+
+	/**
+	 * 신고에 대한 제재 삭제
+	 */
+	public void deleteSuspension(Long reportId){
+		suspensionRepository.findByReportId(reportId)
+			.ifPresent(suspension -> suspensionRepository.delete(suspension));
 	}
 }

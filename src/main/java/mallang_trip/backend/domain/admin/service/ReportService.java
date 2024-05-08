@@ -101,5 +101,4 @@ public class ReportService {
 			.orElse(null);
 		return ReportCompleteDetailsResponse.of(report, suspension);
 	}
-
 }
