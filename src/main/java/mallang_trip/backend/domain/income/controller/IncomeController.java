@@ -59,7 +59,7 @@ public class IncomeController {
 		return new BaseResponse<>(incomeService.getRemittedIncomes());
 	}
 
-	@ApiOperation(value = "(관리자)수수료 조회")
+	@ApiOperation(value = "수수료 조회")
 	@GetMapping("/commission-rate")
 	@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
 	@ApiResponses({
