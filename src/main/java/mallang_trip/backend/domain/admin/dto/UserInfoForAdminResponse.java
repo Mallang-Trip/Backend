@@ -18,6 +18,9 @@ public class UserInfoForAdminResponse {
     private String profileImg;
     private String role;
 
+    // If the user is a driver, the following fields are also included
+    private String driverRegion;
+
     public static UserInfoForAdminResponse of(User user, Integer duration) {
         return UserInfoForAdminResponse.builder()
             .userId(user.getId())
@@ -28,6 +31,20 @@ public class UserInfoForAdminResponse {
             .Introduction(user.getIntroduction())
             .createdAt(user.getCreatedAt())
             .role(user.getRole().toString())
+            .build();
+    }
+
+    public static UserInfoForAdminResponse of(User user, Integer duration, String driverRegion) {
+        return UserInfoForAdminResponse.builder()
+            .userId(user.getId())
+            .loginId(user.getLoginId())
+            .userNickname(user.getNickname())
+            .suspensionDuration(duration)
+            .profileImg(user.getProfileImage())
+            .Introduction(user.getIntroduction())
+            .createdAt(user.getCreatedAt())
+            .role(user.getRole().toString())
+            .driverRegion(driverRegion)
             .build();
     }
 }

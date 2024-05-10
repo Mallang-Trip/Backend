@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.driver.controller;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import javax.validation.Valid;
@@ -93,6 +94,7 @@ public class DriverController {
 
     @PutMapping("/my")
     @ApiOperation(value = "(드라이버) 내 프로필 정보 변경")
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
     public BaseResponse<String> changeMyDriverProfile(
         @RequestBody @Valid ChangeDriverProfileRequest request)
@@ -103,6 +105,7 @@ public class DriverController {
 
     @GetMapping("/my")
     @ApiOperation(value = "(드라이버) 내 프로필 정보 조회")
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PreAuthorize("hasRole('ROLE_DRIVER')") // 드라이버
     public BaseResponse<MyDriverProfileResponse> getMyDriverProfile()
         throws BaseException {
