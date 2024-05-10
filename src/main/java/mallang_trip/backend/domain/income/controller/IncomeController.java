@@ -68,7 +68,7 @@ public class IncomeController {
 			@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
 			@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
-	@PreAuthorize("hasRole('ROLE_USER')") // 사용자
+	@PreAuthorize("isAuthenticated()") // 로그인한 사용자
 	public BaseResponse<CommissionRateResponse> getCommissionRate() throws BaseException {
 		return new BaseResponse<>(incomeAdminService.getCommissionRate());
 	}
