@@ -41,6 +41,7 @@ public class ExceptionController {
     @ExceptionHandler(InvalidDataAccessApiUsageException.class)
     @ResponseBody
     public ExceptionResponse invalidRequest(InvalidDataAccessApiUsageException e) {
+        System.out.println(e.getMessage());
         return ExceptionResponse.builder().message("잘못된 요청입니다.").build();
     }
 
