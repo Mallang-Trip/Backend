@@ -12,6 +12,9 @@ public enum PartyStatus {
     CANCELED_BY_EXPIRATION, // 모집 기간 만료로 인한 취소
     CANCELED_BY_ALL_QUIT, // 파티원 전원 탈퇴로 인한 취소
     CANCELED_BY_DRIVER_QUIT, // 드라이버 탈퇴로 인한 취소
+    CANCELED_BY_USER_QUIT, // 파티원 탈퇴로 인한 취소
+    CANCELED_BY_REFUND, // 환불로 인한 취소
+    CANCELED_BY_REFUND_FAILED, // 환불 실패로 인한 취소
     DAY_OF_TRAVEL, // 여행 당일
     FINISHED, // 종료
     ;
