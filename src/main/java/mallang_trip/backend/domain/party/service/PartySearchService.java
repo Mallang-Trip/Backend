@@ -105,14 +105,14 @@ public class PartySearchService {
 				ReservationStatus status = reservation.get().getStatus();
 
 				if(status.equals(ReservationStatus.REFUND_COMPLETE)){	// 환불 완료
-					partyResponses.add(PartyBriefResponse.of(partyMember.getParty(),CANCELED_BY_REFUND));
+					partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_REFUND));
 				}
 				else if(status.equals(ReservationStatus.REFUND_FAILED)){	// 환불 실패
-					partyResponses.add(PartyBriefResponse.of(partyMember.getParty(),CANCELED_BY_REFUND_FAILED));
+					partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_REFUND_FAILED));
 				}
 			}
 			else{	// 결제가 진행되지 않은 경우
-				partyResponses.add(PartyBriefResponse.of(partyMember.getParty(),CANCELED_BY_USER_QUIT));
+				partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_USER_QUIT));
 			}
 		}
 

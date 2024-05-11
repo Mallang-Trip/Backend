@@ -43,7 +43,7 @@ public class PartyBriefResponse {
             .build();
     }
 
-    public static PartyBriefResponse of(Party party, PartyStatus status){
+    public static PartyBriefResponse ofCanceled(Party party, PartyStatus status){
         Course course = party.getCourse();
         return PartyBriefResponse.builder()
             .partyId(party.getId())
