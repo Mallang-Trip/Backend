@@ -22,7 +22,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM party p\n"
 		+ "JOIN party_member m ON p.id = m.party_id\n"
-		+ "WHERE m.user_id = :userId AND NOT (p.status LIKE 'CANCELED%') AND p.start_date = :date",
+		+ "WHERE m.deleted = FALSE AND m.user_id = :userId AND NOT (p.status LIKE 'CANCELED%') AND p.start_date = :date",
 		nativeQuery = true)
 	Boolean existsValidPartyByUserAndStartDate(@Param(value = "userId") Long userId,
 		@Param(value = "date") String startDate);
