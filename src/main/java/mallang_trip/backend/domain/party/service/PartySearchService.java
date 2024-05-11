@@ -87,6 +87,8 @@ public class PartySearchService {
 	 */
 	public List<PartyBriefResponse> getMyPartiesByMember() {
 		User user = currentUserService.getCurrentUser();
+
+		// 가입신청 중, 가입 중인 파티 조회
 		List<PartyBriefResponse> partyResponses = Stream.concat(
 				getMyProposingParties(user).stream(),
 				partyMemberRepository.findByUser(user).stream().map(PartyMember::getParty)
@@ -94,27 +96,15 @@ public class PartySearchService {
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
 
-		List<PartyMember> partyDeletedMembers =	partyMemberRepository.findByUserAndDeleted(user.getId());	// 예약 취소한 파티 멤버 조회
+		// 탈퇴한 파티 조회
+		List<PartyBriefResponse> canceledPartyResponses = partyMemberRepository.findByUserAndDeleted(user.getId())
+			.stream()
+			.map(partyMember -> partyMember.getParty())
+			.map(party -> PartyBriefResponse.ofCanceled(party, CANCELED_BY_USER_QUIT))
+			.collect(Collectors.toList());
 
-		for(PartyMember partyMember : partyDeletedMembers){
-			// 예약 결제 상태 확인
-			Optional<Reservation> reservation = reservationRepository.findByPartyMemberId(partyMember.getId());
-
-			if(reservation.isPresent()){ // 결제가 진행된 경우
-				ReservationStatus status = reservation.get().getStatus();
-
-				if(status.equals(ReservationStatus.REFUND_COMPLETE)){	// 환불 완료
-					partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_REFUND));
-				}
-				else if(status.equals(ReservationStatus.REFUND_FAILED)){	// 환불 실패
-					partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_REFUND_FAILED));
-				}
-			}
-			else{	// 결제가 진행되지 않은 경우
-				partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_USER_QUIT));
-			}
-		}
-
+		// concat & sort
+		partyResponses.addAll(canceledPartyResponses);
 		partyResponses.sort(Comparator.comparing(PartyBriefResponse::getStartDate).reversed());
 
 		return partyResponses;
