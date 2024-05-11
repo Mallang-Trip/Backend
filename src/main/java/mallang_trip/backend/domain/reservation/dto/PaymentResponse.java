@@ -2,6 +2,7 @@ package mallang_trip.backend.domain.reservation.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.party.entity.Party;
@@ -16,7 +17,8 @@ public class PaymentResponse {
     private String partyName;
     private LocalDate partyStartDate;
     private ReservationStatus status;
-    private LocalDateTime updatedAt;
+    private LocalDateTime paymentTime;
+    private LocalDateTime refundTime;
     private Integer paymentAmount;
     private Integer refundAmount;
     private String receiptUrl;
@@ -28,11 +30,21 @@ public class PaymentResponse {
             .partyName(party.getCourse().getName())
             .partyStartDate(party.getStartDate())
             .status(reservation.getStatus())
-            .updatedAt(reservation.getUpdatedAt())
+            .paymentTime(parseDateTime(reservation.getPayTime()))
+            .refundTime(parseDateTime(reservation.getCancelTime()))
             .paymentAmount(reservation.getPaymentAmount())
             .refundAmount(reservation.getRefundAmount())
             .receiptUrl(reservation.getReceiptUrl())
             .cancelReceiptUrl(reservation.getCancelReceiptUrl())
             .build();
+    }
+
+    public static LocalDateTime parseDateTime(String dateString) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            return LocalDateTime.parse(dateString, formatter);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

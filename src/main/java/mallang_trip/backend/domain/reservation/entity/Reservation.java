@@ -52,6 +52,9 @@ public class Reservation extends BaseEntity {
 	private String payTime;
 
 	@Column
+	private String cancelTime;
+
+	@Column
 	@Builder.Default()
 	private Integer refundAmount = 0;
 
@@ -64,8 +67,9 @@ public class Reservation extends BaseEntity {
 		this.payTime = payTime;
 	}
 
-	public void saveCancelReceipt(String cancelReceiptUrl){
+	public void saveCancelReceipt(String cancelReceiptUrl, String cancelTime){
 		this.cancelReceiptUrl = cancelReceiptUrl;
+		this.cancelTime = cancelTime;
 	}
 
 	public void changeStatus(ReservationStatus status){

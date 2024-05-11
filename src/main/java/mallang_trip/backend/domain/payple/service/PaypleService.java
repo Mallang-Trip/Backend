@@ -181,7 +181,7 @@ public class PaypleService {
 		CancelResponse response = billingService.cancel(oid, date, amount);
 
 		if(response != null){
-			reservation.saveCancelReceipt(response.getPcd_PAY_CARDRECEIPT());
+			reservation.saveCancelReceipt(response.getPcd_PAY_CARDRECEIPT(), response.getPcd_PAY_TIME());
 			reservation.changeStatus(REFUND_COMPLETE);
 			paymentNotificationService.refundSuccess(reservation);
 		} else {
