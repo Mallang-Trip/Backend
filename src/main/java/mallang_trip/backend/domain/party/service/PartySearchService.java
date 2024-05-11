@@ -91,7 +91,6 @@ public class PartySearchService {
 				getMyProposingParties(user).stream(),
 				partyMemberRepository.findByUser(user).stream().map(PartyMember::getParty)
 			)
-			.sorted(Comparator.comparing(Party::getStartDate).reversed())
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
 
@@ -115,6 +114,8 @@ public class PartySearchService {
 				partyResponses.add(PartyBriefResponse.ofCanceled(partyMember.getParty(),CANCELED_BY_USER_QUIT));
 			}
 		}
+
+		partyResponses.sort(Comparator.comparing(PartyBriefResponse::getStartDate).reversed());
 
 		return partyResponses;
 	}
