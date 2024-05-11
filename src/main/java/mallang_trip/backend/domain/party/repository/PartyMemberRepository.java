@@ -25,4 +25,10 @@ public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> 
         + "FROM party_member\n"
         + "WHERE party_id = :party_id AND ready = false AND deleted = 'false' ", nativeQuery = true)
     Boolean isEveryoneReady(@Param(value = "party_id") Long partyId);
+
+
+    // find By User deleted = True
+    @Query(value = "SELECT * FROM party_member\n"
+        + "WHERE user_id = :user_id AND deleted = 'true'", nativeQuery = true)
+    List<PartyMember> findByUserAndDeleted(@Param(value = "user_id") Long userId);
 }

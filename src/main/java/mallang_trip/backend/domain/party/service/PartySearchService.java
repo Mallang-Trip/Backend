@@ -1,18 +1,13 @@
 package mallang_trip.backend.domain.party.service;
 
-import static mallang_trip.backend.domain.party.constant.PartyStatus.DAY_OF_TRAVEL;
-import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
-import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
-import static mallang_trip.backend.domain.party.constant.PartyStatus.SEALED;
-import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_COURSE_CHANGE_APPROVAL;
-import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_DRIVER_APPROVAL;
-import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOIN_APPROVAL;
+import static mallang_trip.backend.domain.party.constant.PartyStatus.*;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.transaction.Transactional;
@@ -20,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.party.entity.PartyRegion;
 import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
+import mallang_trip.backend.domain.reservation.constant.ReservationStatus;
+import mallang_trip.backend.domain.reservation.entity.Reservation;
+import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
@@ -56,6 +54,8 @@ public class PartySearchService {
 	private final PartyProposalRepository partyProposalRepository;
 
 	private final PartyRegionRepository partyRegionRepository;
+
+	private final ReservationRepository reservationRepository;
 
 	/**
 	 * 모집중인 파티 검색 : region == "all" -> 지역 전체 검색.
@@ -94,6 +94,28 @@ public class PartySearchService {
 			.sorted(Comparator.comparing(Party::getStartDate).reversed())
 			.map(PartyBriefResponse::of)
 			.collect(Collectors.toList());
+
+		List<PartyMember> partyDeletedMembers =	partyMemberRepository.findByUserAndDeleted(user.getId());	// 예약 취소한 파티 멤버 조회
+
+		for(PartyMember partyMember : partyDeletedMembers){
+			// 예약 결제 상태 확인
+			Optional<Reservation> reservation = reservationRepository.findByPartyMemberId(partyMember.getId());
+
+			if(reservation.isPresent()){ // 결제가 진행된 경우
+				ReservationStatus status = reservation.get().getStatus();
+
+				if(status.equals(ReservationStatus.REFUND_COMPLETE)){	// 환불 완료
+					partyResponses.add(PartyBriefResponse.of(partyMember.getParty(),CANCELED_BY_REFUND));
+				}
+				else if(status.equals(ReservationStatus.REFUND_FAILED)){	// 환불 실패
+					partyResponses.add(PartyBriefResponse.of(partyMember.getParty(),CANCELED_BY_REFUND_FAILED));
+				}
+			}
+			else{	// 결제가 진행되지 않은 경우
+				partyResponses.add(PartyBriefResponse.of(partyMember.getParty(),CANCELED_BY_USER_QUIT));
+			}
+		}
+
 		return partyResponses;
 	}
 

@@ -42,4 +42,22 @@ public class PartyBriefResponse {
             .updatedAt(party.getUpdatedAt())
             .build();
     }
+
+    public static PartyBriefResponse of(Party party, PartyStatus status){
+        Course course = party.getCourse();
+        return PartyBriefResponse.builder()
+            .partyId(party.getId())
+            .status(status)
+            .image(course.getImages().isEmpty() ? null : course.getImages().get(0))
+            .name(course.getName())
+            .startDate(party.getStartDate())
+            .endDate(party.getEndDate())
+            .price((course.getTotalPrice() - course.getDiscountPrice()) / party.getCapacity())
+            .driverName(party.getDriver().getUser().getName())
+            .headcount(party.getHeadcount())
+            .capacity(party.getCapacity())
+            .createdAt(party.getCreatedAt())
+            .updatedAt(party.getUpdatedAt())
+            .build();
+    }
 }

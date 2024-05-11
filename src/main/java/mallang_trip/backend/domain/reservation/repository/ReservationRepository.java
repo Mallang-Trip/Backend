@@ -18,4 +18,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 		+ "WHERE party_member_id = :member_id\n"
 		+ "    AND (status = 'PAYMENT_FAILED' OR status = 'PAYMENT_COMPLETE');", nativeQuery = true)
 	Optional<Reservation> findPaymentCompletedOrFailedByMember(@Param(value = "member_id") Long memberId);
+
+	Optional<Reservation> findByPartyMemberId(Long partyMemberId);
 }
