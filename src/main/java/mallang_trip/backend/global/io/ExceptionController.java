@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class ExceptionController {
@@ -69,6 +70,13 @@ public class ExceptionController {
     @ExceptionHandler(SizeLimitExceededException.class)
     @ResponseBody
     public ExceptionResponse invalidRequest(SizeLimitExceededException e) {
-        return ExceptionResponse.builder().message("업로드 가능한 최대 용량을 초과했습니다.").build();
+        return ExceptionResponse.builder().message("max-file-size-exceeded").build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseBody
+    public ExceptionResponse invalidRequest(MaxUploadSizeExceededException e) {
+        return ExceptionResponse.builder().message("max-upload-size-exceeded").build();
     }
 }
