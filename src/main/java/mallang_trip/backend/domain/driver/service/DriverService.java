@@ -172,7 +172,7 @@ public class DriverService {
 	/**
 	 * 가격 설정: 기존 가격 정보 삭제 후 재생성
 	 */
-	private void setPrice(Driver driver, List<DriverPriceRequest> requests) {
+	public void setPrice(Driver driver, List<DriverPriceRequest> requests) {
 		driverPriceRepository.deleteAllByDriver(driver);
 		requests.stream()
 			.forEach(request -> driverPriceRepository.save(request.toDriverPrice(driver)));
@@ -268,7 +268,7 @@ public class DriverService {
 	/**
 	 * 드라이버 가격 조회
 	 */
-	private List<DriverPriceResponse> getDriverPrice(Driver driver) {
+	public List<DriverPriceResponse> getDriverPrice(Driver driver) {
 		return driverPriceRepository.findAllByDriver((driver)).stream()
 			.map(DriverPriceResponse::of)
 			.collect(Collectors.toList());

@@ -31,38 +31,36 @@ public class UserAdminService {
     /**
      * (관리자) 회원 정보 목록 조회
      */
-    public List<UserInfoForAdminResponse> getUserList(String nicknameOrId){
-        if(nicknameOrId == null){
+    public List<UserInfoForAdminResponse> getUserList(String nicknameOrId) {
+        if (nicknameOrId == null) {
             return userRepository.findAll().stream()
-                    .map(user-> {
-                        if(user.getRole().equals(ROLE_DRIVER)){
+                    .map(user -> {
+                        if (user.getRole().equals(ROLE_DRIVER)) {
                             Driver driver = driverRepository.findByUser(user)
                                     .orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
-                            return UserInfoForAdminResponse.of(user,0,driver.getRegion());
+                            return UserInfoForAdminResponse.of(user, 0, driver.getRegion());
                         }
-                        return UserInfoForAdminResponse.of(user,suspensionService.getSuspensionDuration(user));
+                        return UserInfoForAdminResponse.of(user, suspensionService.getSuspensionDuration(user));
                     })
                     .collect(Collectors.toList());
         }
-        return userRepository.findByNicknameContainingIgnoreCaseOrLoginIdContainingIgnoreCase(nicknameOrId,nicknameOrId).stream()
-                .map(user-> UserInfoForAdminResponse.of(user,suspensionService.getSuspensionDuration(user)))
+        return userRepository.findByNicknameContainingIgnoreCaseOrLoginIdContainingIgnoreCase(nicknameOrId, nicknameOrId).stream()
+                .map(user -> UserInfoForAdminResponse.of(user, suspensionService.getSuspensionDuration(user)))
                 .collect(Collectors.toList());
     }
 
     /**
      * (관리자) 관리자 권한 회원 목록 조회
-     *
      */
-    public List<UserInfoForAdminResponse> getAdminList(){
+    public List<UserInfoForAdminResponse> getAdminList() {
         return userRepository.findByRole(ROLE_ADMIN).stream()
-                .map(user-> UserInfoForAdminResponse.of(user,0))
+                .map(user -> UserInfoForAdminResponse.of(user, 0))
                 .collect(Collectors.toList());
     }
 
 
     /**
      * (관리자) 회원 관리자 권한 부여
-     *
      */
     public void grantAdminRole(GrantAdminRoleRequest request) {
         // List<Integer> userIds
@@ -78,12 +76,11 @@ public class UserAdminService {
 
     /**
      * (관리자) 회원 관리자 권한 해제
-     *
      */
-    public void revokeAdminRole(Long userId){
+    public void revokeAdminRole(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
-        if(user.getRole().equals(ROLE_ADMIN)){
+        if (user.getRole().equals(ROLE_ADMIN)) {
             user.setRole(ROLE_USER);
         }
     }

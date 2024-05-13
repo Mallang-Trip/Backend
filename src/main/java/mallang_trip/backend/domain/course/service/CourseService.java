@@ -65,7 +65,7 @@ public class CourseService {
 	/**
 	 * CourseDay 생성
 	 */
-	private void createCourseDays(List<CourseDayRequest> request, Course course) {
+	public void createCourseDays(List<CourseDayRequest> request, Course course) {
 		request.forEach(day -> courseDayRepository.save(day.toCourseDay(course)));
 	}
 
@@ -116,7 +116,7 @@ public class CourseService {
 	 */
 	public CourseDetailsResponse getCourseDetails(Course course) {
 		List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
-			.stream()// 병렬 처리
+			.stream()
 			.map(this::courseDayToResponse)
 			.collect(Collectors.toList());
 
