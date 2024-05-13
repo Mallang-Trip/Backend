@@ -224,6 +224,9 @@ public class DriverService {
 			.region(driver.getRegion())
 			.reviews(driverReviewService.get(driver))
 			.courses(courseService.getDriversCourses(user))
+			.vehicleImg(driver.getVehicleImg())
+			.vehicleModel(driver.getVehicleModel())
+			.vehicleCapacity(driver.getVehicleCapacity())
 			.build();
 	}
 

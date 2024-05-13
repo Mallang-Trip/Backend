@@ -18,4 +18,7 @@ public class DriverDetailsResponse {
     private String region;
     private List<DriverReviewResponse> reviews;
     private List<CourseBriefResponse> courses;
+    private String vehicleImg;
+    private String vehicleModel;
+    private Integer vehicleCapacity;
 }
