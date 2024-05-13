@@ -11,7 +11,9 @@ public class UserInfoForAdminResponse {
 
     private Long userId;
     private String loginId;
+    private String name;
     private String userNickname;
+    private String phoneNumber;
     private Integer suspensionDuration;
     private LocalDateTime createdAt;
     private String Introduction;
@@ -25,7 +27,9 @@ public class UserInfoForAdminResponse {
         return UserInfoForAdminResponse.builder()
             .userId(user.getId())
             .loginId(user.getLoginId())
+            .name(user.getName())
             .userNickname(user.getNickname())
+            .phoneNumber(user.getPhoneNumber())
             .suspensionDuration(duration)
             .profileImg(user.getProfileImage())
             .Introduction(user.getIntroduction())
@@ -38,7 +42,9 @@ public class UserInfoForAdminResponse {
         return UserInfoForAdminResponse.builder()
             .userId(user.getId())
             .loginId(user.getLoginId())
+            .name(user.getName())
             .userNickname(user.getNickname())
+            .phoneNumber(user.getPhoneNumber())
             .suspensionDuration(duration)
             .profileImg(user.getProfileImage())
             .Introduction(user.getIntroduction())
