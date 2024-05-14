@@ -37,6 +37,7 @@ public class PartyNotificationService {
 			.toString();
 		notificationService.create(driver, content, PARTY, party.getId());
 		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.");
+		mailService.sendEmailNotification("mallangtrip@gmail.com", driver.getName(), content,"새로운 여행 신청이 존재합니다.");
 
 	}
 
