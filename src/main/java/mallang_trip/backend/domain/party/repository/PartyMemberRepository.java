@@ -29,7 +29,7 @@ public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> 
 
     // find By User deleted = True
     @Query(value = "SELECT * FROM party_member\n"
-        + "WHERE user_id = :user_id AND deleted = 'true'", nativeQuery = true)
+        + "WHERE user_id = :user_id AND deleted = true", nativeQuery = true)
     List<PartyMember> findByUserAndDeleted(@Param(value = "user_id") Long userId);
 
     // find By Reservation (include deleted = true)
