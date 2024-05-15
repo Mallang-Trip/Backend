@@ -157,6 +157,14 @@ public class PartyService {
             party.setStatus(CANCELED_BY_DRIVER_REFUSED);
             partyNotificationService.creationRefused(party);
         }
+        // headcount == capacity 인 경우
+        if (party.getHeadcount() == party.getCapacity()) {
+            partyMemberService.setReadyAllMembers(party, true);
+            partyNotificationService.partyFulled(party);
+            reservationService.reserveParty(party);
+            party.setStatus(SEALED);
+            mailService.sendEmailParty(party, MailStatus.SEALED,null);
+        }
 
     }
 
