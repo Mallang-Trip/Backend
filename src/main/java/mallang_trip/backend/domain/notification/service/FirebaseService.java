@@ -121,7 +121,7 @@ public class FirebaseService{
      * Firebase push 알림 - 단일
      *
      */
-//    @Async
+    @Async
     public void sendPushMessage(String token, String title, String body) {
         try{
         Message message = Message.builder().setToken(token)
