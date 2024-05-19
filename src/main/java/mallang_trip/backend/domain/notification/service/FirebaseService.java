@@ -138,10 +138,10 @@ public class FirebaseService{
 
         return response;
 
-    }
-    catch (FirebaseMessagingException e) {
-        log.error("Firebase Messaging Error : {}", e.getMessage());
-    }
+        } catch (FirebaseMessagingException e) {
+            log.error("Firebase Messaging Error : {}", e.getMessage());
+            return "fail";
+        }
     }
 
 }
