@@ -124,8 +124,8 @@ public class FirebaseService{
      * Firebase push 알림 - 단일
      *
      */
-    @Async
-    public void sendPushMessage(String token, String title, String body) {
+//    @Async
+    public String sendPushMessage(String token, String title, String body) {
         try{
         Message message = Message.builder().setToken(token)
                 .setNotification(Notification.builder()
@@ -135,6 +135,8 @@ public class FirebaseService{
                 .build();
 
         String response = firebaseMessaging.send(message);
+
+        return response;
 
     }
     catch (FirebaseMessagingException e) {
