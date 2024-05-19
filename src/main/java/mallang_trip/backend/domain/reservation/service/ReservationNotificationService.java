@@ -3,10 +3,15 @@ package mallang_trip.backend.domain.reservation.service;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.notification.constant.NotificationType;
+import mallang_trip.backend.domain.notification.entity.Firebase;
+import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
+import mallang_trip.backend.domain.notification.service.FirebaseService;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.notification.service.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +21,8 @@ public class ReservationNotificationService {
 	private final NotificationService notificationService;
 
 	private final MailService mailService;
+	private final FirebaseService firebaseService;
+	private final FirebaseRepository firebaseRepository;
 
 	public void penaltyPaymentRequired(User user, Integer penaltyAmount){
 		String content = new StringBuilder()
@@ -26,5 +33,7 @@ public class ReservationNotificationService {
 		notificationService.create(user, content, NotificationType.NONE, null);
 		mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"위약금이 발생하였습니다.");
 
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
 	}
 }

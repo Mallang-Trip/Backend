@@ -108,24 +108,49 @@ public class FirebaseService{
      *
      */
     @Async
-    public void sendPushMessage(List<String> tokens, String title, String body) throws FirebaseMessagingException {
-
-        MulticastMessage message = MulticastMessage.builder()
-                .setNotification(Notification.builder()
-                        .setTitle(title)
-                        .setBody(body)
-                        .build())
-                .addAllTokens(tokens)
-                .build();
-        BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
+    public void sendPushMessage(List<String> tokens, String title, String body) {
+        try{
+            MulticastMessage message = MulticastMessage.builder()
+                    .setNotification(Notification.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build())
+                    .addAllTokens(tokens)
+                    .build();
+            BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
+        }
+        catch(FirebaseMessagingException e){
+            log.error("Firebase Messaging Error : {}", e.getMessage());
+        }
     }
 
     /**
      * Firebase push 알림 - 단일
      *
      */
+    @Async
+    public void sendPushMessage(String token, String title, String body) {
+        try{
+            Message message = Message.builder().setToken(token)
+                    .setNotification(Notification.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build())
+                    .build();
+
+            String response = firebaseMessaging.send(message);
+
+        } catch (FirebaseMessagingException e) {
+            log.error("Firebase Messaging Error : {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Firebase push 알림 - 단일
+     * 테스트용
+     */
 //    @Async
-    public String sendPushMessage(String token, String title, String body) {
+    public String sendPushMessageTest(String token, String title, String body) {
         try{
         Message message = Message.builder().setToken(token)
                 .setNotification(Notification.builder()

@@ -14,6 +14,7 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.entity.Report;
@@ -22,6 +23,9 @@ import mallang_trip.backend.domain.admin.repository.ReportRepository;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.driver.repository.DriverRepository;
 import mallang_trip.backend.domain.mail.service.MailService;
+import mallang_trip.backend.domain.notification.entity.Firebase;
+import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
+import mallang_trip.backend.domain.notification.service.FirebaseService;
 import mallang_trip.backend.domain.party.entity.PartyRegion;
 import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
 import mallang_trip.backend.global.io.BaseException;
@@ -54,6 +58,8 @@ public class SuspensionService {
 	private final ReportRepository reportRepository;
 
 	private final MailService mailService;
+	private final FirebaseService firebaseService;
+	private final FirebaseRepository firebaseRepository;
 
 	/**
 	 * 유저 정지
@@ -119,6 +125,9 @@ public class SuspensionService {
 			.toString();
 		notificationService.create(user, content, SUSPEND, null);
 		mailService.sendEmailNotification(user.getEmail(), user.getNickname(), content,"말랑트립에서 중요한 안내 말씀드립니다.");
+
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getToken(), "말랑트립", content));
 
 	}
 
