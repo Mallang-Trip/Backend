@@ -39,7 +39,7 @@ jobs:
     - run: touch ./src/main/resources/application.yml
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
     - run: cat ./src/main/resources/application.yml
-    - run: mkdir -p ./src/main/resources/fireBase
+    - run: mkdir -p ./src/main/resources/firebase
 
     # 키 파일
     - name: create-json
@@ -48,7 +48,7 @@ jobs:
       with:
         name: "mallang-trip-firebase.json"
         json: ${{ secrets.FIREBASE_KEY }}
-        dir: 'src/main/resources/fireBase/'
+        dir: 'src/main/resources/firebase/'
 
     # (4) Gradle build (Test 제외)
     - name: Build with Gradle
