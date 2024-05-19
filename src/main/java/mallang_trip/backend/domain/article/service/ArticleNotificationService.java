@@ -3,6 +3,7 @@ package mallang_trip.backend.domain.article.service;
 import static mallang_trip.backend.domain.notification.constant.NotificationType.ARTICLE;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.article.repository.ReplyRepository;
@@ -10,6 +11,9 @@ import mallang_trip.backend.domain.article.entity.Article;
 import mallang_trip.backend.domain.article.entity.Comment;
 import mallang_trip.backend.domain.article.entity.Reply;
 import mallang_trip.backend.domain.mail.service.MailService;
+import mallang_trip.backend.domain.notification.entity.Firebase;
+import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
+import mallang_trip.backend.domain.notification.service.FirebaseService;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.notification.service.NotificationService;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
@@ -26,6 +30,8 @@ public class ArticleNotificationService {
 	private final CurrentUserService currentUserService;
 
 	private final MailService mailService;
+	private final FirebaseRepository firebaseRepository;
+	private final FirebaseService firebaseService;
 
 	/**
 	 * 새 댓글이 작성되었을 때 알림을 전송하는 메소드입니다.
@@ -42,7 +48,8 @@ public class ArticleNotificationService {
 			.toString();
 		notificationService.create(article.getUser(), content, ARTICLE, article.getId());
 		//mailService.sendEmailNotification(article.getUser().getEmail(),article.getUser().getName(),content,"새 댓글이 추가되었습니다.");
-
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(article.getUser());
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getToken(), "말랑트립", content));
 	}
 
 	/**
@@ -56,10 +63,22 @@ public class ArticleNotificationService {
 		String content = new StringBuilder()
 			.append("내 댓글에 새 답글이 추가되었습니다.")
 			.toString();
+
+		List<String> firebaseTokens = null;
+
 		getRepliedUsers(comment).stream()
 			.forEach(user ->
-				notificationService.create(user, content, ARTICLE, comment.getArticle().getId()));
-		//mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"새 댓글이 추가되었습니다.");
+			{
+				notificationService.create(user, content, ARTICLE, comment.getArticle().getId());
+
+				// firebase push message
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
+				firebase.ifPresent(value -> firebaseTokens.add(value.getToken()));
+			});
+
+		if(firebaseTokens != null && !firebaseTokens.isEmpty()){
+			firebaseService.sendPushMessage(firebaseTokens,"말랑트립",content);
+		}
 	}
 
 	/**
