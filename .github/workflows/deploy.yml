@@ -39,6 +39,16 @@ jobs:
     - run: touch ./src/main/resources/application.yml
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
     - run: cat ./src/main/resources/application.yml
+    - run: mkdir ./src/main/rescources/fireBase
+
+    # 키 파일
+    - name: create-json
+      id: create-json
+      uses: jsdaniell/create-json@v1.2.2
+      with:
+        name: "mallang-trip-firebase.json"
+        json: ${{ secrets.FIREBASE_KEY }}
+        dir: 'src/main/resources/fireBase/'
 
     # (4) Gradle build (Test 제외)
     - name: Build with Gradle
