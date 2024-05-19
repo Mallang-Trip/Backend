@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 
 import com.google.firebase.messaging.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import mallang_trip.backend.domain.notification.entity.Firebase;
@@ -17,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import java.io.IOException;
@@ -25,15 +27,20 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 @Slf4j
 public class FirebaseService{
 
-    private final FirebaseMessaging firebaseMessaging;
+    private FirebaseMessaging firebaseMessaging;
 
     private final CurrentUserService currentUserService;
     private final FirebaseRepository firebaseRepository;
 
-    public FirebaseService(@Value("${firebase.src}") String src, CurrentUserService currentUserService, FirebaseRepository firebaseRepository) {
+    @Value("${firebase.src}")
+    private String src;
+
+    @PostConstruct
+    public void init(){
         log.info("FirebaseService start");
         try{
             FirebaseOptions options = new FirebaseOptions.Builder()
@@ -41,11 +48,7 @@ public class FirebaseService{
                     .build();
 
             FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
-            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance(firebaseApp);
             firebaseMessaging = FirebaseMessaging.getInstance(firebaseApp);
-
-            this.currentUserService = currentUserService;
-            this.firebaseRepository = firebaseRepository;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
