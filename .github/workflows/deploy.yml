@@ -39,7 +39,7 @@ jobs:
     - run: touch ./src/main/resources/application.yml
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
     - run: cat ./src/main/resources/application.yml
-    - run: mkdir ./src/main/rescources/fireBase
+    - run: mkdir -p ./src/main/rescources/fireBase
 
     # 키 파일
     - name: create-json
