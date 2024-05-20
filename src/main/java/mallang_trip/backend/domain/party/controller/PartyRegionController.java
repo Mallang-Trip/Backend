@@ -52,6 +52,7 @@ public class PartyRegionController {
     @ApiResponses({
         @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
         @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 409, message = "해당 지역에 드라이버가 존재합니다."),
         @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
         @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
@@ -73,6 +74,7 @@ public class PartyRegionController {
     @ApiResponses({
         @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
         @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 409, message = "해당 지역에 드라이버가 존재합니다."),
         @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
         @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })

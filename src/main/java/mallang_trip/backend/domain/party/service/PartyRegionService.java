@@ -71,6 +71,10 @@ public class PartyRegionService {
         PartyRegion partyRegion = partyRegionRepository.findById(region_id).
             orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
 
+        if (!partyRegion.isZero()) {
+            throw new BaseException(REGION_NOT_EMPTY);
+        }
+
         partyRegion.modify(request.getRegion(), request.getRegionImg());
     }
 
