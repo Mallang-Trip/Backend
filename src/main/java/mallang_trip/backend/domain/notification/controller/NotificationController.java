@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.notification.controller;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.global.io.BaseException;
@@ -25,6 +26,7 @@ public class NotificationController {
 
     @ApiOperation(value = "내 알림 조회")
     @GetMapping
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<NotificationListResponse> get() throws BaseException {
         return new BaseResponse<>(notificationService.getNotifications());
@@ -32,6 +34,7 @@ public class NotificationController {
 
     @ApiOperation(value = "알림 확인 처리")
     @PutMapping("/{notification_id}")
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<String> check(
         @PathVariable(value = "notification_id") Long notificationId) throws BaseException {
@@ -39,8 +42,18 @@ public class NotificationController {
         return new BaseResponse<>("성공");
     }
 
+    @ApiOperation(value = "알림 전체 확인 처리")
+    @PutMapping("/all")
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
+    @PreAuthorize("isAuthenticated()") // 로그인 사용자
+    public BaseResponse<String> checkAll() throws BaseException {
+        notificationService.checkAll();
+        return new BaseResponse<>("성공");
+    }
+
     @ApiOperation(value = "알림 삭제")
     @DeleteMapping("/{notification_id}")
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PreAuthorize("isAuthenticated()") // 로그인 사용자
     public BaseResponse<String> delete(
         @PathVariable(value = "notification_id") Long notificationId) throws BaseException {

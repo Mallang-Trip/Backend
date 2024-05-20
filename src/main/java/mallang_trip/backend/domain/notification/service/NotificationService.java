@@ -66,6 +66,16 @@ public class NotificationService {
 	}
 
 	/**
+	 * 알림 전체 확인 처리
+	 */
+	public void checkAll(){
+		notificationRepository.findByUser(currentUserService.getCurrentUser()).stream()
+			.forEach(notification -> {
+				if(!notification.getChecked()) notification.setCheckTrue();
+			});
+	}
+
+	/**
 	 * 알림 삭제
 	 */
 	public void delete(Long notificationId){
