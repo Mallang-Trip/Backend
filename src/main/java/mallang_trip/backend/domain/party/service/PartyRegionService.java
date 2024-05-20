@@ -71,7 +71,8 @@ public class PartyRegionService {
         PartyRegion partyRegion = partyRegionRepository.findById(region_id).
             orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
 
-        if (!partyRegion.isZero()) {
+        // 지역명 변경 시, 활동중인 드라이버 확인
+        if(partyRegion.getRegion() != request.getRegion() && !partyRegion.isZero()){
             throw new BaseException(REGION_NOT_EMPTY);
         }
 
