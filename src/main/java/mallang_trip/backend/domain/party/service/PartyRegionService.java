@@ -72,7 +72,7 @@ public class PartyRegionService {
             orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
 
         // 지역명 변경 시, 활동중인 드라이버 확인
-        if(partyRegion.getRegion() != request.getRegion() && !partyRegion.isZero()){
+        if(!partyRegion.getRegion().equals(request.getRegion()) && !partyRegion.isZero()){
             throw new BaseException(REGION_NOT_EMPTY);
         }
 
