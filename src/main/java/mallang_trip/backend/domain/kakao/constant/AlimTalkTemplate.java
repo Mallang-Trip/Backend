@@ -6,12 +6,14 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AlimTalkTemplate {
+
 	DRIVER_RESERVATION_CONFIRM("DriverReservationConfirm",
 		"[예약 확정 안내]\n"
 			+ "예약이 확정되었습니다.\n"
 			+ "\n"
 			+ "- 파티명: #{party_name}\n"
 			+ "- 여행일시: #{date}"),
+
 	DRIVER_RESERVATION_CANCELED("DriverReservationCanceled",
 		"[예약 취소 안내]\n"
 		+ "예약이 취소되었습니다.\n"
@@ -22,13 +24,6 @@ public enum AlimTalkTemplate {
 	DRIVER_NEW_PARTY("DriverNewParty",
 		"[여행 신청 안내]\n"
 			+ "새로운 여행 신청이 존재합니다. 24시간 내에 승인/거절을 선택해주세요.\n"
-			+ "\n"
-			+ "- 파티명: #{party_name}\n"
-			+ "- 여행일시: #{date}"),
-
-	DRIVER_RECRUITING_END("DriverRecruitingEnd",
-		"[모집 종료 안내]\n"
-			+ "여행자 모집이 종료되었습니다.\n"
 			+ "\n"
 			+ "- 파티명: #{party_name}\n"
 			+ "- 여행일시: #{date}"),

@@ -22,6 +22,8 @@ public class AlimTalkService {
 	private final AlimTalkRequestService alimTalkRequestService;
 	private final PartyMemberService partyMemberService;
 
+	private final String TEST_NUMBER = "01099467188";
+
 	/**
 	 * 알림톡 발송
 	 *
@@ -30,8 +32,7 @@ public class AlimTalkService {
 	 * 1. DRIVER_RESERVATION_CONFIRM: 드라이버 예약 확정 알림톡,
 	 * 2. DRIVER_RESERVATION_CANCEL: 드라이버 예약 취소 알림톡,
 	 * 3. DRIVER_NEW_PARTY: 드라이버 새 여행 신청 알림톡,
-	 * 4. DRIVER_RECRUITING_END: 드라이버 파티 모집 종료 알림톡,
-	 * 5. DRIVER_COURSE_CHANGE: 드라이버 코스 변경 제안 알림톡,
+	 * 4. DRIVER_COURSE_CHANGE: 드라이버 코스 변경 제안 알림톡
 	 */
 	public void sendDriverAlimTalk(AlimTalkTemplate template, Party party){
 		Map<String, String> templateValues = new HashMap<>();
@@ -39,7 +40,8 @@ public class AlimTalkService {
 		templateValues.put("date", getReservationDateTime(party));
 
 		String content = applyTemplate(template.getContent(), templateValues);
-		String to = party.getDriver().getUser().getPhoneNumber();
+		//String to = party.getDriver().getUser().getPhoneNumber();
+		String to = TEST_NUMBER; // 테스트용 임시 발송 번호
 
 		alimTalkRequestService.send(AlimTalkRequest.of(template, to, content));
 	}
@@ -51,12 +53,14 @@ public class AlimTalkService {
 	 */
 	public void sendTravelerListAlimTalk(Party party){
 		Map<String, String> templateValues = new HashMap<>();
+		templateValues.put("driver_name", party.getDriver().getUser().getName());
 		templateValues.put("party_name", party.getCourse().getName());
 		templateValues.put("date", getReservationDateTime(party));
 		templateValues.put("member_info", getPartyMembersInfo(party));
 
 		String content = applyTemplate(DRIVER_TRAVELER_LIST.getContent(), templateValues);
-		String to = party.getDriver().getUser().getPhoneNumber();
+		//String to = party.getDriver().getUser().getPhoneNumber();
+		String to = TEST_NUMBER; // 테스트용 임시 발송 번호
 
 		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content));
 	}
@@ -77,7 +81,7 @@ public class AlimTalkService {
 	}
 
 	/**
-	 * 예약일시 조회
+	 * 파티 예약일시 조회
 	 *
 	 * @param party 조회할 Party 객체
 	 * @return MM월 dd일 (E) hh:mm ~ hh:mm 형식의 String
@@ -92,7 +96,7 @@ public class AlimTalkService {
 	}
 
 	/**
-	 * 예약자 명단 정보 조회
+	 * 파티 예약자 명단 정보 조회
 	 */
 	private String getPartyMembersInfo(Party party){
 		StringBuilder stringBuilder = new StringBuilder();
@@ -106,7 +110,6 @@ public class AlimTalkService {
 					.append(phoneNumber.substring(0, 3) + "-" + phoneNumber.substring(3, 7) + "-" + phoneNumber.substring(7))
 					.append("\n  ");
 			});
-
 		return stringBuilder.toString();
 	}
 }

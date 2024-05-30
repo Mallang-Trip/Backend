@@ -42,6 +42,12 @@ public class AlimTalkRequestService {
 
 	private final String hostname = "https://sens.apigw.ntruss.com";
 
+	/**
+	 * SecretKey로 암호화한 서명 생성
+	 *
+	 * @param time 현재 서버 시간
+	 * @return 암호화된 서명 값
+	 */
 	private String makeSignature(Long time) {
 		String space = " ";
 		String newLine = "\n";
@@ -74,6 +80,11 @@ public class AlimTalkRequestService {
 		}
 	}
 
+	/**
+	 * 요청 header 설정
+	 *
+	 * @return HttpHeaders 객체
+	 */
 	private HttpHeaders setHeader() {
 		Long time = System.currentTimeMillis();
 
@@ -86,6 +97,11 @@ public class AlimTalkRequestService {
 		return headers;
 	}
 
+	/**
+	 * 알림톡 요청
+	 *
+	 * @param request 요청 정보가 담긴 AlimTalkRequest DTO
+	 */
 	public void send(AlimTalkRequest request) {
 		try {
 			HttpHeaders headers = setHeader();
