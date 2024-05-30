@@ -13,6 +13,7 @@ import mallang_trip.backend.domain.kakao.constant.AlimTalkTemplate;
 import mallang_trip.backend.domain.kakao.dto.AlimTalkRequest;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.service.PartyMemberService;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,7 +23,9 @@ public class AlimTalkService {
 	private final AlimTalkRequestService alimTalkRequestService;
 	private final PartyMemberService partyMemberService;
 
-	private final String TEST_NUMBER = "01099467188";
+	// TEST 번호
+	private final String TEST_NUMBER_ONE = "01099467188";
+	private final String TEST_NUMBER_TWO = "01025264159";
 
 	/**
 	 * 알림톡 발송
@@ -34,16 +37,21 @@ public class AlimTalkService {
 	 * 3. DRIVER_NEW_PARTY: 드라이버 새 여행 신청 알림톡,
 	 * 4. DRIVER_COURSE_CHANGE: 드라이버 코스 변경 제안 알림톡
 	 */
+	@Async
 	public void sendDriverAlimTalk(AlimTalkTemplate template, Party party){
 		Map<String, String> templateValues = new HashMap<>();
 		templateValues.put("party_name", party.getCourse().getName());
 		templateValues.put("date", getReservationDateTime(party));
 
 		String content = applyTemplate(template.getContent(), templateValues);
-		//String to = party.getDriver().getUser().getPhoneNumber();
-		String to = TEST_NUMBER; // 테스트용 임시 발송 번호
 
-		alimTalkRequestService.send(AlimTalkRequest.of(template, to, content));
+		// REAL
+		//String to = party.getDriver().getUser().getPhoneNumber();
+		//alimTalkRequestService.send(AlimTalkRequest.of(template, to, content));
+
+		// TEST
+		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_ONE, content));
+		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_TWO, content));
 	}
 
 	/**
@@ -51,6 +59,7 @@ public class AlimTalkService {
 	 *
 	 * @param party 해당하는 Party 객체
 	 */
+	@Async
 	public void sendTravelerListAlimTalk(Party party){
 		Map<String, String> templateValues = new HashMap<>();
 		templateValues.put("driver_name", party.getDriver().getUser().getName());
@@ -59,10 +68,14 @@ public class AlimTalkService {
 		templateValues.put("member_info", getPartyMembersInfo(party));
 
 		String content = applyTemplate(DRIVER_TRAVELER_LIST.getContent(), templateValues);
-		//String to = party.getDriver().getUser().getPhoneNumber();
-		String to = TEST_NUMBER; // 테스트용 임시 발송 번호
 
-		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content));
+		// REAL
+		//String to = party.getDriver().getUser().getPhoneNumber();
+		//alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content));
+
+		// TEST
+		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_ONE, content));
+		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_TWO, content));
 	}
 
 
