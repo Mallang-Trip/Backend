@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.income.service.IncomeService;
+import mallang_trip.backend.domain.kakao.service.AlimTalkService;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
@@ -30,6 +31,7 @@ public class PartySchedulerService {
 	private final PartyNotificationService partyNotificationService;
 	private final CourseDayRepository courseDayRepository;
 	private final IncomeService incomeService;
+	private final AlimTalkService alimTalkService;
 
 	/**
 	 * 24시간 초과된 제안 만료 (1분마다 반복 실행)
@@ -96,7 +98,10 @@ public class PartySchedulerService {
 	public void handleDayBeforeTravelParties(){
 		String tomorrow = LocalDate.now().plusDays(1).toString();
 		partyRepository.findDayOfTravelParties(tomorrow).stream()
-			.forEach(party -> partyNotificationService.dayBeforeTravel(party));
+			.forEach(party -> {
+				partyNotificationService.dayBeforeTravel(party);
+				alimTalkService.sendTravelerListAlimTalk(party);
+			});
 	}
 
 	/**

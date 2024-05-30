@@ -2,6 +2,10 @@ package mallang_trip.backend.domain.party.service;
 
 import static mallang_trip.backend.domain.admin.exception.AdminExceptionStatus.SUSPENDING;
 import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
+import static mallang_trip.backend.domain.kakao.constant.AlimTalkTemplate.DRIVER_COURSE_CHANGE;
+import static mallang_trip.backend.domain.kakao.constant.AlimTalkTemplate.DRIVER_NEW_PARTY;
+import static mallang_trip.backend.domain.kakao.constant.AlimTalkTemplate.DRIVER_RESERVATION_CANCELED;
+import static mallang_trip.backend.domain.kakao.constant.AlimTalkTemplate.DRIVER_RESERVATION_CONFIRM;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_ALL_QUIT;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_DRIVER_QUIT;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_DRIVER_REFUSED;
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.income.service.IncomeService;
+import mallang_trip.backend.domain.kakao.service.AlimTalkService;
 import mallang_trip.backend.domain.mail.constant.MailStatus;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
@@ -75,6 +80,7 @@ public class PartyService {
 
     private final MailService mailService;
     private final IncomeService incomeService;
+    private final AlimTalkService alimTalkService;
 
     /**
      * 파티 생성 신청
@@ -114,6 +120,8 @@ public class PartyService {
             request.getCompanions());
         // 드라이버 파티 신청 알림
         partyNotificationService.newParty(driver.getUser(), party);
+        alimTalkService.sendDriverAlimTalk(DRIVER_NEW_PARTY, party);
+
         return PartyIdResponse.builder().partyId(party.getId()).build();
     }
 
@@ -194,6 +202,7 @@ public class PartyService {
             partyProposalService.createJoinWithCourseChange(party, request);
             party.setStatus(WAITING_JOIN_APPROVAL);
             partyNotificationService.newJoinRequest(party);
+            alimTalkService.sendDriverAlimTalk(DRIVER_COURSE_CHANGE, party);
         } else {
             partyNotificationService.newMember(user, party);
             joinParty(party, user, request.getHeadcount(), request.getCompanions());
@@ -212,6 +221,7 @@ public class PartyService {
             reservationService.reserveParty(party);
             party.setStatus(SEALED);
             mailService.sendEmailParty(party, MailStatus.SEALED,null);
+            alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CONFIRM, party);
         } else {
             partyMemberService.setReadyAllMembers(party, false);
             party.setStatus(RECRUITING);
@@ -237,6 +247,7 @@ public class PartyService {
         PartyProposal proposal = partyProposalService.createCourseChange(party, request);
         party.setStatus(WAITING_COURSE_CHANGE_APPROVAL);
         partyNotificationService.newCourseChange(proposal);
+        alimTalkService.sendDriverAlimTalk(DRIVER_COURSE_CHANGE, party);
     }
 
     /**
@@ -315,6 +326,7 @@ public class PartyService {
         partyNotificationService.allReady(party);
         reservationService.reserveParty(party);
         mailService.sendEmailParty(party, MailStatus.SEALED,null);
+        alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CONFIRM, party);
         party.setStatus(SEALED);
     }
 
@@ -452,6 +464,7 @@ public class PartyService {
         chatService.leavePrivateChatWhenLeavingParty(currentUserService.getCurrentUser(), party);
         partyMemberService.setReadyAllMembers(party, false);
         mailService.sendEmailParty(party, MailStatus.CANCELLED,reason.toString());
+        alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CANCELED, party);
     }
 
     /**

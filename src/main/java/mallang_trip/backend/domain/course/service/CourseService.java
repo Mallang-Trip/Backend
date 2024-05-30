@@ -4,6 +4,8 @@ import static mallang_trip.backend.domain.destination.exception.DestinationExcep
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -22,7 +24,6 @@ import mallang_trip.backend.domain.destination.dto.DestinationResponse;
 import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.destination.repository.DestinationRepository;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -182,5 +183,31 @@ public class CourseService {
 				.stream()
 				.map(CourseBriefResponse::of)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * 코스의 시작 시간 ~ 종료 시간 조회
+	 *
+	 * @param course 조회할 Course 객체
+	 * @return HH:MM ~ HH:MM 형식
+	 */
+	public String getStartAndEndTime(Course course){
+		List<CourseDay> courseDays = courseDayRepository.findAllByCourse(course);
+		if(courseDays == null || courseDays.isEmpty()){
+			return null;
+		}
+
+		LocalTime startTime = courseDays.get(0).getStartTime();
+		LocalTime endTime = courseDays.get(0).getEndTime();
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+		String content = new StringBuilder()
+			.append(startTime.format(formatter))
+			.append(" ~ ")
+			.append(endTime.format(formatter))
+			.toString();
+
+		return content;
 	}
 }
