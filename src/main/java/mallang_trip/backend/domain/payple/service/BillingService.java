@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.driver.entity.Driver;
+import mallang_trip.backend.domain.payple.constant.BankCode;
 import mallang_trip.backend.domain.payple.dto.*;
 import mallang_trip.backend.domain.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
@@ -181,14 +182,16 @@ public class BillingService {
 	 * 정산 자동화
 	 * @param driver
 	 * @param amount : 정산 금액
-	 * @param bankNum : 은행 코드
+	 *
 	 *
 	 */
 	@Async
-	public void settlement(Driver driver, String amount, String bankNum) {
+	public void settlement(Driver driver, String amount) {
 
 		String access_token;
 		String billing_tran_id;
+
+		String bankNum = BankCode.getCode(driver.getBank());
 
 //		String webhookUrl="http://your-test-domain.com"; // 테스트용 webhook url
 
@@ -361,7 +364,6 @@ public class BillingService {
 			log.info("이체 실행 실패");
 			return ;
 		}
-
 	}
 
 
