@@ -306,9 +306,16 @@ public class PartyService {
     public void setReady(Long partyId, Boolean ready) {
         Party party = partyRepository.findById(partyId)
             .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+        PartyMember member = partyMemberRepository.findByPartyAndUser(party,
+                currentUserService.getCurrentUser())
+            .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
         // status CHECK
         if (!party.getStatus().equals(RECRUITING)) {
             throw new BaseException(Forbidden);
+        }
+        // 이미 레디 상태인 경우
+        if(ready.equals(member.getReady())){
+            return;
         }
         partyMemberService.setReady(party, ready);
         if (ready) {
