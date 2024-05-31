@@ -85,22 +85,20 @@ public class PartySchedulerService {
 	 */
 	private void FinishingParties(String today){
 		partyRepository.findFinishingParties(today).stream()
-			.forEach(party -> {
-				party.setStatus(FINISHED);
-				incomeService.create(party, PARTY_INCOME, party.getCourse().getTotalPrice());
-			});
+			.forEach(party -> party.setStatus(FINISHED));
 	}
 
 	/**
 	 * 여행 시작 전날 알림 전송 (매일 18시 실행)
 	 */
-	@Scheduled(cron = "0 0 9 * * *")
+	@Scheduled(cron = "0 0 18 * * *")
 	public void handleDayBeforeTravelParties(){
 		String tomorrow = LocalDate.now().plusDays(1).toString();
 		partyRepository.findDayOfTravelParties(tomorrow).stream()
 			.forEach(party -> {
 				partyNotificationService.dayBeforeTravel(party);
 				alimTalkService.sendTravelerListAlimTalk(party);
+				incomeService.create(party, PARTY_INCOME, party.getCourse().getTotalPrice());
 			});
 	}
 

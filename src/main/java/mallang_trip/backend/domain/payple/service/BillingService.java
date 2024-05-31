@@ -185,8 +185,7 @@ public class BillingService {
 	 *
 	 *
 	 */
-	@Async
-	public void settlement(Driver driver, String amount) {
+	public SettlementExecuteResponse settlement(Driver driver, String amount) {
 
 		String access_token;
 		String billing_tran_id;
@@ -226,13 +225,13 @@ public class BillingService {
 				log.info("파트너 인증 성공");
 			} else {
 				log.info("파트너 인증 실패: {}", response.getMessage());
-				return ;
+				return null;
 			}
 			access_token = response.getAccess_token();
 
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
 			log.info("정산 인증 실패");
-			return ;
+			return null;
 		}
 
 		/**
@@ -274,13 +273,13 @@ public class BillingService {
 				log.info("계좌 인증 성공");
 			} else {
 				log.info("계좌 인증 실패: {}", response.getMessage());
-				return ;
+				return null;
 			}
 			billing_tran_id = response.getBilling_tran_id();
 
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
 			log.info("계좌 인증 실패");
-			return ;
+			return null;
 		}
 
 		/**
@@ -315,14 +314,14 @@ public class BillingService {
 				log.info("이체 대기 성공");
 			} else {
 				log.info("이체 대기 실패: {}", response.getMessage());
-				return ;
+				return null;
 			}
 
 			group_key = response.getGroup_key();
 
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
 			log.info("이체 대기 실패");
-			return ;
+			return null;
 		}
 
 		/**
@@ -356,13 +355,14 @@ public class BillingService {
 			SettlementExecuteResponse response = responseEntity.getBody();
 			if(response.getResult().equals("A0000")){
 				log.info("이체 실행 성공");
+				return response;
 			} else {
 				log.info("이체 실행 실패: {}", response.getMessage());
-				return ;
+				return null;
 			}
 		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
 			log.info("이체 실행 실패");
-			return ;
+			return null;
 		}
 	}
 
