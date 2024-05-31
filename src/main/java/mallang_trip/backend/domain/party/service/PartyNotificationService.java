@@ -613,7 +613,7 @@ public class PartyNotificationService {
 			.append(getPartyName(party))
 			.append("] 이 시작되었습니다! ")
 			.append(party.getCourse().getTotalPrice())
-			.append("원이 익월 10일까지 입금될 예정입니다.")
+			.append("원이 입금될 예정입니다.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!");

@@ -81,6 +81,14 @@ public class Income extends BaseEntity {
 		this.receiverAccountNumber = request.getReceiverAccountNumber();
 	}
 
+	public void completeRemittance(LocalDate remittedAt, String senderBank, String receiverBank, String receiverAccountNumber) {
+		this.remitted = true;
+		this.remittedAt = remittedAt;
+		this.senderBank = senderBank;
+		this.receiverBank = receiverBank;
+		this.receiverAccountNumber = receiverAccountNumber;
+	}
+
 	/**
 	 * 수익 금액, 수수료 금액을 변경합니다.
 	 */

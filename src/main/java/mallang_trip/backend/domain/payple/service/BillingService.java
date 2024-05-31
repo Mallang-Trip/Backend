@@ -6,11 +6,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mallang_trip.backend.domain.payple.dto.BillingRequest;
-import mallang_trip.backend.domain.payple.dto.BillingResponse;
-import mallang_trip.backend.domain.payple.dto.CancelRequest;
-import mallang_trip.backend.domain.payple.dto.CancelResponse;
-import mallang_trip.backend.domain.payple.dto.PartnerAuthResponse;
+import mallang_trip.backend.domain.driver.entity.Driver;
+import mallang_trip.backend.domain.payple.constant.BankCode;
+import mallang_trip.backend.domain.payple.dto.*;
 import mallang_trip.backend.domain.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -18,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientResponseException;
@@ -32,11 +31,24 @@ public class BillingService {
 	@Value("${payple.cancel-key}")
 	private String cancelKey;
 
+	@Value("${payple.custKey}")
+	private String custKey;
+
+	@Value("${payple.cst-id}")
+	private String cstId;
+
+	@Value("${payple.code}")
+	private String code;
+
 	// test
 	//private final String hostname = "https://democpay.payple.kr/php";
 
 	// real
 	private final String hostname = "https://cpay.payple.kr/php";
+
+//	private final String settlement_hostname = "https://hub.payple.kr";
+
+	private final String settlement_hostname = "https://demohub.payple.kr";
 
 	private final PartnerAuthService partnerAuthService;
 
@@ -69,18 +81,18 @@ public class BillingService {
 		}
 
 		BillingRequest request = BillingRequest.builder()
-			.pcd_CST_ID(authResponse.getCst_id())
-			.pcd_CUST_KEY(authResponse.getCustKey())
-			.pcd_AUTH_KEY(authResponse.getAuthKey())
-			.pcd_PAY_TYPE("card")
-			.pcd_PAYER_ID(billingKey)
-			.pcd_PAY_GOODS(goods)
-			.pcd_SIMPLE_FLAG("Y")
-			.pcd_PAY_TOTAL(amount)
-			.pcd_PAYER_NO(user.getId())
-			.pcd_PAYER_NAME(user.getName())
-			.pcd_PAYER_HP(user.getPhoneNumber())
-			.build();
+				.pcd_CST_ID(authResponse.getCst_id())
+				.pcd_CUST_KEY(authResponse.getCustKey())
+				.pcd_AUTH_KEY(authResponse.getAuthKey())
+				.pcd_PAY_TYPE("card")
+				.pcd_PAYER_ID(billingKey)
+				.pcd_PAY_GOODS(goods)
+				.pcd_SIMPLE_FLAG("Y")
+				.pcd_PAY_TOTAL(amount)
+				.pcd_PAYER_NO(user.getId())
+				.pcd_PAYER_NAME(user.getName())
+				.pcd_PAYER_HP(user.getPhoneNumber())
+				.build();
 
 		try {
 			HttpHeaders headers = setHeaders();
@@ -92,9 +104,9 @@ public class BillingService {
 			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 
 			ResponseEntity<BillingResponse> responseEntity = restTemplate.postForEntity(
-				new URI(hostname + "/SimplePayCardAct.php?ACT_=PAYM"),
-				httpBody,
-				BillingResponse.class
+					new URI(hostname + "/SimplePayCardAct.php?ACT_=PAYM"),
+					httpBody,
+					BillingResponse.class
 			);
 
 			BillingResponse response = responseEntity.getBody();
@@ -127,15 +139,15 @@ public class BillingService {
 		}
 
 		CancelRequest request = CancelRequest.builder()
-			.pcd_CST_ID(authResponse.getCst_id())
-			.pcd_CUST_KEY(authResponse.getCustKey())
-			.pcd_AUTH_KEY(authResponse.getAuthKey())
-			.pcd_REFUND_KEY(cancelKey)
-			.pcd_PAYCANCEL_FLAG("Y")
-			.pcd_PAY_OID(oid)
-			.pcd_PAY_DATE(date)
-			.pcd_REFUND_TOTAL(amount)
-			.build();
+				.pcd_CST_ID(authResponse.getCst_id())
+				.pcd_CUST_KEY(authResponse.getCustKey())
+				.pcd_AUTH_KEY(authResponse.getAuthKey())
+				.pcd_REFUND_KEY(cancelKey)
+				.pcd_PAYCANCEL_FLAG("Y")
+				.pcd_PAY_OID(oid)
+				.pcd_PAY_DATE(date)
+				.pcd_REFUND_TOTAL(amount)
+				.build();
 
 		try {
 			HttpHeaders headers = setHeaders();
@@ -147,9 +159,9 @@ public class BillingService {
 			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 
 			ResponseEntity<CancelResponse> responseEntity = restTemplate.postForEntity(
-				new URI(hostname + "/account/api/cPayCAct.php"),
-				httpBody,
-				CancelResponse.class
+					new URI(hostname + "/account/api/cPayCAct.php"),
+					httpBody,
+					CancelResponse.class
 			);
 
 			CancelResponse response = responseEntity.getBody();
@@ -164,5 +176,195 @@ public class BillingService {
 			return null;
 		}
 	}
+
+	/**
+	 *
+	 * 정산 자동화
+	 * @param driver
+	 * @param amount : 정산 금액
+	 *
+	 *
+	 */
+	public SettlementExecuteResponse settlement(Driver driver, String amount) {
+
+		String access_token;
+		String billing_tran_id;
+
+		String bankNum = BankCode.getCode(driver.getBank());
+
+//		String webhookUrl="http://your-test-domain.com"; // 테스트용 webhook url
+
+		String group_key;
+
+		/**
+		 * 1. 파트너 인증
+		 *
+		 * */
+		SettlementAuthRequest settlementAuthRequest = SettlementAuthRequest.builder()
+				.code(code)
+				.custKey(custKey)
+				.cst_id(cstId)
+				.build();
+		try{
+			HttpHeaders headers = setHeaders();
+			ObjectMapper objectMapper = new ObjectMapper();
+			String body = objectMapper.writeValueAsString(settlementAuthRequest);
+			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
+			ResponseEntity<SettlementAuthResponse> responseEntity = restTemplate.postForEntity(
+					new URI(settlement_hostname + "/oauth/token"),
+					httpBody,
+					SettlementAuthResponse.class
+			);
+
+			SettlementAuthResponse response = responseEntity.getBody();
+			if(response.getResult().equals("T0000")){
+				log.info("파트너 인증 성공");
+			} else {
+				log.info("파트너 인증 실패: {}", response.getMessage());
+				return null;
+			}
+			access_token = response.getAccess_token();
+
+		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
+			log.info("정산 인증 실패");
+			return null;
+		}
+
+		/**
+		 * 2. 계좌 인증 요청
+		 *
+		 *
+		 * */
+		StringBuilder birthday = new StringBuilder();
+		birthday.append(driver.getUser().getBirthday().toString().substring(2, 4))
+				.append(driver.getUser().getBirthday().toString().substring(5, 7))
+				.append(driver.getUser().getBirthday().toString().substring(8, 10));
+		SettlementAccountRequest settlementAccountRequest = SettlementAccountRequest.builder()
+				.cst_id(cstId)
+				.custKey(custKey)
+				.bank_code_std(bankNum) // 은행코드는 수정 필요
+				.account_num(driver.getAccountNumber())
+				.account_holder_info_type("0") // 0: 개인, 6: 사업자
+				.account_holder_info(birthday.toString()) // 생년월일yymmdd or 사업자번호
+				.build();
+
+		try{
+			HttpHeaders headers = setHeaders();
+			headers.set("Authorization", "Bearer " + access_token);
+			ObjectMapper objectMapper = new ObjectMapper();
+			String body = objectMapper.writeValueAsString(settlementAccountRequest);
+			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
+			ResponseEntity<SettlementAccountResponse> responseEntity = restTemplate.postForEntity(
+					new URI(settlement_hostname + "/inquiry/real_name"),
+					httpBody,
+					SettlementAccountResponse.class
+			);
+
+			SettlementAccountResponse response = responseEntity.getBody();
+			if(response.getResult().equals("A0000")){
+				log.info("계좌 인증 성공");
+			} else {
+				log.info("계좌 인증 실패: {}", response.getMessage());
+				return null;
+			}
+			billing_tran_id = response.getBilling_tran_id();
+
+		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
+			log.info("계좌 인증 실패");
+			return null;
+		}
+
+		/**
+		 * 3. 빌링키로 이체 대기 요청
+		 *
+		 * */
+		SettlementTransferRequest settlementTransferRequest = SettlementTransferRequest.builder()
+				.cst_id(cstId)
+				.custKey(custKey)
+				.billing_tran_id(billing_tran_id)
+				.tran_amt(amount)
+				.build();
+
+		try{
+			HttpHeaders headers = setHeaders();
+			headers.set("Authorization", "Bearer " + access_token);
+			ObjectMapper objectMapper = new ObjectMapper();
+			String body = objectMapper.writeValueAsString(settlementTransferRequest);
+			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
+			ResponseEntity<SettlementTransferResponse> responseEntity = restTemplate.postForEntity(
+					new URI(settlement_hostname + "/transfer/request"),
+					httpBody,
+					SettlementTransferResponse.class
+			);
+
+			SettlementTransferResponse response = responseEntity.getBody();
+			if(response.getResult().equals("A0000")){
+				log.info("이체 대기 성공");
+			} else {
+				log.info("이체 대기 실패: {}", response.getMessage());
+				return null;
+			}
+
+			group_key = response.getGroup_key();
+
+		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
+			log.info("이체 대기 실패");
+			return null;
+		}
+
+		/**
+		 * 4. 이체 실행 요청
+		 * */
+		SettlementExecuteRequest settlementExecuteRequest = SettlementExecuteRequest.builder()
+				.cst_id(cstId)
+				.custKey(custKey)
+				.group_key(group_key)
+//				.webhook_url(webhookUrl)
+				.billing_tran_id(billing_tran_id)
+				.execute_type("NOW") // NOW: 즉시, CANCEL : 대기 중인 이체 취소
+				.build();
+
+		try{
+			HttpHeaders headers = setHeaders();
+			headers.set("Authorization", "Bearer " + access_token);
+			ObjectMapper objectMapper = new ObjectMapper();
+			String body = objectMapper.writeValueAsString(settlementExecuteRequest);
+			HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
+			ResponseEntity<SettlementExecuteResponse> responseEntity = restTemplate.postForEntity(
+					new URI(settlement_hostname + "/transfer/execute"),
+					httpBody,
+					SettlementExecuteResponse.class
+			);
+
+			SettlementExecuteResponse response = responseEntity.getBody();
+			if(response.getResult().equals("A0000")){
+				log.info("이체 실행 성공");
+				return response;
+			} else {
+				log.info("이체 실행 실패: {}", response.getMessage());
+				return null;
+			}
+		} catch (RestClientResponseException | URISyntaxException | JsonProcessingException ex) {
+			log.info("이체 실행 실패");
+			return null;
+		}
+	}
+
 
 }
