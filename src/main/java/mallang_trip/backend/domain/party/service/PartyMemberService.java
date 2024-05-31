@@ -114,34 +114,43 @@ public class PartyMemberService {
     /**
      * 파티 레디 or 취소
      */
-    public void setReady(Party party, Boolean ready) {
+    public boolean setReady(Party party, Boolean ready) {
         Role role = currentUserService.getCurrentUser().getRole();
         if (role.equals(Role.ROLE_DRIVER)) {
-            setReadyByDriver(party, ready);
+            return setReadyByDriver(party, ready);
         }
         if (role.equals(Role.ROLE_USER)) {
-            setReadyByMember(party, ready);
+            return setReadyByMember(party, ready);
         }
+        return false;
     }
 
     /**
      * (드라이버) 파티 레디 or 취소
      */
-    public void setReadyByDriver(Party party, Boolean ready) {
+    public boolean setReadyByDriver(Party party, Boolean ready) {
         if (!party.getDriver().getUser().equals(currentUserService.getCurrentUser())) {
             throw new BaseException(NOT_PARTY_MEMBER);
         }
+        if(party.getDriverReady().equals(ready)){
+            return false;
+        }
         party.setDriverReady(ready);
+        return true;
     }
 
     /**
      * (멤버) 파티 레디 or 취소
      */
-    public void setReadyByMember(Party party, Boolean ready) {
+    public boolean setReadyByMember(Party party, Boolean ready) {
         PartyMember member = partyMemberRepository.findByPartyAndUser(party,
                 currentUserService.getCurrentUser())
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+        if(member.getReady().equals(ready)){
+            return false;
+        }
         member.setReady(ready);
+        return true;
     }
 
     /**
