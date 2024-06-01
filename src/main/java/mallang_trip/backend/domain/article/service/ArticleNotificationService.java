@@ -2,6 +2,7 @@ package mallang_trip.backend.domain.article.service;
 
 import static mallang_trip.backend.domain.notification.constant.NotificationType.ARTICLE;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class ArticleNotificationService {
 			.append("내 댓글에 새 답글이 추가되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		getRepliedUsers(comment).stream()
 			.forEach(user ->

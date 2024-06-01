@@ -18,6 +18,7 @@ import org.apache.commons.fileupload.util.LimitedInputStream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,7 +61,7 @@ public class PartyNotificationService {
 			.append("] 신청이 승인되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.forEach(user ->
@@ -84,7 +85,7 @@ public class PartyNotificationService {
 			.append("] 신청이 거절되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.forEach(user ->
@@ -109,7 +110,7 @@ public class PartyNotificationService {
 			.append("]에 가입했습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
@@ -133,7 +134,7 @@ public class PartyNotificationService {
 			.append("] 참여 승인을 기다리고 있습니다. 24시간 내에 수락/거절을 선택해주세요.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user -> {
@@ -173,7 +174,7 @@ public class PartyNotificationService {
 			.append("] 변경안이 승인되어 가입 완료되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user -> {
@@ -219,7 +220,7 @@ public class PartyNotificationService {
 			.append("] 변경안 및 가입 신청이 거절되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
@@ -245,7 +246,7 @@ public class PartyNotificationService {
 			.append("] 새로운 코스 변경 제안이 존재합니다. 24시간 내에 수락/거절을 선택해주세요.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.filter(user -> !proposal.getProposer().equals(user))
@@ -272,7 +273,7 @@ public class PartyNotificationService {
 			.append("]대로 코스가 변경되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user -> {
@@ -297,7 +298,7 @@ public class PartyNotificationService {
 			.append("] 코스 변경 신청이 거절되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user -> {
@@ -328,7 +329,7 @@ public class PartyNotificationService {
 			.append("]을/를 탈퇴하여 파티원들의 말랑레디가 전원 OFF로 변경되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.filter(user -> !runner.equals(user))
@@ -368,7 +369,7 @@ public class PartyNotificationService {
 			.append("]이/가 완전히 취소되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -409,7 +410,7 @@ public class PartyNotificationService {
 			.append("]이/가 자동 취소되었습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
@@ -443,7 +444,7 @@ public class PartyNotificationService {
 			.append("]의 인원 4명이 최종 확정되어 결제를 진행합니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -489,7 +490,7 @@ public class PartyNotificationService {
 			.append("] 모든 멤버들이 말랑레디를 확정하여 결제를 진행합니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -544,7 +545,7 @@ public class PartyNotificationService {
 			.append("]")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -589,7 +590,7 @@ public class PartyNotificationService {
 			.append("] 이 시작되었습니다! 즐겁고 안전한 말랑트립 되세요 :)")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -630,7 +631,7 @@ public class PartyNotificationService {
 			.append("]은 어떠셨나요? 말랑트립의 성장과 발전을 위해 피드백을 남겨주신다면 감사드리겠습니다 :) ")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
@@ -665,7 +666,7 @@ public class PartyNotificationService {
 			.append("] 예약 취소로 영업일 기준 3일 내에 예약금 전액이 환불되며 파티원을 재모집합니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -707,7 +708,7 @@ public class PartyNotificationService {
 			.append("] 예약을 취소하였습니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->{
@@ -730,7 +731,7 @@ public class PartyNotificationService {
 			.append("]이/가 취소되었습니다. 영업일 3일 내로 전액 환불될 예정입니다.")
 			.toString();
 
-		List<String> firebaseTokens = null;
+		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.map(PartyMember::getUser)
@@ -740,6 +741,10 @@ public class PartyNotificationService {
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
 			});
+
+		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
+			firebaseService.sendPushMessage(firebaseTokens, "말랑트립", content);
+		}
 	}
 
 	// 4. 전원 예약 취소
