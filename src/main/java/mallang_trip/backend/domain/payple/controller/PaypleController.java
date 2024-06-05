@@ -91,4 +91,13 @@ public class PaypleController {
 		paypleService.manualBilling(reservationId);
 		return new BaseResponse<>("성공");
 	}
+
+	@ApiOperation("Webhook")
+	@PostMapping("/webhook")
+	@PreAuthorize("permitAll()")
+	// content would be a JSON format
+	public BaseResponse<String> webhook(@RequestBody String body) throws BaseException {
+		paypleService.webhook(body);
+		return new BaseResponse<>("성공");
+	}
 }
