@@ -41,6 +41,7 @@ public class SecurityConfig {
 
             .and()
             .authorizeRequests()
+            .antMatchers("/card/webhook").permitAll() // Payple Webhook
             .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs").permitAll() // swagger
             .antMatchers("/check", "/signup", "/login", "/refresh-token", "/check-duplication", "/certification/**", "/user/info/**").permitAll() // User API
             .antMatchers("/upload/signup").permitAll() // fileUpload API

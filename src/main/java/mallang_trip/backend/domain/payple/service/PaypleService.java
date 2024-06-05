@@ -11,14 +11,11 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.income.constant.IncomeType;
 import mallang_trip.backend.domain.income.service.IncomeService;
 import mallang_trip.backend.domain.party.entity.Party;
-import mallang_trip.backend.domain.payple.dto.BillingResponse;
-import mallang_trip.backend.domain.payple.dto.CancelResponse;
-import mallang_trip.backend.domain.payple.dto.CardRequest;
-import mallang_trip.backend.domain.payple.dto.CardResponse;
-import mallang_trip.backend.domain.payple.dto.SettlementExecuteResponse;
+import mallang_trip.backend.domain.payple.dto.*;
 import mallang_trip.backend.domain.payple.entity.Card;
 import mallang_trip.backend.domain.payple.repository.CardRepository;
 import mallang_trip.backend.domain.reservation.entity.Reservation;
@@ -26,14 +23,24 @@ import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PaypleService {
 
+	@Value("${google.uri}")
+	private String webhookUri;
 	private final CurrentUserService currentUserService;
 	private final CardRepository cardRepository;
 	private final ReservationRepository reservationRepository;
@@ -191,5 +198,34 @@ public class PaypleService {
 		} else {
 			reservation.changeStatus(REFUND_FAILED);
 		}
+	}
+
+	/**
+	 * Webhook
+	 * */
+	@Async
+	public void webhook(String body){
+		// request content would be a JSON format
+		// key : value
+		// key is "text"
+		// value is the content of 'body' parameter
+		GoogleChatRequest request = GoogleChatRequest.builder()
+				.text(body)
+				.build();
+
+		// send the request to Google Chat
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<GoogleChatRequest> httpBody = new HttpEntity<>(request, headers);
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
+		try{
+			restTemplate.postForObject(webhookUri, httpBody, String.class);
+		} catch (Exception e){
+			log.error("Webhook Error: {}", e.getMessage());
+		}
+
+		return;
 	}
 }
