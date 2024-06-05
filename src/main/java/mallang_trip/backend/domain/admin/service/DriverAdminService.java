@@ -85,7 +85,7 @@ public class DriverAdminService {
                 .vehicleCapacity(4)
                 .bank("은행명")
                 .accountHolder(user.getName())
-                .accountNumber("계좌번호")
+                .accountNumber("123412341234")
                 .introduction(user.getIntroduction())
                 .build());
 
