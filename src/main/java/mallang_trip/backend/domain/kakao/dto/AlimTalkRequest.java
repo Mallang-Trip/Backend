@@ -30,12 +30,12 @@ public class AlimTalkRequest {
 		private String linkPc;
 	}
 
-	public static AlimTalkRequest of(AlimTalkTemplate template, String to, String content){
+	public static AlimTalkRequest of(AlimTalkTemplate template, String to, String content, Long partyId){
 		Button button = Button.builder()
 			.type("WL")
 			.name("홈페이지")
-			.linkMobile("https://mallangtrip.com")
-			.linkPc("https://mallangtrip.com")
+			.linkMobile("https://mallangtrip.com/party/detail/" + partyId)
+			.linkPc("https://mallangtrip.com/party/detail/" + partyId)
 			.build();
 		Message message = Message.builder()
 			.to(to)
