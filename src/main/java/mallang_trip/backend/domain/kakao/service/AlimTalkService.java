@@ -47,11 +47,11 @@ public class AlimTalkService {
 
 		// REAL
 		//String to = party.getDriver().getUser().getPhoneNumber();
-		//alimTalkRequestService.send(AlimTalkRequest.of(template, to, content));
+		//alimTalkRequestService.send(AlimTalkRequest.of(template, to, content, party.getId()));
 
 		// TEST
-		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_ONE, content));
-		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_TWO, content));
+		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_ONE, content, party.getId()));
+		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_TWO, content, party.getId()));
 	}
 
 	/**
@@ -71,11 +71,11 @@ public class AlimTalkService {
 
 		// REAL
 		//String to = party.getDriver().getUser().getPhoneNumber();
-		//alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content));
+		//alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content, party.getId()));
 
 		// TEST
-		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_ONE, content));
-		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_TWO, content));
+		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_ONE, content, party.getId()));
+		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_TWO, content, party.getId()));
 	}
 
 
