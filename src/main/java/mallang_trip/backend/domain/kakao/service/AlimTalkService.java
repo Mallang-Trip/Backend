@@ -23,10 +23,6 @@ public class AlimTalkService {
 	private final AlimTalkRequestService alimTalkRequestService;
 	private final PartyMemberService partyMemberService;
 
-	// TEST 번호
-	private final String TEST_NUMBER_ONE = "01099467188";
-	private final String TEST_NUMBER_TWO = "01025264159";
-
 	/**
 	 * 알림톡 발송
 	 *
@@ -45,13 +41,8 @@ public class AlimTalkService {
 
 		String content = applyTemplate(template.getContent(), templateValues);
 
-		// REAL
-		//String to = party.getDriver().getUser().getPhoneNumber();
-		//alimTalkRequestService.send(AlimTalkRequest.of(template, to, content, party.getId()));
-
-		// TEST
-		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_ONE, content, party.getId()));
-		alimTalkRequestService.send(AlimTalkRequest.of(template, TEST_NUMBER_TWO, content, party.getId()));
+		String to = party.getDriver().getUser().getPhoneNumber();
+		alimTalkRequestService.send(AlimTalkRequest.of(template, to, content, party.getId()));
 	}
 
 	/**
@@ -69,13 +60,8 @@ public class AlimTalkService {
 
 		String content = applyTemplate(DRIVER_TRAVELER_LIST.getContent(), templateValues);
 
-		// REAL
-		//String to = party.getDriver().getUser().getPhoneNumber();
-		//alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content, party.getId()));
-
-		// TEST
-		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_ONE, content, party.getId()));
-		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, TEST_NUMBER_TWO, content, party.getId()));
+		String to = party.getDriver().getUser().getPhoneNumber();
+		alimTalkRequestService.send(AlimTalkRequest.of(DRIVER_TRAVELER_LIST, to, content, party.getId()));
 	}
 
 
