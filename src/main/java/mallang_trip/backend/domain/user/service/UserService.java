@@ -80,6 +80,8 @@ public class UserService {
 				.profileImage(request.getProfileImg())
 				.role(ROLE_USER)
 				.build());
+		} catch (BaseException ex) {
+			throw ex;
 		} finally {
 			lock.unlock();
 		}
