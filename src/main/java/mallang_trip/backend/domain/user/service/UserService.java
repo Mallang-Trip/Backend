@@ -9,6 +9,7 @@ import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CAN
 
 import java.time.LocalDate;
 
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.user.dto.*;
 import mallang_trip.backend.global.config.security.TokenProvider;
@@ -55,6 +56,10 @@ public class UserService {
 		try {
 			lock.lock();
 
+			if(!lock.tryLock(5, 10, TimeUnit.SECONDS)){
+				return;
+			}
+
 			if (isDuplicate(request)) {
 				throw new BaseException(Conflict);
 			}
@@ -80,8 +85,10 @@ public class UserService {
 				.profileImage(request.getProfileImg())
 				.role(ROLE_USER)
 				.build());
-		} catch (BaseException ex) {
-			throw ex;
+		} catch (BaseException e) {
+			throw e;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		} finally {
 			lock.unlock();
 		}
