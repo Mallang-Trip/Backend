@@ -20,6 +20,8 @@ import mallang_trip.backend.domain.user.constant.Gender;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.sms.service.SmsService;
 import mallang_trip.backend.domain.user.repository.UserRepository;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -39,8 +41,7 @@ public class UserService {
 	private final CurrentUserService currentUserService;
 	private final SmsService smsService;
 	private final PortOneIdentificationService portOneIdentificationService;
-
-	private final UserSearchService userSearchService;
+	private final RedissonClient redissonClient;
 
 	/**
 	 * 회원 가입을 처리하는 메소드입니다.
@@ -49,31 +50,41 @@ public class UserService {
 	 * @throws BaseException 중복된 회원 정보가 있을 경우 발생하는 예외
 	 */
 	public void signup(SignupRequest request) {
-		if (isDuplicate(request)) {
-			throw new BaseException(Conflict);
+		RLock lock = redissonClient.getLock("signup-lock:" + request.getId());
+
+		try {
+			lock.lock();
+
+			if (isDuplicate(request)) {
+				throw new BaseException(Conflict);
+			}
+
+			IdentificationResultResponse.CertificationAnnotation response =
+				portOneIdentificationService.get(request.getImpUid()).getResponse();
+
+			if(!response.getName().equals(request.getName()) || !response.getPhone().equals(request.getPhone())){
+				throw new BaseException(Forbidden);
+			}
+
+			userRepository.save(User.builder()
+				.loginId(request.getId())
+				.password(passwordEncoder.encode(request.getPassword()))
+				.email(request.getEmail())
+				.name(response.getName())
+				.birthday(LocalDate.parse(response.getBirthday()))
+				.country(Country.from(request.getCountry()))
+				.gender(Gender.from(response.getGender()))
+				.phoneNumber(response.getPhone())
+				.nickname(request.getNickname())
+				.introduction(request.getIntroduction())
+				.profileImage(request.getProfileImg())
+				.role(ROLE_USER)
+				.build());
+		} catch (BaseException ex) {
+			throw ex;
+		} finally {
+			lock.unlock();
 		}
-
-		IdentificationResultResponse.CertificationAnnotation response =
-			portOneIdentificationService.get(request.getImpUid()).getResponse();
-
-		if(!response.getName().equals(request.getName()) || !response.getPhone().equals(request.getPhone())){
-			throw new BaseException(Forbidden);
-		}
-
-		userRepository.save(User.builder()
-			.loginId(request.getId())
-			.password(passwordEncoder.encode(request.getPassword()))
-			.email(request.getEmail())
-			.name(response.getName())
-			.birthday(LocalDate.parse(response.getBirthday()))
-			.country(Country.from(request.getCountry()))
-			.gender(Gender.from(response.getGender()))
-			.phoneNumber(response.getPhone())
-			.nickname(request.getNickname())
-			.introduction(request.getIntroduction())
-			.profileImage(request.getProfileImg())
-			.role(ROLE_USER)
-			.build());
 	}
 
 	/**
