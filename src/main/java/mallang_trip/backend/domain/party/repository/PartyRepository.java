@@ -32,6 +32,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 	List<Party> findExpiredRecruitingParties(@Param(value = "today") String today);
 
 	@Query(value = "SELECT * FROM party\n"
+		+ "WHERE status = 'WAITING_DRIVER_APPROVAL'\n"
+		+ "AND created_at < :time", nativeQuery = true)
+	List<Party> findExpiredWaitingDriverApprovalParties(@Param(value = "time") String time);
+
+	@Query(value = "SELECT * FROM party\n"
 		+ "WHERE start_date = :today AND (status = 'SEALED' OR status = 'WAITING_COURSE_CHANGE_APPROVAL')", nativeQuery = true)
 	List<Party> findDayOfTravelParties(@Param(value = "today") String today);
 

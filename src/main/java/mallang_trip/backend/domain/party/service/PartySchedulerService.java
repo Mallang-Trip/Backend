@@ -2,6 +2,7 @@ package mallang_trip.backend.domain.party.service;
 
 import static mallang_trip.backend.domain.income.constant.IncomeType.PARTY_INCOME;
 import static mallang_trip.backend.domain.income.constant.IncomeType.PENALTY_INCOME;
+import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_DRIVER_REFUSED;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.CANCELED_BY_EXPIRATION;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.DAY_OF_TRAVEL;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
@@ -38,9 +39,18 @@ public class PartySchedulerService {
 	 */
 	@Scheduled(fixedDelay = 60000)
 	public void expireProposal() {
-		partyProposalRepository.findExpiredProposal(LocalDateTime.now().minusDays(1).toString())
+		String yesterday = LocalDateTime.now().minusDays(1).toString();
+
+		partyProposalRepository.findExpiredProposal(yesterday)
 			.stream()
 			.forEach(proposal -> partyProposalService.expireProposal(proposal));
+
+		partyRepository.findExpiredWaitingDriverApprovalParties(yesterday)
+			.stream()
+			.forEach(party -> {
+				party.setStatus(CANCELED_BY_DRIVER_REFUSED);
+				partyNotificationService.creationRefused(party);
+			});
 	}
 
 	/**
