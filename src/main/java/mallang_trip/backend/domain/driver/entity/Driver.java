@@ -70,7 +70,8 @@ public class Driver extends BaseEntity {
     private Integer vehicleCapacity;
 
     @Column
-    private String region;
+    @ElementCollection
+    private List<String> region;
 
     @Column
     private String bank;

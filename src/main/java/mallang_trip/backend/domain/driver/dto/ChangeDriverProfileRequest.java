@@ -25,7 +25,7 @@ public class ChangeDriverProfileRequest {
 
     // 활동 가능 지역
     @NotBlank
-    private String region;
+    private List<String> region;
 
     // 입금 계좌 & 운행 가격
     @NotBlank

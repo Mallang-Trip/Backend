@@ -14,7 +14,7 @@ public class DriverRegistrationResponse {
     private String vehicleModel;
     private Integer vehicleCapacity;
     private String vehicleNumber;
-    private String region;
+    private List<String> region;
     private String bank;
     private String accountHolder;
     private String accountNumber;

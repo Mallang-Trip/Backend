@@ -3,21 +3,17 @@ package mallang_trip.backend.domain.party.service;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.*;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
+import static mallang_trip.backend.domain.region.exception.RegionException.REGION_NOT_FOUND;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
-import mallang_trip.backend.domain.party.entity.PartyRegion;
-import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
-import mallang_trip.backend.domain.reservation.constant.ReservationStatus;
-import mallang_trip.backend.domain.reservation.entity.Reservation;
-import mallang_trip.backend.domain.reservation.repository.ReservationRepository;
+import mallang_trip.backend.domain.region.repository.RegionRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
@@ -32,7 +28,6 @@ import mallang_trip.backend.domain.party.repository.PartyMemberRepository;
 import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 import mallang_trip.backend.domain.reservation.service.ReservationService;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,10 +47,7 @@ public class PartySearchService {
 	private final PartyHistoryService partyHistoryService;
 	private final PartyDibsService partyDibsService;
 	private final PartyProposalRepository partyProposalRepository;
-
-	private final PartyRegionRepository partyRegionRepository;
-
-	private final ReservationRepository reservationRepository;
+	private final RegionRepository regionRepository;
 
 	/**
 	 * 모집중인 파티 검색 : region == "all" -> 지역 전체 검색.
@@ -64,9 +56,8 @@ public class PartySearchService {
 		String startDate, String endDate, Integer maxPrice) {
 
 		// 지역 확인
-		if(!region.equals("all")){
-			partyRegionRepository.findByRegion(region)
-				.orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
+		if(!region.equals("all") && !regionRepository.existsByName(region)){
+			throw new BaseException(REGION_NOT_FOUND);
 		}
 
 		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)

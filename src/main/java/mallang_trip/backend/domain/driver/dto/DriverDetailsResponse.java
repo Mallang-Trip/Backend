@@ -15,7 +15,7 @@ public class DriverDetailsResponse {
     private Integer reservationCount;
     private Double avgRate;
     private String introduction;
-    private String region;
+    private List<String> region;
     private List<DriverReviewResponse> reviews;
     private List<CourseBriefResponse> courses;
     private String vehicleImg;
