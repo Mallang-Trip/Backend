@@ -19,7 +19,7 @@ public class DriverRegistrationResponse {
     private String accountHolder;
     private String accountNumber;
     private List<DriverPriceResponse> prices;
-    private String vehicleImg;
+    private List<String> vehicleImgs;
     private String driverLicenceImg;
     private String taxiLicenceImg;
     private String insuranceLicenceImg;
@@ -39,7 +39,7 @@ public class DriverRegistrationResponse {
             .accountHolder(driver.getAccountHolder())
             .accountNumber(driver.getAccountNumber())
             .prices(prices)
-            .vehicleImg(driver.getVehicleImg())
+            .vehicleImgs(driver.getVehicleImgs())
             .driverLicenceImg(driver.getDriverLicenceImg())
             .taxiLicenceImg(driver.getTaxiLicenceImg())
             .insuranceLicenceImg(driver.getInsuranceLicenceImg())

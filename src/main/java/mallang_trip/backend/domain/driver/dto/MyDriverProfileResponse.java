@@ -18,7 +18,7 @@ public class MyDriverProfileResponse {
     private List<String> region;
     private List<DayOfWeek> weeklyHoliday;
     private List<LocalDate> holidays;
-    private String vehicleImg;
+    private List<String> vehicleImgs;
     private String vehicleModel;
     private String vehicleNumber;
     private Integer vehicleCapacity;

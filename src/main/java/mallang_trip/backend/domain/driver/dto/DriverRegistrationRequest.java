@@ -23,11 +23,11 @@ public class DriverRegistrationRequest {
     private Integer vehicleCapacity;
     @NotBlank
     private String vehicleNumber;
-    @NotBlank
-    private String vehicleImg;
+    @NotNull
+    private List<String> vehicleImgs;
 
     // 활동 가능 지역
-    @NotBlank
+    @NotNull
     private List<String> region;
 
     // 입금 계좌 & 운행 가격
@@ -55,7 +55,7 @@ public class DriverRegistrationRequest {
     public Driver toDriver(User user){
         return Driver.builder()
             .user(user)
-            .vehicleImg(vehicleImg)
+            .vehicleImgs(vehicleImgs)
             .driverLicenceImg(driverLicenceImg)
             .taxiLicenceImg(taxiLicenceImg)
             .insuranceLicenceImg(insuranceLicenceImg)

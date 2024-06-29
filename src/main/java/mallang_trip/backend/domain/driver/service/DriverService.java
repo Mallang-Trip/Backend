@@ -180,7 +180,7 @@ public class DriverService {
 			.region(driver.getRegion())
 			.weeklyHoliday(driver.getWeeklyHoliday())
 			.holidays(driver.getHoliday())
-			.vehicleImg(driver.getVehicleImg())
+			.vehicleImgs(driver.getVehicleImgs())
 			.vehicleModel(driver.getVehicleModel())
 			.vehicleNumber(driver.getVehicleNumber())
 			.vehicleCapacity(driver.getVehicleCapacity())
@@ -212,7 +212,7 @@ public class DriverService {
 			.region(driver.getRegion())
 			.reviews(driverReviewService.get(driver))
 			.courses(courseService.getDriversCourses(user))
-			.vehicleImg(driver.getVehicleImg())
+			.vehicleImgs(driver.getVehicleImgs())
 			.vehicleModel(driver.getVehicleModel())
 			.vehicleCapacity(driver.getVehicleCapacity())
 			.build();
