@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.admin.dto;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import mallang_trip.backend.domain.user.entity.User;
@@ -21,7 +22,7 @@ public class UserInfoForAdminResponse {
     private String role;
 
     // If the user is a driver, the following fields are also included
-    private String driverRegion;
+    private List<String> driverRegion;
 
     public static UserInfoForAdminResponse of(User user, Integer duration) {
         return UserInfoForAdminResponse.builder()
@@ -38,7 +39,7 @@ public class UserInfoForAdminResponse {
             .build();
     }
 
-    public static UserInfoForAdminResponse of(User user, Integer duration, String driverRegion) {
+    public static UserInfoForAdminResponse of(User user, Integer duration, List<String> driverRegion) {
         return UserInfoForAdminResponse.builder()
             .userId(user.getId())
             .loginId(user.getLoginId())

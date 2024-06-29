@@ -31,7 +31,6 @@ import mallang_trip.backend.domain.mail.constant.MailStatus;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
-import mallang_trip.backend.domain.party.entity.PartyRegion;
 import mallang_trip.backend.domain.party.repository.*;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
@@ -75,9 +74,6 @@ public class PartyService {
     private final PartyMemberRepository partyMemberRepository;
     private final PartyMemberCompanionRepository partyMemberCompanionRepository;
     private final PartyProposalRepository partyProposalRepository;
-
-    private final PartyRegionRepository partyRegionRepository;
-
     private final MailService mailService;
     private final IncomeService incomeService;
     private final AlimTalkService alimTalkService;
@@ -101,15 +97,11 @@ public class PartyService {
         // 코스 생성
         Course course = courseService.createCourse(request.getCourse());
 
-        // 지역 확인
-        partyRegionRepository.findByRegion(driver.getRegion())
-            .orElseThrow(() -> new BaseException(REGION_NOT_FOUND));
-
         // 파티 생성
         Party party = partyRepository.save(Party.builder()
             .driver(driver)
             .course(course)
-            .region(driver.getRegion())
+            .region(course.getRegion())
             .capacity(driver.getVehicleCapacity())
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())

@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.course.service;
 
 import static mallang_trip.backend.domain.destination.exception.DestinationExceptionStatus.CANNOT_FOUND_DESTINATION;
+import static mallang_trip.backend.domain.region.exception.RegionException.REGION_NOT_FOUND;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
@@ -14,6 +15,7 @@ import mallang_trip.backend.domain.course.dto.CourseDayRequest;
 import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
+import mallang_trip.backend.domain.region.repository.RegionRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.course.dto.CourseDayResponse;
@@ -35,6 +37,7 @@ public class CourseService {
 	private final CourseRepository courseRepository;
 	private final CourseDayRepository courseDayRepository;
 	private final DestinationRepository destinationRepository;
+	private final RegionRepository regionRepository;
 
 	/**
 	 * (드라이버) 코스 생성
@@ -44,18 +47,24 @@ public class CourseService {
 	 *                totalDays: 총 일수
 	 *                name: 코스 이름
 	 *                capacity: 최대 수용인원
+	 *                region: 지역 이름
 	 *                totalPrice: 총 가격
 	 *                days: 코스 일자 배열
 	 * @return 생성된 코스
 	 * @throws BaseException Unauthorized 유저
 	 */
 	public Course createCourse(CourseRequest request) {
+		if(!regionRepository.existsByName(request.getRegion())){
+			throw new BaseException(REGION_NOT_FOUND);
+		}
+
 		Course course = courseRepository.save(Course.builder()
 			.owner(currentUserService.getCurrentUser())
 			.images(request.getImages())
 			.totalDays(request.getTotalDays())
 			.name(request.getName())
 			.capacity(request.getCapacity())
+			.region(request.getRegion())
 			.totalPrice(request.getTotalPrice())
 			.build());
 		createCourseDays(request.getDays(), course);
@@ -77,6 +86,7 @@ public class CourseService {
 	 *                 totalDays: 총 일수
 	 *                 name: 코스 이름
 	 *                 capacity: 최대 수용인원
+	 *                 region: 지역
 	 *                 totalPrice: 총 가격
 	 *                 days: 코스 일자 배열
 	 *
@@ -89,6 +99,10 @@ public class CourseService {
 		// 내 코스가 아닌 경우
 		if (!course.getOwner().equals(currentUserService.getCurrentUser())) {
 			throw new BaseException(Forbidden);
+		}
+		// 지역 확인
+		if(!regionRepository.existsByName(request.getRegion())){
+			throw new BaseException(REGION_NOT_FOUND);
 		}
 		// 코스 정보 변경
 		course.modify(request);
@@ -113,7 +127,6 @@ public class CourseService {
 	 * 코스 상세 조회 (Course -> CourseDetailsResponse)
 	 * @param course 코스
 	 * @return 코스 상세 정보
-	 *
 	 */
 	public CourseDetailsResponse getCourseDetails(Course course) {
 		List<CourseDayResponse> courseDayResponses = courseDayRepository.findAllByCourse(course)
@@ -127,6 +140,7 @@ public class CourseService {
 			.totalDays(course.getTotalDays())
 			.name(course.getName())
 			.capacity(course.getCapacity())
+			.region(course.getRegion())
 			.totalPrice(course.getTotalPrice())
 			.discountPrice(course.getDiscountPrice())
 			.days(courseDayResponses)
