@@ -24,6 +24,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mallang_trip.backend.domain.driver.constant.DriverStatus;
+import mallang_trip.backend.domain.driver.dto.AdminDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverRegistrationRequest;
 import mallang_trip.backend.global.entity.BaseEntity;
@@ -126,6 +127,23 @@ public class Driver extends BaseEntity {
         this.vehicleNumber = request.getVehicleNumber();
         this.vehicleCapacity = request.getVehicleCapacity();
         this.introduction = request.getIntroduction();
+        changeHoliday(request.getHolidays());
+        changeWeeklyHoliday(request.getWeeklyHolidays());
+    }
+
+    public void changeProfileByAdmin(AdminDriverProfileRequest request) {
+        this.region = request.getRegion();
+        this.bank = request.getBank();
+        this.accountHolder = request.getAccountHolder();
+        this.accountNumber = request.getAccountNumber();
+        this.vehicleImg = request.getVehicleImg();
+        this.vehicleModel = request.getVehicleModel();
+        this.vehicleNumber = request.getVehicleNumber();
+        this.vehicleCapacity = request.getVehicleCapacity();
+        this.introduction = request.getIntroduction();
+        this.driverLicenceImg = request.getDriverLicenseImg();
+        this.taxiLicenceImg = request.getTaxiLicenseImg();
+        this.insuranceLicenceImg = request.getInsuranceLicenseImg();
         changeHoliday(request.getHolidays());
         changeWeeklyHoliday(request.getWeeklyHolidays());
     }
