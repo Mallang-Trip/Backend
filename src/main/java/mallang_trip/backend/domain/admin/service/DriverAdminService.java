@@ -7,6 +7,8 @@ import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
 import mallang_trip.backend.domain.course.service.CourseService;
+import mallang_trip.backend.domain.driver.dto.AdminDriverProfileRequest;
+import mallang_trip.backend.domain.driver.dto.AdminDriverProfileResponse;
 import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverRegistrationResponse;
 import mallang_trip.backend.domain.driver.dto.MyDriverProfileResponse;
@@ -129,12 +131,12 @@ public class DriverAdminService {
     /**
      * (관리자) 드라이버 프로필 조회
      */
-    public MyDriverProfileResponse getDriverProfile(Long driverId) {
+    public AdminDriverProfileResponse getDriverProfile(Long driverId) {
         Driver driver = driverRepository.findByIdAndStatus(driverId, ACCEPTED)
                 .orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
         User user = driver.getUser();
 
-        return MyDriverProfileResponse.builder()
+        return AdminDriverProfileResponse.builder()
                 .userId(user.getId())
                 .name(user.getName())
                 .profileImg(user.getProfileImage())
@@ -153,18 +155,21 @@ public class DriverAdminService {
                 .prices(driverService.getDriverPrice(driver))
                 .courses(courseService.getDriversCourses(user))
                 .status(driver.getStatus())
+                .taxiLicenseImg(driver.getTaxiLicenceImg())
+                .driverLicenseImg(driver.getDriverLicenceImg())
+                .insuranceLicenseImg(driver.getInsuranceLicenceImg())
                 .build();
     }
 
     /**
      * (관리자) 드라이버 프로필 수정
      */
-    public void changeDriverProfile(Long driverId, ChangeDriverProfileRequest request) {
+    public void changeDriverProfile(Long driverId, AdminDriverProfileRequest request) {
         Driver driver = driverRepository.findByIdAndStatus(driverId, ACCEPTED)
                 .orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));
         User user = driver.getUser();
 
-        driver.changeProfile(request);
+        driver.changeProfileByAdmin(request);
         driverService.setPrice(driver, request.getPrices());
         user.setProfileImage(request.getProfileImg());
         user.setPhoneNumber(request.getPhoneNumber());
