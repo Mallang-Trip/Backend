@@ -67,7 +67,8 @@ public class UserService {
 			IdentificationResultResponse.CertificationAnnotation response =
 				portOneIdentificationService.get(request.getImpUid()).getResponse();
 
-			if(!response.getName().equals(request.getName()) || !response.getPhone().equals(request.getPhone())){
+			// 스페이스바 있어도 같은 값으로 인식
+			if(!response.getName().contains(request.getName()) || !response.getPhone().contains(request.getPhone())){
 				throw new BaseException(Forbidden);
 			}
 
