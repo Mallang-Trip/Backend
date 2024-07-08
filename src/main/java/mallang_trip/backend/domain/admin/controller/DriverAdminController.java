@@ -3,12 +3,13 @@ package mallang_trip.backend.domain.admin.controller;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.service.DriverAdminService;
+import mallang_trip.backend.domain.admin.service.UserAdminService;
 import mallang_trip.backend.domain.course.dto.CourseDetailsResponse;
 import mallang_trip.backend.domain.course.dto.CourseIdResponse;
 import mallang_trip.backend.domain.course.dto.CourseRequest;
-import mallang_trip.backend.domain.driver.dto.AdminDriverProfileRequest;
-import mallang_trip.backend.domain.driver.dto.AdminDriverProfileResponse;
+import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverRegistrationResponse;
+import mallang_trip.backend.domain.driver.dto.MyDriverProfileResponse;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -107,7 +108,7 @@ public class DriverAdminController {
             @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<AdminDriverProfileResponse> getDriverProfile(@PathVariable(value = "driverId") Long driverId) throws BaseException {
+    public BaseResponse<MyDriverProfileResponse> getMyDriverProfile(@PathVariable(value = "driverId") Long driverId) throws BaseException {
         return new BaseResponse<>(driverAdminService.getDriverProfile(driverId));
     }
 
@@ -129,7 +130,7 @@ public class DriverAdminController {
             @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<String> changeDriverProfile(@PathVariable(value = "driverId") Long driverId, @RequestBody @Valid AdminDriverProfileRequest request) throws BaseException {
+    public BaseResponse<String> changeMyDriverProfile(@PathVariable(value = "driverId") Long driverId, @RequestBody @Valid ChangeDriverProfileRequest request) throws BaseException {
         driverAdminService.changeDriverProfile(driverId, request);
         return new BaseResponse<>("성공");
     }
