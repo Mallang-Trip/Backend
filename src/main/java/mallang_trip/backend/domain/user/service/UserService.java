@@ -72,6 +72,26 @@ public class UserService {
 				throw new BaseException(Forbidden);
 			}
 
+			// 미성년자 확인
+			// string 10자리 YYYY-DD-MM을 year, month, day로 나누어 저장
+			String[] birthday = response.getBirthday().split("-");
+			int year = Integer.parseInt(birthday[0]);
+			int month = Integer.parseInt(birthday[1]);
+			int day = Integer.parseInt(birthday[2]);
+
+			// 만 19세 이상인지 확인
+			if (LocalDate.now().getYear() - year < 19) {	// 만 19세 미만
+				throw new BaseException(Forbidden);
+			} else if (LocalDate.now().getYear() - year == 19) {
+				if (LocalDate.now().getMonthValue() < month) {	// month가 지나지 않았으면
+					throw new BaseException(Forbidden);
+				} else if (LocalDate.now().getMonthValue() == month) {	// month가 같으면
+					if (LocalDate.now().getDayOfMonth() < day) {	// day가 지나지 않았으면
+						throw new BaseException(Forbidden);
+					}
+				}
+			}
+
 			userRepository.save(User.builder()
 				.loginId(request.getId())
 				.password(passwordEncoder.encode(request.getPassword()))
