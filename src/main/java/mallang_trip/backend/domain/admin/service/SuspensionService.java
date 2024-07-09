@@ -1,14 +1,10 @@
 package mallang_trip.backend.domain.admin.service;
 
-import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
 import static mallang_trip.backend.domain.notification.constant.NotificationType.SUSPEND;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.CANCELED;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.EXPIRED;
 import static mallang_trip.backend.domain.admin.constant.SuspensionStatus.SUSPENDING;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.REGION_NOT_FOUND;
-import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
-import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
@@ -20,14 +16,11 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.admin.entity.Report;
 import mallang_trip.backend.domain.admin.exception.AdminExceptionStatus;
 import mallang_trip.backend.domain.admin.repository.ReportRepository;
-import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.driver.repository.DriverRepository;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.notification.entity.Firebase;
 import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
 import mallang_trip.backend.domain.notification.service.FirebaseService;
-import mallang_trip.backend.domain.party.entity.PartyRegion;
-import mallang_trip.backend.domain.party.repository.PartyRegionRepository;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.admin.dto.SuspendingUserResponse;
 import mallang_trip.backend.domain.admin.dto.SuspensionRequest;
@@ -50,13 +43,8 @@ public class SuspensionService {
 	private final SuspensionRepository suspensionRepository;
 	private final NotificationService notificationService;
 	private final ChatRoomService chatRoomService;
-
 	private final DriverRepository driverRepository;
-
-	private final PartyRegionRepository partyRegionRepository;
-
 	private final ReportRepository reportRepository;
-
 	private final MailService mailService;
 	private final FirebaseService firebaseService;
 	private final FirebaseRepository firebaseRepository;
@@ -83,13 +71,6 @@ public class SuspensionService {
 			.build());
 		chatRoomService.leaveAllChatExceptMyParty(user);
 		notifySuspend(user, request.getContent(), request.getDuration());
-
-		// 드라이버인지 확인
-		if(user.getRole().equals(ROLE_DRIVER)){
-			Driver driver=driverRepository.findByUser(user).orElseThrow(()->new BaseException(CANNOT_FOUND_DRIVER));
-			PartyRegion partyRegion=partyRegionRepository.findByRegion(driver.getRegion()).orElseThrow(()->new BaseException(REGION_NOT_FOUND));
-			partyRegion.subCount();
-		}
 	}
 
 	/**
@@ -138,12 +119,6 @@ public class SuspensionService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_USER));
 		cancelSuspension(user);
-
-		if(user.getRole().equals(ROLE_DRIVER)){
-			Driver driver=driverRepository.findByUser(user).orElseThrow(()->new BaseException(CANNOT_FOUND_DRIVER));
-			PartyRegion partyRegion=partyRegionRepository.findByRegion(driver.getRegion()).orElseThrow(()->new BaseException(REGION_NOT_FOUND));
-			partyRegion.addCount();
-		}
 	}
 
 	/**
@@ -161,17 +136,7 @@ public class SuspensionService {
 	public void expireSuspension() {
 		suspensionRepository.findByStatus(SUSPENDING).stream()
 			.filter(suspension -> isSuspensionExpired(suspension))
-			.forEach(suspension -> {
-				suspension.setStatus(EXPIRED);
-
-				User user=suspension.getUser();
-
-				if(user.getRole().equals(ROLE_DRIVER)){
-					Driver driver=driverRepository.findByUser(user).orElseThrow(()->new BaseException(CANNOT_FOUND_DRIVER));
-					PartyRegion partyRegion=partyRegionRepository.findByRegion(driver.getRegion()).orElseThrow(()->new BaseException(REGION_NOT_FOUND));
-					partyRegion.addCount();
-				}
-			});
+			.forEach(suspension -> suspension.setStatus(EXPIRED));
 	}
 
 	/**

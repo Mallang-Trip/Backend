@@ -52,7 +52,7 @@ public class DriverAdminController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
             @ApiImplicitParam(name = "userId", value = "user_id", required = true, paramType = "path", dataTypeClass = Long.class),
-            @ApiImplicitParam(name = "region", value = "지역", required = true, paramType = "query", dataTypeClass = String.class)
+            @ApiImplicitParam(name = "region", value = "지역 목록", required = true, paramType = "query", dataTypeClass = String.class, allowMultiple = true)
     })
     @ApiResponses({
             @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
@@ -62,7 +62,7 @@ public class DriverAdminController {
             @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<String> registerDriver(@PathVariable(value = "userId") Long userId, @RequestParam String region) throws BaseException {
+    public BaseResponse<String> registerDriver(@PathVariable(value = "userId") Long userId, @RequestParam List<String> region) throws BaseException {
         driverAdminService.registerDriver(userId, region);
         return new BaseResponse<>("성공");
     }

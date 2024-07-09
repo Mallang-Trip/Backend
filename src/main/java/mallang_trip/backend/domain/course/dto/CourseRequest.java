@@ -30,6 +30,10 @@ public class CourseRequest {
     @ApiModelProperty(value = "최대 수용인원", required = true)
     private Integer capacity;
 
+    @NotBlank
+    @ApiModelProperty(value = "지역", required = true)
+    private String region;
+
     @NotNull
     @Min(value = 0)
     @ApiModelProperty(value = "총 가격", required = true)

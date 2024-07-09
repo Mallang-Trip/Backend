@@ -17,6 +17,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
+
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +30,7 @@ import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 
 @Entity
@@ -48,8 +51,9 @@ public class Driver extends BaseEntity {
     @JoinColumn(name = "id", nullable = false)
     private User user;
 
-    @Column(name = "vehicle_img", nullable = false)
-    private String vehicleImg;
+    @Type(type = "io.hypersistence.utils.hibernate.type.json.JsonType")
+    @Column(name ="vehicle_imgs", columnDefinition = "json", nullable = false)
+    private List<String> vehicleImgs;
 
     @Column(name = "driver_license_img", nullable = false)
     private String driverLicenceImg;
@@ -70,7 +74,8 @@ public class Driver extends BaseEntity {
     private Integer vehicleCapacity;
 
     @Column
-    private String region;
+    @ElementCollection
+    private List<String> region;
 
     @Column
     private String bank;
@@ -99,7 +104,7 @@ public class Driver extends BaseEntity {
         this.vehicleModel = request.getVehicleModel();
         this.vehicleCapacity = request.getVehicleCapacity();
         this.vehicleNumber = request.getVehicleNumber();
-        this.vehicleImg = request.getVehicleImg();
+        this.vehicleImgs = request.getVehicleImgs();
         this.region = request.getRegion();
         this.bank = request.getBank();
         this.accountHolder = request.getAccountHolder();
@@ -116,7 +121,7 @@ public class Driver extends BaseEntity {
         this.bank = request.getBank();
         this.accountHolder = request.getAccountHolder();
         this.accountNumber = request.getAccountNumber();
-        this.vehicleImg = request.getVehicleImg();
+        this.vehicleImgs = request.getVehicleImgs();
         this.vehicleModel = request.getVehicleModel();
         this.vehicleNumber = request.getVehicleNumber();
         this.vehicleCapacity = request.getVehicleCapacity();

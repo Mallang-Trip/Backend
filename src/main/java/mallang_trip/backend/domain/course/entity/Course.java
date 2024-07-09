@@ -49,6 +49,9 @@ public class Course extends BaseEntity {
 	@Column
 	private Integer capacity;
 
+	@Column
+	private String region;
+
 	@Column(name = "total_price")
 	private Integer totalPrice;
 
