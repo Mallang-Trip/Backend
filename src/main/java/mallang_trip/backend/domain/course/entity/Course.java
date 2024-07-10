@@ -68,6 +68,7 @@ public class Course extends BaseEntity {
 		this.totalDays = request.getTotalDays();
 		this.totalPrice = request.getTotalPrice();
 		this.name = request.getName();
+		this.region = request.getRegion();
 		this.capacity = request.getCapacity();
 	}
 }

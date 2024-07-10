@@ -169,6 +169,7 @@ public class DriverAdminService {
                 .totalDays(request.getTotalDays())
                 .name(request.getName())
                 .capacity(request.getCapacity())
+                .region(request.getRegion())
                 .totalPrice(request.getTotalPrice())
                 .build());
         courseService.createCourseDays(request.getDays(), course);
