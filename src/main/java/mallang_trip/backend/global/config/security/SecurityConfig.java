@@ -45,6 +45,7 @@ public class SecurityConfig {
             .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs").permitAll() // swagger
             .antMatchers("/check", "/signup", "/login", "/refresh-token", "/check-duplication", "/certification/**", "/user/info/**").permitAll() // User API
             .antMatchers("/upload/signup").permitAll() // fileUpload API
+                .antMatchers(HttpMethod.GET, "/region/**").permitAll()
             .antMatchers(HttpMethod.GET, "/destination/**").permitAll() // destination API
             .antMatchers(HttpMethod.GET, "/driver/**").permitAll() // driver API
             .antMatchers(HttpMethod.GET, "/course/**").permitAll() // course API
