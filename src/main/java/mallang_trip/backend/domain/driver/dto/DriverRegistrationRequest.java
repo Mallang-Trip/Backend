@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +38,7 @@ public class DriverRegistrationRequest {
     private String accountHolder;
     @NotBlank
     @Size(min = 10, max = 14)
+    @Pattern(regexp = "\\d{10,14}", message = "Account number must be between 10 and 14 digits")
     private String accountNumber;
     @NotNull
     List<DriverPriceRequest> prices;
