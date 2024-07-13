@@ -215,6 +215,7 @@ public class DriverService {
 			.vehicleImgs(driver.getVehicleImgs())
 			.vehicleModel(driver.getVehicleModel())
 			.vehicleCapacity(driver.getVehicleCapacity())
+			.prices(getDriverPrice(driver))
 			.build();
 	}
 
