@@ -21,4 +21,5 @@ public class DriverDetailsResponse {
     private List<String> vehicleImgs;
     private String vehicleModel;
     private Integer vehicleCapacity;
+    private List<DriverPriceResponse> prices;
 }
