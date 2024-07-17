@@ -136,7 +136,7 @@ public class Driver extends BaseEntity {
         this.bank = request.getBank();
         this.accountHolder = request.getAccountHolder();
         this.accountNumber = request.getAccountNumber();
-        this.vehicleImg = request.getVehicleImg();
+        this.vehicleImgs = request.getVehicleImgs();
         this.vehicleModel = request.getVehicleModel();
         this.vehicleNumber = request.getVehicleNumber();
         this.vehicleCapacity = request.getVehicleCapacity();

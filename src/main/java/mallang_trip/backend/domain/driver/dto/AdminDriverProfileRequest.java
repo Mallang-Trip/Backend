@@ -22,11 +22,11 @@ public class AdminDriverProfileRequest {
 	@NotBlank
 	private String vehicleNumber;
 	@NotBlank
-	private String vehicleImg;
+	private List<String> vehicleImgs;
 
 	// 활동 가능 지역
 	@NotBlank
-	private String region;
+	private List<String> region;
 
 	// 입금 계좌 & 운행 가격
 	@NotBlank
