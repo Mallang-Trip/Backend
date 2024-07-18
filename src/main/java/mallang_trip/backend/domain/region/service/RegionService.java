@@ -70,7 +70,7 @@ public class RegionService {
 			throw new BaseException(REGION_NOT_EMPTY);
 		}
 
-		region.modify(request.getName(), request.getImage());
+		region.modify(request.getName(), request.getImage(), request.getProvince());
 	}
 
 	/**

@@ -11,12 +11,14 @@ public class RegionResponse {
 	private Long regionId;
 	private String name;
 	private String image;
+	private String province;
 
 	public static RegionResponse of(Region region) {
 		return RegionResponse.builder()
 			.regionId(region.getId())
 			.name(region.getName())
 			.image(region.getImage())
+			.province(region.getProvince())
 			.build();
 	}
 }
