@@ -17,4 +17,8 @@ public class RegionRequest {
 	@NotBlank
 	@ApiModelProperty(value = "지역 이미지 URL", required = true)
 	private String image;
+
+	@NotBlank
+	@ApiModelProperty(value = "지역 소속 시/도", required = true)
+	private String province;
 }

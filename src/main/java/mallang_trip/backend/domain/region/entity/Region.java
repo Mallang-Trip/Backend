@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mallang_trip.backend.global.entity.BaseEntity;
+import org.checkerframework.checker.units.qual.C;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -32,8 +33,12 @@ public class Region extends BaseEntity {
 	@Column(name="image", nullable = false)
 	private String image;
 
-	public void modify(String name, String image){
+	@Column
+	private String province;
+
+	public void modify(String name, String image,String province){
 		this.name = name;
 		this.image = image;
+		this.province = province;
 	}
 }
