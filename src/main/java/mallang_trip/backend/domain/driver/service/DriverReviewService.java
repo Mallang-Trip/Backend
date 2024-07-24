@@ -70,7 +70,7 @@ public class DriverReviewService {
 		// 정지된 사용자일 경우
 		suspensionService.checkSuspension(currentUser);
 		// 작성자가 아닐 경우
-		if (currentUser.equals(review.getUser())) {
+		if (!currentUser.equals(review.getUser())) {
 			throw new BaseException(Forbidden);
 		}
 		review.change(request.getRate(), request.getContent(), request.getImages());
