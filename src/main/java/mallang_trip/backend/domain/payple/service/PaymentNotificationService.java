@@ -57,7 +57,7 @@ public class PaymentNotificationService {
 			.toString();
 		notificationService.create(member.getUser(), content, PARTY, party.getId());
 
-		//mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 실패하였습니다."); => 필요 없는 것으로 예상.
+		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 실패하였습니다.");
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(member.getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
