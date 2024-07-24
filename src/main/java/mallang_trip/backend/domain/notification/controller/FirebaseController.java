@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.notification.dto.FirebaseRequest;
 import mallang_trip.backend.domain.notification.dto.FirebaseTest;
+import mallang_trip.backend.domain.notification.dto.FirebaseUpdateDeleteRequest;
 import mallang_trip.backend.domain.notification.service.FirebaseService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
@@ -34,8 +35,8 @@ public class FirebaseController {
     @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @DeleteMapping("/firebase")
     @PreAuthorize("isAuthenticated()")
-    public BaseResponse<String> deleteFirebaseToken() throws BaseException {
-        firebaseService.deleteToken();
+    public BaseResponse<String> deleteFirebaseToken(@RequestBody @Valid FirebaseUpdateDeleteRequest request) throws BaseException {
+        firebaseService.deleteToken(request);
         return new BaseResponse<>("성공");
     }
 
@@ -43,7 +44,7 @@ public class FirebaseController {
     @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PutMapping("/firebase")
     @PreAuthorize("isAuthenticated()")
-    public BaseResponse<String> updateFirebaseToken(@RequestBody @Valid FirebaseRequest request) throws BaseException {
+    public BaseResponse<String> updateFirebaseToken(@RequestBody @Valid FirebaseUpdateDeleteRequest request) throws BaseException {
         firebaseService.updateToken(request);
         return new BaseResponse<>("성공");
     }

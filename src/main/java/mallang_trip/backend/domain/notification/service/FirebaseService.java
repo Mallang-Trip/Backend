@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import mallang_trip.backend.domain.notification.dto.FirebaseRequest;
+import mallang_trip.backend.domain.notification.dto.FirebaseUpdateDeleteRequest;
 import mallang_trip.backend.domain.notification.entity.Firebase;
 import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
 import mallang_trip.backend.domain.user.entity.User;
@@ -60,12 +61,14 @@ public class FirebaseService{
      * Firebase Token 제거
      *
      */
-    public void deleteToken(){
+    public void deleteToken(FirebaseUpdateDeleteRequest request){
         User user = currentUserService.getCurrentUser();
 
         Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
         if(firebase.isPresent()){
-            firebase.get().setTokens(null);
+            List<String> tokens = firebase.get().getTokens();
+            tokens.remove(request.getFirebaseToken());
+            firebase.get().changeTokens(tokens);
         } else {
             log.error("Firebase Token Not Found : {}", user.getId());
         }
@@ -93,12 +96,14 @@ public class FirebaseService{
      * Firebase Token 갱신
      * @param request
      */
-    public void updateToken(FirebaseRequest request) {
+    public void updateToken(FirebaseUpdateDeleteRequest request) {
         User user = currentUserService.getCurrentUser();
 
         Optional<Firebase> firebase = firebaseRepository.findByUser(user);
         if(firebase.isPresent()){
-            firebase.get().changeTokens(request.getFirebaseTokens());
+            List<String> tokens = firebase.get().getTokens();
+            tokens.add(request.getFirebaseToken());
+            firebase.get().changeTokens(tokens);
         } else {
             log.error("Firebase Token Not Found : {}", user.getId());
         }
