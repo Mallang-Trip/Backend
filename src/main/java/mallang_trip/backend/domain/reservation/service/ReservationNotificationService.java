@@ -33,7 +33,7 @@ public class ReservationNotificationService {
 		notificationService.create(user, content, NotificationType.NONE, null);
 		mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"위약금이 발생하였습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 }

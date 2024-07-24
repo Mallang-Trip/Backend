@@ -6,13 +6,15 @@ import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Builder
 @Jacksonized
 public class FirebaseRequest {
 
-    @NotBlank
-    @ApiModelProperty(value = "Firebase Token", required = true)
-    private String firebaseToken;
+    @NotNull
+    @ApiModelProperty(value = "Firebase Tokens", required = true)
+    private List<String> firebaseTokens;
 }

@@ -107,8 +107,8 @@ public class SuspensionService {
 		notificationService.create(user, content, SUSPEND, null);
 		mailService.sendEmailNotification(user.getEmail(), user.getNickname(), content,"말랑트립에서 중요한 안내 말씀드립니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content));
 
 	}
 

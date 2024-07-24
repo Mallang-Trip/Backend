@@ -9,6 +9,7 @@ import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import mallang_trip.backend.domain.notification.dto.FirebaseRequest;
 import mallang_trip.backend.domain.notification.entity.Firebase;
 import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
 import mallang_trip.backend.domain.user.entity.User;
@@ -62,9 +63,9 @@ public class FirebaseService{
     public void deleteToken(){
         User user = currentUserService.getCurrentUser();
 
-        Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
+        Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
         if(firebase.isPresent()){
-            firebase.get().setToken(null);
+            firebase.get().setTokens(null);
         } else {
             log.error("Firebase Token Not Found : {}", user.getId());
         }
@@ -73,16 +74,16 @@ public class FirebaseService{
     /**
      * Firebase Token 등록
      */
-    public void saveToken(String token) {
+    public void saveToken(FirebaseRequest request) {
         User user = currentUserService.getCurrentUser();
 
         if(firebaseRepository.existsByUser(user)) {
             Firebase firebase = firebaseRepository.findByUser(user).get();
-            firebase.setToken(token);
+            firebase.changeTokens(request.getFirebaseTokens());
         } else {
             Firebase firebase = Firebase.builder()
                     .user(user)
-                    .token(token)
+                    .tokens(request.getFirebaseTokens())
                     .build();
             firebaseRepository.save(firebase);
         }
@@ -90,14 +91,14 @@ public class FirebaseService{
 
     /**
      * Firebase Token 갱신
-     * @param token
+     * @param request
      */
-    public void updateToken(String token) {
+    public void updateToken(FirebaseRequest request) {
         User user = currentUserService.getCurrentUser();
 
         Optional<Firebase> firebase = firebaseRepository.findByUser(user);
         if(firebase.isPresent()){
-            firebase.get().setToken(token);
+            firebase.get().changeTokens(request.getFirebaseTokens());
         } else {
             log.error("Firebase Token Not Found : {}", user.getId());
         }

@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface FirebaseRepository extends JpaRepository<Firebase, Long> {
 
     // find by user and token not null
-    Optional<Firebase> findByUserAndTokenNotNull(User user);
+    Optional<Firebase> findByUserAndTokensNotNull(User user);
 
     Optional<Firebase> findByUser(User user);
 

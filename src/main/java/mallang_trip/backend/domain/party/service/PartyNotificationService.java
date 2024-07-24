@@ -49,8 +49,8 @@ public class PartyNotificationService {
 		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.");
 		mailService.sendEmailNotification("mallangtrip@gmail.com", driver.getName(), content,"새로운 여행 신청이 존재합니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(driver);
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(),"말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(driver);
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(),"말랑트립", content));
 	}
 
 	// 2. 내 파티 생성 신청을 드라이버가 수락했을 경우
@@ -68,8 +68,8 @@ public class PartyNotificationService {
 					{notificationService.create(user.getUser(), content, PARTY, party.getId());
 					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 승인되었습니다.");
 
-					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user.getUser());
-					firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user.getUser());
+					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 					});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()){
@@ -92,8 +92,8 @@ public class PartyNotificationService {
 					{notificationService.create(user.getUser(), content, PARTY, party.getId());
 					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 거절되었습니다.");
 
-					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user.getUser());
-					firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user.getUser());
+					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 					});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -117,8 +117,8 @@ public class PartyNotificationService {
 					{notificationService.create(user, content, PARTY, party.getId());
 					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티에 새로운 멤버가 가입했습니다.");
 
-					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-					firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 					});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -141,8 +141,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"신규 여행자가 참여 승인을 기다리고 있습니다.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			}
 			);
 
@@ -161,8 +161,8 @@ public class PartyNotificationService {
 			.toString();
 		notificationService.create(joiner, content, PARTY, party.getId());
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(joiner);
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(joiner);
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 6-2. 기존 파티원
@@ -180,8 +180,8 @@ public class PartyNotificationService {
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -206,8 +206,8 @@ public class PartyNotificationService {
 			proposal.getParty().getId());
 		mailService.sendEmailNotification(proposal.getProposer().getEmail(), proposal.getProposer().getName(), content,"변경안 및 가입 신청이 거절되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(proposal.getProposer());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(proposal.getProposer());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 7-2. 기존 가입자
@@ -228,8 +228,8 @@ public class PartyNotificationService {
 					notificationService.create(user, content, PARTY, party.getId());
 					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"변경안 및 가입 신청이 거절되었습니다.");
 
-					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-					firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -253,8 +253,8 @@ public class PartyNotificationService {
 			.forEach(user -> {notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"새로운 코스 변경 제안이 존재합니다.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"새로운 코스 변경 제안이 존재합니다.");
 
@@ -279,8 +279,8 @@ public class PartyNotificationService {
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -305,8 +305,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"코스 변경 신청이 거절되었습니다.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -337,8 +337,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"말랑레디가 전원 OFF로 변경되었습니다.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -357,8 +357,8 @@ public class PartyNotificationService {
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 2. 드라이버가 파티를 탈퇴한 경우
@@ -378,8 +378,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 완전히 취소되었습니다.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -398,8 +398,8 @@ public class PartyNotificationService {
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
 		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 4. 모집기간 만료로 파티가 취소되었을 경우
@@ -418,8 +418,8 @@ public class PartyNotificationService {
 						notificationService.create(user, content, PARTY, party.getId());
 						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 자동 취소되었습니다.");
 
-						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-						firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+						firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 					});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -452,8 +452,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				//mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"결제를 진행합니다.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -472,8 +472,8 @@ public class PartyNotificationService {
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다."); // party의 driver에게 이메일
 		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 2. 파티원 전원이 레디를 완료했을 경우
@@ -497,8 +497,8 @@ public class PartyNotificationService {
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -517,8 +517,8 @@ public class PartyNotificationService {
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
 		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	/**
@@ -553,8 +553,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"드라이버의 정보를 확인해주세요.");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -572,8 +572,8 @@ public class PartyNotificationService {
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행자를 확인해주세요!");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 2. 여행 당일 시작 시간
@@ -598,8 +598,8 @@ public class PartyNotificationService {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 시작되었습니다!");
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -619,8 +619,8 @@ public class PartyNotificationService {
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 3. 여행 다음 날
@@ -639,8 +639,8 @@ public class PartyNotificationService {
 						notificationService.create(user, content, FEEDBACK, null);
 						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 끝났습니다. 피드백을 남겨주세요!");
 
-						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-						firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+						firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 					});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -674,8 +674,8 @@ public class PartyNotificationService {
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -695,8 +695,8 @@ public class PartyNotificationService {
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.");
 		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 2. 예약 취소 -> 전액 위약금이 발생한 경우
@@ -714,8 +714,8 @@ public class PartyNotificationService {
 			.forEach(user ->{
 				notificationService.create(user, content, PARTY, party.getId());
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -738,8 +738,8 @@ public class PartyNotificationService {
 			.forEach(user ->{
 				notificationService.create(user, content, PARTY, party.getId());
 
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(f -> firebaseTokens.add(f.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
@@ -761,7 +761,7 @@ public class PartyNotificationService {
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
 		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(party.getDriver().getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 }

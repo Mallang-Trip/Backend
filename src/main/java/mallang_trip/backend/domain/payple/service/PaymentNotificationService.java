@@ -40,8 +40,8 @@ public class PaymentNotificationService {
 		notificationService.create(member.getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 완료되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(member.getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(member.getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 2. 결제 실패
@@ -59,8 +59,8 @@ public class PaymentNotificationService {
 
 		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 실패하였습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(member.getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(member.getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 
 	// 3. 환불 성공
@@ -79,8 +79,8 @@ public class PaymentNotificationService {
 		notificationService.create(member.getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"환불 처리되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(member.getUser());
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(member.getUser());
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
 	}
 	
 }

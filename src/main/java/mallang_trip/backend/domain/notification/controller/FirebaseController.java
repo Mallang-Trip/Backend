@@ -26,7 +26,7 @@ public class FirebaseController {
     @PostMapping("/firebase")
     @PreAuthorize("isAuthenticated()")
     public BaseResponse<String> registerFirebaseToken(@RequestBody @Valid FirebaseRequest request) throws BaseException {
-        firebaseService.saveToken(request.getFirebaseToken());
+        firebaseService.saveToken(request);
         return new BaseResponse<>("성공");
     }
 
@@ -44,7 +44,7 @@ public class FirebaseController {
     @PutMapping("/firebase")
     @PreAuthorize("isAuthenticated()")
     public BaseResponse<String> updateFirebaseToken(@RequestBody @Valid FirebaseRequest request) throws BaseException {
-        firebaseService.updateToken(request.getFirebaseToken());
+        firebaseService.updateToken(request);
         return new BaseResponse<>("성공");
     }
 

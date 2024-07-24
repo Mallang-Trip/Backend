@@ -37,7 +37,7 @@ public class DriverNotificationService {
 		notificationService.create(driver, content, DRIVER, driver.getId());
 		mailService.sendEmailNotification(driver.getEmail(),driver.getName(),content,"새 리뷰가 작성되었습니다.");
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(driver);
-		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(driver);
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content));
 	}
 }
