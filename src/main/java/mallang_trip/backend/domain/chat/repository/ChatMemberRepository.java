@@ -20,4 +20,6 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
     List<ChatMember> findByUserAndActive(User user, boolean active);
 
     List<ChatMember> findByChatRoom(ChatRoom chatRoom);
+
+    List<ChatMember> findByChatRoomAndActive(ChatRoom chatRoom, boolean active);
 }

@@ -356,7 +356,7 @@ public class ChatService {
 	private List<String> getPushAlarmTokens(ChatRoom room, User currentUser){
 		List<String> firebaseTokens = new ArrayList<>();
 
-		chatMemberService.getChatMembers(room).stream()
+		chatMemberRepository.findByChatRoomAndActive(room, true).stream()
 			.map(member -> member.getUser())
 			.filter(user -> !user.equals(currentUser))
 			.forEach(user -> {
