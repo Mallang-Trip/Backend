@@ -22,15 +22,6 @@ public class FirebaseController {
 
     private final FirebaseService firebaseService;
 
-    @ApiOperation(value ="Firebase 토큰 등록")
-    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
-    @PostMapping("/firebase")
-    @PreAuthorize("isAuthenticated()")
-    public BaseResponse<String> registerFirebaseToken(@RequestBody @Valid FirebaseRequest request) throws BaseException {
-        firebaseService.saveToken(request);
-        return new BaseResponse<>("성공");
-    }
-
     @ApiOperation(value ="Firebase 토큰 삭제")
     @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @DeleteMapping("/firebase")
@@ -40,7 +31,7 @@ public class FirebaseController {
         return new BaseResponse<>("성공");
     }
 
-    @ApiOperation(value ="Firebase 토큰 갱신")
+    @ApiOperation(value ="Firebase 토큰 추가")
     @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
     @PutMapping("/firebase")
     @PreAuthorize("isAuthenticated()")

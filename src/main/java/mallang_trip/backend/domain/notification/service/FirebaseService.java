@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 
 import com.google.firebase.messaging.*;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,38 +76,33 @@ public class FirebaseService{
     }
 
     /**
-     * Firebase Token 등록
-     */
-    public void saveToken(FirebaseRequest request) {
-        User user = currentUserService.getCurrentUser();
-
-        if(firebaseRepository.existsByUser(user)) {
-            Firebase firebase = firebaseRepository.findByUser(user).get();
-            firebase.changeTokens(request.getFirebaseTokens());
-        } else {
-            Firebase firebase = Firebase.builder()
-                    .user(user)
-                    .tokens(request.getFirebaseTokens())
-                    .build();
-            firebaseRepository.save(firebase);
-        }
-    }
-
-    /**
-     * Firebase Token 갱신
-     * @param request
+     * Firebase Token 추가 (등록)
+     *
      */
     public void updateToken(FirebaseUpdateDeleteRequest request) {
         User user = currentUserService.getCurrentUser();
+        Firebase firebase = firebaseRepository.findByUser(user).orElse(null);
 
-        Optional<Firebase> firebase = firebaseRepository.findByUser(user);
-        if(firebase.isPresent()){
-            List<String> tokens = firebase.get().getTokens();
+        // 처음 등록하는 경우
+        if(firebase == null){
+            List<String> tokens = new ArrayList<>();
             tokens.add(request.getFirebaseToken());
-            firebase.get().changeTokens(tokens);
-        } else {
-            log.error("Firebase Token Not Found : {}", user.getId());
+            firebaseRepository.save(
+				Firebase.builder()
+                		.user(user)
+                		.tokens(tokens)
+                		.build()
+			);
+            return;
         }
+
+        // 추가하는 경우
+        List<String> tokens = firebase.getTokens();
+        if(tokens == null){
+            tokens = new ArrayList<>();
+        }
+        tokens.add(request.getFirebaseToken());
+        firebase.changeTokens(tokens);
     }
 
     /**
