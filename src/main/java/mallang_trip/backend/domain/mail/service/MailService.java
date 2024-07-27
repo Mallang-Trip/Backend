@@ -81,11 +81,12 @@ public class MailService {
      *
      */
     @Async
-    public void sendEmailNotification(String emailAddress, String name, String reason,String title) {
+    public void sendEmailNotification(String emailAddress, String name, String reason,String title, String url) {
         HashMap<String,String> mailContents= new HashMap<>();
         mailContents.put("name",name);
         mailContents.put("reason",reason);
         mailContents.put("title",title);
+        mailContents.put("url",url);
         try {
             sendEmail(MailTemplate.NOTIFICATION,emailAddress,name,mailContents);
         } catch (MessagingException | UnsupportedEncodingException e) {
@@ -98,10 +99,11 @@ public class MailService {
      *
      */
     @Async
-    public void sendEmailNotification(String emailAddress, String name, HashMap<String,String> reason,String title) {
+    public void sendEmailNotification(String emailAddress, String name, HashMap<String,String> reason,String title, String url) {
         HashMap<String,String> mailContents= new HashMap<>();
         mailContents.put("name",name);
         mailContents.put("title",title);
+        mailContents.put("url",url);
         reason.keySet().stream().forEach(key->{
             mailContents.put(key,reason.get(key));
         });
@@ -121,7 +123,7 @@ public class MailService {
      * @param reason 세부 내용
      */
     @Async
-    public void sendEmailParty(Party party, MailStatus mailStatus,String reason) {
+    public void sendEmailParty(Party party, MailStatus mailStatus,String reason, String url) {
         StringBuilder peopleNameBuilder = new StringBuilder();
         HashMap<String,String> mailContents= new HashMap<>();
 
@@ -142,14 +144,17 @@ public class MailService {
             mailContents.put("driver_name",party.getDriver().getUser().getName());
 
             mailContents.put("title","확정된 파티 안내드립니다.");
+            mailContents.put("url",url);
         }
         else if(mailStatus.equals(MailStatus.CANCELLED)){
             mailContents.put("reason",reason);
             mailContents.put("title","파티 취소 안내드립니다.");
+            mailContents.put("url",url);
         }
         else{
             mailContents.put("reason",reason);
             mailContents.put("title","파티 코스 수정 안내드립니다.");
+            mailContents.put("url",url);
         }
 
         partyMemberService.getMembers(party).stream()

@@ -25,6 +25,7 @@ public class PaymentNotificationService {
 	private final MailService mailService;
 	private final FirebaseService firebaseService;
 	private final FirebaseRepository firebaseRepository;
+	private final String MallangTripUrl = "https://mallangtrip.com";
 
 	// 1. 결제 성공
 	public void paymentSuccess(Reservation reservation){
@@ -42,8 +43,12 @@ public class PaymentNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(member.getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 완료되었습니다.");
+		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 완료되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(member.getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -65,9 +70,13 @@ public class PaymentNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(member.getUser(), content, PARTY, party.getId());
 
-		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 실패하였습니다.");
+		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"결제 실패하였습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(member.getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -91,8 +100,12 @@ public class PaymentNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(member.getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"환불 처리되었습니다.");
+		mailService.sendEmailNotification(member.getUser().getEmail(),member.getUser().getName(),content,"환불 처리되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(member.getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));

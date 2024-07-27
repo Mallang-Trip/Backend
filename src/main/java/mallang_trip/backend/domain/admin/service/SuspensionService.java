@@ -105,7 +105,7 @@ public class SuspensionService {
 			//.append("14일 전까지 이의제기가 가능하며 이의 제기를 원하시면 여기를 눌러주세요.")
 			.toString();
 		notificationService.create(user, content, SUSPEND, null);
-		mailService.sendEmailNotification(user.getEmail(), user.getNickname(), content,"말랑트립에서 중요한 안내 말씀드립니다.");
+		mailService.sendEmailNotification(user.getEmail(), user.getNickname(), content,"말랑트립에서 중요한 안내 말씀드립니다.", "http://pf.kakao.com/_tfMxaG/chat");	// => 이거는 상대주소가 아니라 카카오톡 채팅방?
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content,"http://pf.kakao.com/_tfMxaG/chat"));	// => 이거는 상대주소가 아니라 카카오톡 채팅방?

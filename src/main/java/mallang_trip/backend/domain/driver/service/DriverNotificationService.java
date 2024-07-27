@@ -25,6 +25,7 @@ public class DriverNotificationService {
 	private final MailService mailService;
 	private final FirebaseService firebaseService;
 	private final FirebaseRepository firebaseRepository;
+	private final String MallangTripUrl = "https://mallangtrip.com";
 
 	public void newReview(DriverReview review){
 		User driver = review.getDriver().getUser();
@@ -40,8 +41,12 @@ public class DriverNotificationService {
 				.append(driver.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(driver, content, DRIVER, driver.getId());
-		mailService.sendEmailNotification(driver.getEmail(),driver.getName(),content,"새 리뷰가 작성되었습니다.");
+		mailService.sendEmailNotification(driver.getEmail(),driver.getName(),content,"새 리뷰가 작성되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(driver);
 		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content, url));

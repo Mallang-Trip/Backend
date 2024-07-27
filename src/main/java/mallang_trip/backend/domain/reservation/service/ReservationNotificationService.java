@@ -31,7 +31,7 @@ public class ReservationNotificationService {
 			.append("원이 발생하였습니다. 위약금 지급을 위해 말랑트립 1:1 채팅상담에 연락해주세요.")
 			.toString();
 		notificationService.create(user, content, NotificationType.NONE, null);
-		mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"위약금이 발생하였습니다.");
+		mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"위약금이 발생하였습니다.","http://pf.kakao.com/_tfMxaG/chat");
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content,"http://pf.kakao.com/_tfMxaG/chat"));	//=> 카카오톡 채팅방?

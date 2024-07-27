@@ -77,6 +77,7 @@ public class PartyService {
     private final MailService mailService;
     private final IncomeService incomeService;
     private final AlimTalkService alimTalkService;
+    private final String MallangTripReservationUrl = "https://mallangtrip.com/my/reservation";
 
     /**
      * 파티 생성 신청
@@ -163,7 +164,7 @@ public class PartyService {
             partyNotificationService.partyFulled(party);
             reservationService.reserveParty(party);
             party.setStatus(SEALED);
-            mailService.sendEmailParty(party, MailStatus.SEALED,null);
+            mailService.sendEmailParty(party, MailStatus.SEALED,null,MallangTripReservationUrl);
         }
 
     }
@@ -212,7 +213,7 @@ public class PartyService {
             partyNotificationService.partyFulled(party);
             reservationService.reserveParty(party);
             party.setStatus(SEALED);
-            mailService.sendEmailParty(party, MailStatus.SEALED,null);
+            mailService.sendEmailParty(party, MailStatus.SEALED,null,MallangTripReservationUrl);
             alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CONFIRM, party);
         } else {
             partyMemberService.setReadyAllMembers(party, false);
@@ -282,13 +283,13 @@ public class PartyService {
             partyNotificationService.joinAcceptedAndCourseChanged(proposer, party);
             joinParty(party, proposer, proposal.getHeadcount(), companionRequests);
             partyNotificationService.joinAccepted(proposer, party);
-            mailService.sendEmailParty(party, MailStatus.MODIFIED_JOIN,"새 파티원의 코스 변경 신청을 모두 수락하였습니다.");
+            mailService.sendEmailParty(party, MailStatus.MODIFIED_JOIN,"새 파티원의 코스 변경 신청을 모두 수락하였습니다.",MallangTripReservationUrl);
         }
         if (proposal.getType().equals(COURSE_CHANGE)) {
             partyMemberService.setReadyAllMembers(party, false);
             party.setStatus(SEALED);
             partyNotificationService.courseChangeAccepted(proposal);
-            mailService.sendEmailParty(party, MailStatus.MODIFIED,"코스 변경을 모두 수락했습니다.");
+            mailService.sendEmailParty(party, MailStatus.MODIFIED,"코스 변경을 모두 수락했습니다.",MallangTripReservationUrl);
         }
     }
 
@@ -317,7 +318,7 @@ public class PartyService {
         }
         partyNotificationService.allReady(party);
         reservationService.reserveParty(party);
-        mailService.sendEmailParty(party, MailStatus.SEALED,null);
+        mailService.sendEmailParty(party, MailStatus.SEALED,null,MallangTripReservationUrl);
         alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CONFIRM, party);
         party.setStatus(SEALED);
     }
@@ -455,7 +456,7 @@ public class PartyService {
         }
         chatService.leavePrivateChatWhenLeavingParty(currentUserService.getCurrentUser(), party);
         partyMemberService.setReadyAllMembers(party, false);
-        mailService.sendEmailParty(party, MailStatus.CANCELLED,reason.toString());
+        mailService.sendEmailParty(party, MailStatus.CANCELLED,reason.toString(),MallangTripReservationUrl);
         alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CANCELED, party);
     }
 

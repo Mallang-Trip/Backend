@@ -32,6 +32,7 @@ public class PartyNotificationService {
 	private final MailService mailService;
 	private final FirebaseService firebaseService;
 	private final FirebaseRepository firebaseRepository;
+	private final String MallangTripUrl = "https://mallangtrip.com";
 
 	private String getPartyName(Party party) {
 		return party.getCourse().getName();
@@ -50,9 +51,13 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(driver, content, PARTY, party.getId());
-		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.");
-		mailService.sendEmailNotification("mallangtrip@gmail.com", driver.getName(), content,"새로운 여행 신청이 존재합니다.");
+		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@gmail.com", driver.getName(), content,"새로운 여행 신청이 존재합니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(driver);
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(),"말랑트립", content, url));
@@ -70,13 +75,17 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.forEach(user ->
 					{notificationService.create(user.getUser(), content, PARTY, party.getId());
-					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 승인되었습니다.");
+					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 승인되었습니다.",absoluteUrl);
 
 					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user.getUser());
 					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -99,13 +108,17 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembers(party).stream()
 			.forEach(user ->
 					{notificationService.create(user.getUser(), content, PARTY, party.getId());
-					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 거절되었습니다.");
+					mailService.sendEmailNotification(user.getUser().getEmail(), user.getUser().getName(), content,"신청이 거절되었습니다.",absoluteUrl);
 
 					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user.getUser());
 					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -129,13 +142,17 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
 					{notificationService.create(user, content, PARTY, party.getId());
-					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티에 새로운 멤버가 가입했습니다.");
+					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티에 새로운 멤버가 가입했습니다.",absoluteUrl);
 
 					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -158,13 +175,17 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"신규 여행자가 참여 승인을 기다리고 있습니다.");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"신규 여행자가 참여 승인을 기다리고 있습니다.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -242,9 +263,13 @@ public class PartyNotificationService {
 				.append(proposal.getParty().getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(proposal.getProposer(), content, PARTY,
 			proposal.getParty().getId());
-		mailService.sendEmailNotification(proposal.getProposer().getEmail(), proposal.getProposer().getName(), content,"변경안 및 가입 신청이 거절되었습니다.");
+		mailService.sendEmailNotification(proposal.getProposer().getEmail(), proposal.getProposer().getName(), content,"변경안 및 가입 신청이 거절되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(proposal.getProposer());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -264,6 +289,10 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -271,7 +300,7 @@ public class PartyNotificationService {
 			.forEach(user ->
 					{
 					notificationService.create(user, content, PARTY, party.getId());
-					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"변경안 및 가입 신청이 거절되었습니다.");
+					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"변경안 및 가입 신청이 거절되었습니다.",absoluteUrl);
 
 					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -295,18 +324,22 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.filter(user -> !proposal.getProposer().equals(user))
 			.forEach(user -> {notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"새로운 코스 변경 제안이 존재합니다.");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"새로운 코스 변경 제안이 존재합니다.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
-		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"새로운 코스 변경 제안이 존재합니다.");
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"새로운 코스 변경 제안이 존재합니다.",absoluteUrl);
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
 			firebaseService.sendPushMessage(firebaseTokens, "말랑트립", content, url);
@@ -357,13 +390,17 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"코스 변경 신청이 거절되었습니다.");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"코스 변경 신청이 거절되었습니다.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -393,6 +430,10 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -400,7 +441,7 @@ public class PartyNotificationService {
 			.filter(user -> !runner.equals(user))
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"말랑레디가 전원 OFF로 변경되었습니다.");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"말랑레디가 전원 OFF로 변경되었습니다.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -424,9 +465,13 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -444,6 +489,10 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -452,7 +501,7 @@ public class PartyNotificationService {
 			.forEach(user ->
 			{
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 완전히 취소되었습니다.");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -475,10 +524,14 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
-		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -496,6 +549,10 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -503,7 +560,7 @@ public class PartyNotificationService {
 			.forEach(user ->
 					{
 						notificationService.create(user, content, PARTY, party.getId());
-						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 자동 취소되었습니다.");
+						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 자동 취소되었습니다.",absoluteUrl);
 
 						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 						firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -565,10 +622,14 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다."); // party의 driver에게 이메일
-		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl); // party의 driver에게 이메일
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -621,10 +682,14 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
-		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -658,6 +723,10 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -665,7 +734,7 @@ public class PartyNotificationService {
 			.map(PartyMember::getUser)
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"드라이버의 정보를 확인해주세요.");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"드라이버의 정보를 확인해주세요.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -684,7 +753,7 @@ public class PartyNotificationService {
 			.append("]의 여행자 명단을 확인하고 대면할 때 승객의 신분증을 확인하여 신원을 철저히 검증해주세요.")
 			.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행자를 확인해주세요!");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행자를 확인해주세요!",MallangTripUrl);	// => 노션에 ??로 적혀있음
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content,"/"));	// => 노션에 ??로 적혀있음
@@ -708,6 +777,10 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -715,7 +788,7 @@ public class PartyNotificationService {
 			.map(PartyMember::getUser)
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 시작되었습니다!");
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 시작되었습니다!",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -740,8 +813,12 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -759,6 +836,10 @@ public class PartyNotificationService {
 				.append(party.getDriver().getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 
 		List<String> firebaseTokens = new ArrayList<>();
 
@@ -766,7 +847,7 @@ public class PartyNotificationService {
 			.forEach(user ->
 					{
 						notificationService.create(user, content, FEEDBACK, null);
-						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 끝났습니다. 피드백을 남겨주세요!");
+						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"여행이 끝났습니다. 피드백을 남겨주세요!",absoluteUrl);
 
 						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 						firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -830,9 +911,13 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.");
-		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -911,9 +996,13 @@ public class PartyNotificationService {
 				.append(party.getId())
 				.append("?login_required=true")
 				.toString();
+		String absoluteUrl = new StringBuilder()
+				.append(MallangTripUrl)
+				.append(url)
+				.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
-		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.");
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
