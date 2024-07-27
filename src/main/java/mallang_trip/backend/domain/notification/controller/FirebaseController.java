@@ -45,7 +45,7 @@ public class FirebaseController {
     @PostMapping("/firebase/push")
     @PreAuthorize("isAuthenticated()")
     public BaseResponse<String> sendPushNotification(@RequestBody @Valid FirebaseTest request) throws BaseException {
-        return new BaseResponse<>(firebaseService.sendPushMessageTest(request.getFirebaseToken(), request.getTitle(), request.getBody()));
+        return new BaseResponse<>(firebaseService.sendPushMessageTest(request.getFirebaseToken(), request.getTitle(), request.getBody(), request.getUrl()));
     }
 
 }

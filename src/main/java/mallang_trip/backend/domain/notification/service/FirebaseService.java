@@ -110,13 +110,14 @@ public class FirebaseService{
      *
      */
     @Async
-    public void sendPushMessage(List<String> tokens, String title, String body) {
+    public void sendPushMessage(List<String> tokens, String title, String body, String url) {
         try{
             MulticastMessage message = MulticastMessage.builder()
                     .setNotification(Notification.builder()
                             .setTitle(title)
                             .setBody(body)
                             .build())
+                    .putData("tag",url)
                     .addAllTokens(tokens)
                     .build();
             BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
@@ -131,13 +132,14 @@ public class FirebaseService{
      *
      */
     @Async
-    public void sendPushMessage(String token, String title, String body) {
+    public void sendPushMessage(String token, String title, String body, String url) {
         try{
             Message message = Message.builder().setToken(token)
                     .setNotification(Notification.builder()
                             .setTitle(title)
                             .setBody(body)
                             .build())
+                    .putData("tag",url)
                     .build();
 
             String response = firebaseMessaging.send(message);
@@ -152,13 +154,14 @@ public class FirebaseService{
      * 테스트용
      */
 //    @Async
-    public String sendPushMessageTest(String token, String title, String body) {
+    public String sendPushMessageTest(String token, String title, String body, String url) {
         try{
         Message message = Message.builder().setToken(token)
                 .setNotification(Notification.builder()
                         .setTitle(title)
                         .setBody(body)
                         .build())
+                .putData("tag",url)
                 .build();
 
         String response = firebaseMessaging.send(message);

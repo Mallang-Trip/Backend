@@ -34,10 +34,16 @@ public class DriverNotificationService {
 			.append(driver.getName())
 			.append("님에게 리뷰를 작성하였습니다.")
 			.toString();
+
+		String url = new StringBuilder()
+				.append("/driver/profile/")
+				.append(driver.getId())
+				.append("?login_required=true")
+				.toString();
 		notificationService.create(driver, content, DRIVER, driver.getId());
 		mailService.sendEmailNotification(driver.getEmail(),driver.getName(),content,"새 리뷰가 작성되었습니다.");
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(driver);
-		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content));
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content, url));
 	}
 }

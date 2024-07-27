@@ -34,6 +34,6 @@ public class ReservationNotificationService {
 		mailService.sendEmailNotification(user.getEmail(),user.getName(),content,"위약금이 발생하였습니다.");
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content));
+		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content,"http://pf.kakao.com/_tfMxaG/chat"));	//=> 카카오톡 채팅방?
 	}
 }

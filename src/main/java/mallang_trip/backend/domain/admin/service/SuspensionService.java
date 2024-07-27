@@ -108,7 +108,7 @@ public class SuspensionService {
 		mailService.sendEmailNotification(user.getEmail(), user.getNickname(), content,"말랑트립에서 중요한 안내 말씀드립니다.");
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
-		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content));
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content,"http://pf.kakao.com/_tfMxaG/chat"));	// => 이거는 상대주소가 아니라 카카오톡 채팅방?
 
 	}
 

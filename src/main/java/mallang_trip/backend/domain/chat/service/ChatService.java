@@ -334,12 +334,17 @@ public class ChatService {
 		// 채팅 메시지 PUBLISH
 		template.convertAndSend("/sub/room/" + roomId, ChatMessageResponse.of(message));
 		// firebase push alarm
+		String url = new StringBuilder()
+				.append("/talk?chatRoomId=")
+				.append(roomId)
+				.toString();
+
 		List<String> firebaseTokens = getPushAlarmTokens(room, currentUser);
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
 			firebaseService.sendPushMessage(
 				firebaseTokens,
 				currentUser.getNickname(),
-				request.getContent()
+				request.getContent(), url
 			);
 		}
 	}
