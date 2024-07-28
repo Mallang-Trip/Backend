@@ -101,6 +101,10 @@ public class FirebaseService{
         if(tokens == null){
             tokens = new ArrayList<>();
         }
+        // 중복 체크
+        if(tokens.contains(request.getFirebaseToken())){
+            return;
+        }
         tokens.add(request.getFirebaseToken());
         firebase.changeTokens(tokens);
     }
