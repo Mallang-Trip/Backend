@@ -4,11 +4,15 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,6 +24,8 @@ import mallang_trip.backend.domain.dreamSecurity.dto.MobileOKStdResponse;
 import mallang_trip.backend.global.io.BaseException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.dreamsecurity.mobileOK.*;
@@ -38,12 +44,39 @@ public class MobileOKService {
 
 	private final String clientPrefix = "MALLANG";
 
-	private mobileOKKeyManager initMobileOK(){
+	private mobileOKKeyManager initMobileOK() {
 		mobileOKKeyManager mobileOK = new mobileOKKeyManager();
 
-		try{
-			mobileOK.keyInit("./src/main/resources/dreamsecurity/mok_keyInfo.dat", password);
-		} catch (MobileOKException e){
+		try {
+			// 리소스 파일을 ClassPathResource로 로드
+			Resource resource = new ClassPathResource("dreamsecurity/mok_keyInfo.dat");
+
+			// InputStream을 통해 리소스를 읽어들임
+			try (InputStream inputStream = resource.getInputStream()) {
+				// 임시 파일 생성
+				File tempFile = File.createTempFile("mok_keyInfo", ".dat");
+
+				// 임시 파일에 리소스 파일의 내용을 복사
+				try (FileOutputStream outStream = new FileOutputStream(tempFile)) {
+					byte[] buffer = new byte[4096];
+					int bytesRead;
+
+					while ((bytesRead = inputStream.read(buffer)) != -1) {
+						outStream.write(buffer, 0, bytesRead);
+					}
+				}
+
+				// mobileOK의 keyInit 메서드 호출
+				mobileOK.keyInit(tempFile.getAbsolutePath(), password);
+
+				// 임시 파일 삭제
+				Files.deleteIfExists(tempFile.toPath());
+			}
+
+		} catch (IOException e) {
+			log.error("mobileOK init failed: " + e.getMessage());
+			throw new BaseException(Internal_Server_Error);
+		} catch (MobileOKException e) {
 			log.error("mobileOK init failed: " + e.getErrorCode() + "|" + e.getMessage());
 			throw new BaseException(Internal_Server_Error);
 		}
