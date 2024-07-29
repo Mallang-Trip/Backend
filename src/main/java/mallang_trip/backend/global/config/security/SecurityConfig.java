@@ -54,6 +54,7 @@ public class SecurityConfig {
             .antMatchers(HttpMethod.GET, "/announcement/**").permitAll() // announcement API
             .antMatchers("/identification/**").permitAll() // identification API
             .antMatchers("/ws/chat/**").permitAll() // STOMP chat
+            .antMatchers("/mobileOK/**").permitAll()
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
 
