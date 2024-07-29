@@ -10,7 +10,7 @@ import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +23,7 @@ public class MobileOKController {
 	private final MobileOKService mobileOKService;
 
 	@ApiOperation(value = "본인인증-표준창 인증요청")
-	@GetMapping
+	@PostMapping
 	@PreAuthorize("permitAll()") // anyone
 	public BaseResponse<MobileOKStdResponse> std_request(HttpSession session) throws BaseException {
 		return new BaseResponse<>(mobileOKService.mobileOK_std_request(session));

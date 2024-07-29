@@ -42,7 +42,7 @@ public class MobileOKService {
 		mobileOKKeyManager mobileOK = new mobileOKKeyManager();
 
 		try{
-			mobileOK.keyInit("src/main/resources/dreamsecurity/mok_keyInfo.dat", password);
+			mobileOK.keyInit("./src/main/resources/dreamsecurity/mok_keyInfo.dat", password);
 		} catch (MobileOKException e){
 			log.error("mobileOK init failed: " + e.getErrorCode() + "|" + e.getMessage());
 			throw new BaseException(Internal_Server_Error);
