@@ -131,9 +131,6 @@ public class PartySearchService {
 	 * 내가 속하지 않은 파티 상세 조회
 	 */
 	private PartyDetailsResponse getPartyDetailsByOutsider(Party party) {
-		if (!party.getStatus().equals(RECRUITING)) {
-			throw new BaseException(NOT_PARTY_MEMBER);
-		}
 		return partyToPartyDetailsResponse(party);
 	}
 
