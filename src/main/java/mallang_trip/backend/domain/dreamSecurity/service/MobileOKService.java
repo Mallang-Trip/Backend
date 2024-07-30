@@ -1,7 +1,10 @@
 package mallang_trip.backend.domain.dreamSecurity.service;
 
+import static mallang_trip.backend.domain.dreamSecurity.exception.IdentificationException.SESSION_ERROR;
+import static mallang_trip.backend.domain.dreamSecurity.exception.IdentificationException.TOKEN_TIMEOUT;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_Error;
 
+import feign.template.UriUtils;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -118,26 +122,46 @@ public class MobileOKService {
 			.build();
 	}
 
-	public String mobileOK_std_result(String encryptMOKKeyToken, HttpSession session) {
+	/**
+	 * 본인확인-표준창 검증결과 요청
+	 */
+	public String mobileOK_std_result(String result, HttpSession session) {
 		try {
+			result = UriUtils.decode(result, StandardCharsets.UTF_8);
+			result = UriUtils.decode(result, StandardCharsets.UTF_8);
+			result = result.substring("data=".length());
+
 			mobileOKKeyManager mobileOK = initMobileOK();
 
 			// 본인확인 인증결과 MOKToken API 요청 URL
 			String targetUrl = "https://scert.mobile-ok.com/gui/service/v1/result/request";  // 개발
 			// String targetUrl = "https://cert.mobile-ok.com/gui/service/v1/result/request";  // 운영
 
-			/* 2.1 본인확인 결과 타입 : MOKToken */
-			JSONObject requestData = new JSONObject();
-			requestData.put("encryptMOKKeyToken", encryptMOKKeyToken);
-			String responseData = sendPost(targetUrl, requestData.toString());
-			if (responseData == null) {
-				return "-1|본인확인 MOKToken 인증결과 응답이 없습니다.";
+			// 본인확인 결과 타입별 결과 처리
+			JSONObject resultJSON = new JSONObject(result);
+			String encryptMOKKeyToken = resultJSON.optString("encryptMOKKeyToken", null);
+			String encryptMOKResult = resultJSON.optString("encryptMOKResult", null);
+			/* 본인확인 결과 타입 : MOKToken */
+			if (encryptMOKKeyToken != null) {
+				JSONObject requestData = new JSONObject();
+				requestData.put("encryptMOKKeyToken", encryptMOKKeyToken);
+				String responseData = sendPost(targetUrl, requestData.toString());
+				if (responseData == null) {
+					log.error("-1|본인확인 MOKToken 인증결과 응답이 없습니다.");
+					throw new BaseException(Internal_Server_Error);
+				}
+				JSONObject responseJSON = new JSONObject(responseData);
+				encryptMOKResult = responseJSON.getString("encryptMOKResult");
 			}
-			JSONObject responseJSON = new JSONObject(responseData);
-			String encryptMOKResult = responseJSON.getString("encryptMOKResult");
+			else {
+				/* 본인확인 결과 타입 : MOKResult */
+				if (encryptMOKResult == null) {
+					log.error("-2|본인확인 MOKResult 값이 없습니다.");
+					throw new BaseException(Internal_Server_Error);
+				}
+			}
 
-
-			/* 3. 본인확인 결과 JSON 정보 파싱 */
+			// 본인확인 결과 JSON 정보 파싱
 			JSONObject decrpytResultJson = null;
 			try {
 				decrpytResultJson = new JSONObject(mobileOK.getResultJSON(encryptMOKResult));
@@ -145,7 +169,7 @@ public class MobileOKService {
 				return e.getErrorCode() + "|" + e.getMessage();
 			}
 
-			/* 4. 본인확인 결과 복호화 */
+			// 본인확인 결과 복호화
 
 			/* 사용자 이름 */
 			String userName = decrpytResultJson.optString("userName", null);
@@ -186,7 +210,7 @@ public class MobileOKService {
 
 			// 세션 내 요청 clientTxId 와 수신한 clientTxId 가 동일한지 비교(권고)
 			if (!sessionClientTxId.equals(clientTxId)) {
-				return "-4|세션값에 저장된 거래ID 비교 실패";
+				throw new BaseException(SESSION_ERROR);
 			}
 			// 검증정보 유효시간 검증 (본인확인 결과인증 후 10분 이내 검증 권고) */
 			String dataFormat = "yyyy-MM-dd HH:mm:ss";
@@ -197,7 +221,7 @@ public class MobileOKService {
 
 			long diff = (currentTime.getTime() - targetTime.getTime()) / 1000;
 			if (diff > 600) {
-				return "-5|검증결과 토큰 생성 10분 경과 오류";
+				throw new BaseException(TOKEN_TIMEOUT);
 			}
 
 			/* 6. 이용기관 서비스 기능 처리 */
@@ -217,8 +241,8 @@ public class MobileOKService {
 			outputJson.put("userName", userName);
 			return outputJson.toString();
 		} catch (Exception e) {
-			e.printStackTrace();
-			return "-999|서버 오류";
+			log.error("본인확인-표준창 인증요청 실패: " + e.getMessage());
+			throw new BaseException(Internal_Server_Error);
 		}
 	}
 
@@ -243,14 +267,9 @@ public class MobileOKService {
 				responseData.append(info);
 			}
 			return responseData.toString();
-		} catch (FileNotFoundException e) {
-			// Error Stream contains JSON that we can parse to a FB error
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
+			log.error("본인확인 서버 통신 실패: " + e.getMessage());
+		}  finally {
 			try {
 				if (bufferedReader != null) {
 					bufferedReader.close();
@@ -264,7 +283,7 @@ public class MobileOKService {
 					connection.disconnect();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("본인확인 서버 통신 실패: " + e.getMessage());
 			}
 		}
 		return null;
