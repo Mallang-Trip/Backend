@@ -135,7 +135,7 @@ public class ArticleService {
 			.partyName(embeddedParty == null ? null : embeddedParty.getCourse().getName())
 			.userId(article.getUser().getId())
 			.role(article.getUser().getRole().name())
-			.nicknameOrName(article.getUser().getRole().name() == "ROLE_USER" ? article.getUser().getNickname() : article.getUser().getName())
+			.nicknameOrName(article.getUser().getNickname())
 			.profileImg(article.getUser().getProfileImage())
 			.type(article.getType())
 			.title(article.getTitle())

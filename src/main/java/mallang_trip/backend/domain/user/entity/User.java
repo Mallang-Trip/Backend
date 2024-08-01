@@ -95,4 +95,9 @@ public class User extends BaseEntity {
         int age = LocalDate.now().getYear() - this.birthday.getYear();
         return (int) (age / 10) * 10;
     }
+
+    // nickname Getter 재정의
+    public String getNickname() {
+        return this.role == Role.ROLE_USER ? this.nickname : this.name;
+    }
 }
