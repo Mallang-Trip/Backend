@@ -14,8 +14,7 @@ public class ArticleDetailsResponse {
     private Long userId;
     private Long partyId;
     private String partyName;
-    private String role;
-    private String nicknameOrName;
+    private String nickname;
     private String profileImg;
     private ArticleType type;
     private String title;
