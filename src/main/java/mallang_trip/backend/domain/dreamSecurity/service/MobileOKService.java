@@ -237,6 +237,8 @@ public class MobileOKService {
 				.build();
 			identificationResultService.saveIdentificationResult(sessionClientTxId, identificationResult);
 
+		} catch (BaseException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("본인확인-표준창 검증결과 요청 실패: " + e.getMessage());
 			throw new BaseException(Internal_Server_Error);
