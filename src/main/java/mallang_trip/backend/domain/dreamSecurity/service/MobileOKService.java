@@ -1,7 +1,8 @@
 package mallang_trip.backend.domain.dreamSecurity.service;
 
-import static mallang_trip.backend.domain.dreamSecurity.exception.IdentificationException.SESSION_ERROR;
 import static mallang_trip.backend.domain.dreamSecurity.exception.IdentificationException.TOKEN_TIMEOUT;
+import static mallang_trip.backend.domain.dreamSecurity.exception.IdentificationException.UNDERAGE_FORBIDDEN;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Internal_Server_Error;
 
 import feign.template.UriUtils;
@@ -17,6 +18,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -25,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.dreamSecurity.dto.IdentificationResult;
 import mallang_trip.backend.domain.dreamSecurity.dto.MobileOKStdResponse;
+import mallang_trip.backend.domain.dreamSecurity.dto.MobileOKStdResultResponse;
+import mallang_trip.backend.domain.user.repository.UserRepository;
 import mallang_trip.backend.global.io.BaseException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +55,7 @@ public class MobileOKService {
 	private final String clientPrefix = "MALLANG";
 
 	private final IdentificationResultService identificationResultService;
+	private final UserRepository userRepository;
 
 	private mobileOKKeyManager initMobileOK() {
 		mobileOKKeyManager mobileOK = new mobileOKKeyManager();
@@ -93,7 +100,7 @@ public class MobileOKService {
 	/**
 	 * 본인확인-표준창 인증요청
 	 */
-	public MobileOKStdResponse mobileOK_std_request(HttpSession session) {
+	public MobileOKStdResponse mobileOK_std_request() {
 		mobileOKKeyManager mobileOK = initMobileOK();
 
 		Calendar cal = Calendar.getInstance();
@@ -101,7 +108,6 @@ public class MobileOKService {
 
 		// 본인확인-표준창 거래요청정보 생성
 		String clientTxId = clientPrefix + UUID.randomUUID().toString().replaceAll("-", "");
-		session.setAttribute("sessionClientTxId", clientTxId);
 		String reqClientInfo = clientTxId + "|" + formatter.format(cal.getTime());
 
 		// 생성된 거래정보 암호화
@@ -127,7 +133,7 @@ public class MobileOKService {
 	/**
 	 * 본인확인-표준창 검증결과 요청
 	 */
-	public void mobileOK_std_result(String result, HttpSession session) {
+	public MobileOKStdResultResponse mobileOK_std_result(String result) {
 		try {
 			result = UriUtils.decode(result, StandardCharsets.UTF_8);
 			result = UriUtils.decode(result, StandardCharsets.UTF_8);
@@ -207,12 +213,6 @@ public class MobileOKService {
 			/* 본인확인 인증 시간 */
 			String issueDate = decryptResultJson.getString("issueDate");
 
-			String sessionClientTxId = (String) session.getAttribute("sessionClientTxId");
-
-			// 세션 내 요청 clientTxId 와 수신한 clientTxId 가 동일한지 비교(권고)
-			if (sessionClientTxId == null || !sessionClientTxId.equals(clientTxId)) {
-				throw new BaseException(SESSION_ERROR);
-			}
 			// 검증정보 유효시간 검증 (본인확인 결과인증 후 10분 이내 검증 권고)
 			String dataFormat = "yyyy-MM-dd HH:mm:ss";
 			SimpleDateFormat formatter = new SimpleDateFormat(dataFormat);
@@ -225,17 +225,32 @@ public class MobileOKService {
 				throw new BaseException(TOKEN_TIMEOUT);
 			}
 
+			if(userRepository.existsByDi(di)){
+				throw new BaseException(Conflict);
+			}
+
+			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+			LocalDate birthday = LocalDate.parse(userBirthday, dateFormatter);
+			if(isBelow19(birthday)){
+				throw new BaseException(UNDERAGE_FORBIDDEN);
+			}
+
 			// 본인인증 결과 redis 저장
+			String impUid = UUID.randomUUID().toString();
 			IdentificationResult identificationResult = IdentificationResult.builder()
 				.userName(userName)
 				.ci(ci)
 				.di(di)
 				.userPhone(userPhone)
-				.userBirthday(userBirthday)
+				.userBirthday(birthday)
 				.userGender(userGender)
 				.userNation(userNation)
 				.build();
-			identificationResultService.saveIdentificationResult(sessionClientTxId, identificationResult);
+			identificationResultService.saveIdentificationResult(impUid, identificationResult);
+
+			return MobileOKStdResultResponse.builder()
+				.impUid(impUid)
+				.build();
 
 		} catch (BaseException e) {
 			throw e;
@@ -245,7 +260,6 @@ public class MobileOKService {
 		}
 	}
 
-	/* 본인확인 서버 통신 예제 함수 */
 	public String sendPost(String dest, String jsonData) {
 		HttpURLConnection connection = null;
 		DataOutputStream dataOutputStream = null;
@@ -286,5 +300,12 @@ public class MobileOKService {
 			}
 		}
 		return null;
+	}
+
+	private boolean isBelow19(LocalDate birthDate) {
+		LocalDate today = LocalDate.now();
+		Period age = Period.between(birthDate, today);
+
+		return age.getYears() < 19;
 	}
 }

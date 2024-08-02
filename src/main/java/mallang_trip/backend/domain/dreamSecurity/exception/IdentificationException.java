@@ -9,7 +9,7 @@ import mallang_trip.backend.global.io.ResponseStatus;
 public enum IdentificationException implements ResponseStatus {
 
     TOKEN_TIMEOUT(401, "본인확인 결과인증 후 10분 경과"),
-    SESSION_ERROR(401 ,"세션값 검증 실패"),
+    UNDERAGE_FORBIDDEN(403 ,"19세 미만은 가입이 불가능합니다."),
     ;
 
     private final int statusCode;

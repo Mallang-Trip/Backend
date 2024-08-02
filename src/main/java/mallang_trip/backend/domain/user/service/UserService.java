@@ -1,5 +1,9 @@
 package mallang_trip.backend.domain.user.service;
 
+import static mallang_trip.backend.domain.user.constant.Country.FOREGINER;
+import static mallang_trip.backend.domain.user.constant.Country.LOCAL;
+import static mallang_trip.backend.domain.user.constant.Gender.FEMALE;
+import static mallang_trip.backend.domain.user.constant.Gender.MALE;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Conflict;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
@@ -9,8 +13,12 @@ import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CAN
 
 import java.time.LocalDate;
 
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.dreamSecurity.dto.IdentificationResult;
+import mallang_trip.backend.domain.dreamSecurity.service.IdentificationResultService;
 import mallang_trip.backend.domain.user.dto.*;
 import mallang_trip.backend.global.config.security.TokenProvider;
 import mallang_trip.backend.global.io.BaseException;
@@ -41,8 +49,8 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final CurrentUserService currentUserService;
 	private final SmsService smsService;
-	private final PortOneIdentificationService portOneIdentificationService;
 	private final RedissonClient redissonClient;
+	private final IdentificationResultService identificationResultService;
 
 	/**
 	 * 회원 가입을 처리하는 메소드입니다.
@@ -64,48 +72,29 @@ public class UserService {
 				throw new BaseException(Conflict);
 			}
 
-			IdentificationResultResponse.CertificationAnnotation response =
-				portOneIdentificationService.get(request.getImpUid()).getResponse();
-
-			// 스페이스바 있어도 같은 값으로 인식
-			if(!response.getName().contains(request.getName()) || !response.getPhone().contains(request.getPhone())){
-				throw new BaseException(Forbidden);
-			}
-
-			// 미성년자 확인
-			// string 10자리 YYYY-DD-MM을 year, month, day로 나누어 저장
-			String[] birthday = response.getBirthday().split("-");
-			int year = Integer.parseInt(birthday[0]);
-			int month = Integer.parseInt(birthday[1]);
-			int day = Integer.parseInt(birthday[2]);
-
-			// 만 19세 이상인지 확인
-			if (LocalDate.now().getYear() - year < 19) {	// 만 19세 미만
-				throw new BaseException(Forbidden);
-			} else if (LocalDate.now().getYear() - year == 19) {
-				if (LocalDate.now().getMonthValue() < month) {	// month가 지나지 않았으면
-					throw new BaseException(Forbidden);
-				} else if (LocalDate.now().getMonthValue() == month) {	// month가 같으면
-					if (LocalDate.now().getDayOfMonth() < day) {	// day가 지나지 않았으면
-						throw new BaseException(Forbidden);
-					}
-				}
+			// impUid 본인인증 결과 조회
+			IdentificationResult identificationResult = identificationResultService.getIdentificationResult(
+				request.getImpUid());
+			if(identificationResult == null){
+				throw new BaseException(Unauthorized);
 			}
 
 			userRepository.save(User.builder()
+				.di(identificationResult.getDi())
 				.loginId(request.getId())
 				.password(passwordEncoder.encode(request.getPassword()))
 				.email(request.getEmail())
-				.name(response.getName())
-				.birthday(LocalDate.parse(response.getBirthday()))
-				.country(Country.from(request.getCountry()))
-				.gender(Gender.from(response.getGender()))
-				.phoneNumber(response.getPhone())
+				.name(identificationResult.getUserName())
+				.birthday(identificationResult.getUserBirthday())
+				.country(identificationResult.getUserNation().equals("")? LOCAL : FOREGINER)
+				.gender(identificationResult.getUserGender().equals("1") ? MALE : FEMALE)
+				.phoneNumber(identificationResult.getUserPhone())
 				.nickname(request.getNickname())
 				.introduction(request.getIntroduction())
 				.profileImage(request.getProfileImg())
 				.role(ROLE_USER)
 				.build());
+
 		} catch (BaseException e) {
 			throw e;
 		} catch (InterruptedException e) {
@@ -153,9 +142,6 @@ public class UserService {
 	public void checkDuplication(String type, String value) {
 		boolean isDuplicate;
 		switch (type) {
-			case "phoneNumber":
-				isDuplicate = userRepository.existsByPhoneNumber(value);
-				break;
 			case "loginId":
 				isDuplicate = userRepository.existsByLoginId(value);
 				break;
@@ -182,8 +168,7 @@ public class UserService {
 	private Boolean isDuplicate(SignupRequest request) {
 		if (userRepository.existsByLoginId(request.getId())
 			|| userRepository.existsByEmail(request.getEmail())
-			|| userRepository.existsByNickname(request.getNickname())
-			|| userRepository.existsByPhoneNumber(request.getPhone())) {
+			|| userRepository.existsByNickname(request.getNickname())) {
 			return true;
 		} else {
 			return false;
@@ -195,11 +180,6 @@ public class UserService {
 	 * (아이디 찾기, 비밀번호 찾기 공통)
 	 *
 	 * @param phoneNumber 인증할 휴대폰 번호
-	 * @throws UnsupportedEncodingException 인코딩이 지원되지 않을 때 발생하는 예외
-	 * @throws URISyntaxException 잘못된 URI 문법이 있을 때 발생하는 예외
-	 * @throws NoSuchAlgorithmException 암호화 알고리즘이 지원되지 않을 때 발생하는 예외
-	 * @throws InvalidKeyException 잘못된 키가 제공되었을 때 발생하는 예외
-	 * @throws JsonProcessingException JSON 처리 중 오류가 발생한 경우 발생하는 예외
 	 * @throws BaseException 사용자를 찾을 수 없을 때 발생하는 예외
 	 */
 	public void sendSmsCertification(String phoneNumber) {

@@ -44,7 +44,7 @@ public class UserController {
 	@PostMapping("/signup")
 	@ApiOperation(value = "회원가입")
 	@ApiResponses({
-		@ApiResponse(code = 403, message = "유효하지 않은 imp_uid 입니다."),
+		@ApiResponse(code = 401, message = "유효하지 않거나 만료된 imp_uid 입니다."),
 		@ApiResponse(code = 409, message = "중복된 값이 존재합니다."),
 		@ApiResponse(code = 500, message = "본인인증 서버 통신 실패.")
 	})

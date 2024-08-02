@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.dreamSecurity.dto;
 
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,7 +12,7 @@ public class IdentificationResult {
 	private String ci;
 	private String di;
 	private String userPhone;
-	private String userBirthday;
+	private LocalDate userBirthday;
 	private String userGender;
 	private String userNation;
 }
