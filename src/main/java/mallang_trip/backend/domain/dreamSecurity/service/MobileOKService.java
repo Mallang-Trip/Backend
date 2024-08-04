@@ -142,8 +142,8 @@ public class MobileOKService {
 			mobileOKKeyManager mobileOK = initMobileOK();
 
 			// 본인확인 인증결과 MOKToken API 요청 URL
-			String targetUrl = "https://scert.mobile-ok.com/gui/service/v1/result/request";  // 개발
-			// String targetUrl = "https://cert.mobile-ok.com/gui/service/v1/result/request";  // 운영
+			//String targetUrl = "https://scert.mobile-ok.com/gui/service/v1/result/request";  // 개발
+			String targetUrl = "https://cert.mobile-ok.com/gui/service/v1/result/request";  // 운영
 
 			// 본인확인 결과 타입별 결과 처리
 			JSONObject resultJSON = new JSONObject(result);
