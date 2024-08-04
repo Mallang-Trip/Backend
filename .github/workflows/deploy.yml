@@ -13,6 +13,7 @@ env:
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: codedeploy-springboot-group
 
 permissions:
+  id-token: write
   contents: read
 
 jobs:
@@ -35,7 +36,6 @@ jobs:
 
     # (3) Repository Secrets 설정
     - uses: actions/checkout@v3
-    # - run: mkdir ./src/main/resources
     - run: touch ./src/main/resources/application.yml
     - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
     - run: cat ./src/main/resources/application.yml
