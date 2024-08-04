@@ -225,7 +225,7 @@ public class MobileOKService {
 				throw new BaseException(TOKEN_TIMEOUT);
 			}
 
-			if(userRepository.existsByDi(di)){
+			if(userRepository.existsByDi(di) || userRepository.existsByPhoneNumber(userPhone)){
 				throw new BaseException(Conflict);
 			}
 
