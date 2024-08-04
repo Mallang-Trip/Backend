@@ -86,7 +86,7 @@ public class UserService {
 				.email(request.getEmail())
 				.name(identificationResult.getUserName())
 				.birthday(identificationResult.getUserBirthday())
-				.country(identificationResult.getUserNation().equals("")? LOCAL : FOREGINER)
+				.country(identificationResult.getUserNation().equals("0")? LOCAL : FOREGINER)
 				.gender(identificationResult.getUserGender().equals("1") ? MALE : FEMALE)
 				.phoneNumber(identificationResult.getUserPhone())
 				.nickname(request.getNickname())
