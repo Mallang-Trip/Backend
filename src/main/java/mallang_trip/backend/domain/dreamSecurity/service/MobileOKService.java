@@ -126,7 +126,7 @@ public class MobileOKService {
 			.encryptReqClientInfo(encryptReqClientInfo) /* 암호화된 본인확인 거래 요청 정보 */
 			.serviceType("telcoAuth") /* 이용상품 코드, telcoAuth : 휴대폰본인확인 (SMS인증시 인증번호 발송 방식 “SMS”)*/
 			.retTransferType("MOKToken") /* 본인확인 결과 타입, "MOKToken"  : 개인정보 응답결과를 이용기관 서버에서 본인확인 서버에 요청하여 수신 후 처리 */
-			.returnUrl("https://dev.mallangtrip-server.com/api/mobileOK/result") /* 본인확인 결과 수신 URL "https://" 포함한 URL 입력 */
+			.returnUrl("https://mallangtrip-server.com/api/mobileOK/result") /* 본인확인 결과 수신 URL "https://" 포함한 URL 입력 */
 			.build();
 	}
 
