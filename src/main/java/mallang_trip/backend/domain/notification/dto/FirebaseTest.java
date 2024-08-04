@@ -22,4 +22,8 @@ public class FirebaseTest {
     @NotBlank
     @ApiModelProperty(value = "Body", required = true)
     private String body;
+
+    @NotBlank
+    @ApiModelProperty(value = "url", required = true)
+    private String url;
 }

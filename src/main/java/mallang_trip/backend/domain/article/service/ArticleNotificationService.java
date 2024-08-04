@@ -47,10 +47,15 @@ public class ArticleNotificationService {
 			.append(article.getTitle())
 			.append("] 게시글에 새 댓글이 추가되었습니다.")
 			.toString();
+		String url = new StringBuilder()
+				.append("/community/")
+				.append(article.getId())
+				.append("?login_required=true")
+				.toString();
 		notificationService.create(article.getUser(), content, ARTICLE, article.getId());
 		//mailService.sendEmailNotification(article.getUser().getEmail(),article.getUser().getName(),content,"새 댓글이 추가되었습니다.");
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(article.getUser());
-		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getToken(), "말랑트립", content));
+		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(article.getUser());
+		firebase.ifPresent(value -> firebaseService.sendPushMessage(value.getTokens(), "말랑트립", content,url));
 	}
 
 	/**
@@ -65,6 +70,12 @@ public class ArticleNotificationService {
 			.append("내 댓글에 새 답글이 추가되었습니다.")
 			.toString();
 
+		String url = new StringBuilder()
+				.append("/community/")
+				.append(comment.getArticle().getId())
+				.append("?login_required=true")
+				.toString();
+
 		List<String> firebaseTokens = new ArrayList<>();
 
 		getRepliedUsers(comment).stream()
@@ -73,12 +84,12 @@ public class ArticleNotificationService {
 				notificationService.create(user, content, ARTICLE, comment.getArticle().getId());
 
 				// firebase push message
-				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
-				firebase.ifPresent(value -> firebaseTokens.add(value.getToken()));
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(value -> firebaseTokens.addAll(value.getTokens()));
 			});
 
 		if(firebaseTokens != null && !firebaseTokens.isEmpty()){
-			firebaseService.sendPushMessage(firebaseTokens,"말랑트립",content);
+			firebaseService.sendPushMessage(firebaseTokens,"말랑트립",content,url);
 		}
 	}
 

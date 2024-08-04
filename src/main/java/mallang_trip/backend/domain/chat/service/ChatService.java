@@ -13,6 +13,7 @@ import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.C
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.PARTY_NOT_RECRUITING;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.chat.constant.ChatRoomType;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
+import mallang_trip.backend.domain.notification.entity.Firebase;
+import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
+import mallang_trip.backend.domain.notification.service.FirebaseService;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.chat.dto.ChatMessageRequest;
@@ -58,6 +62,8 @@ public class ChatService {
 	private final ChatMemberRepository chatMemberRepository;
 	private final PartyRepository partyRepository;
 	private final SimpMessagingTemplate template;
+	private final FirebaseService firebaseService;
+	private final FirebaseRepository firebaseRepository;
 
 	/**
 	 * 파티 전용 채팅방 시작
@@ -327,6 +333,43 @@ public class ChatService {
 		sendNewChatRoomList(chatMemberService.getChatMembers(room));
 		// 채팅 메시지 PUBLISH
 		template.convertAndSend("/sub/room/" + roomId, ChatMessageResponse.of(message));
+		// firebase push alarm
+		String url = new StringBuilder()
+				.append("/talk?chatRoomId=")
+				.append(roomId)
+				.toString();
+
+		List<String> firebaseTokens = getPushAlarmTokens(room, currentUser);
+		if(firebaseTokens != null && !firebaseTokens.isEmpty()) {
+			firebaseService.sendPushMessage(
+				firebaseTokens,
+				currentUser.getNickname(),
+				request.getContent(), url
+			);
+		}
+	}
+
+	/**
+	 * 푸시 알림을 보낼 대상의 firebase 토큰 찾기
+	 * <p>
+	 * 채팅 메시지 작성자를 제외한 채팅방의 모든 유저들의 firebase 토큰들을 찾습니다.
+	 *
+	 * @param room 해당 채팅방
+	 * @param currentUser 제외할 대상 (채팅 메시지 작성자)
+	 * @return firebase token list
+	 */
+	private List<String> getPushAlarmTokens(ChatRoom room, User currentUser){
+		List<String> firebaseTokens = new ArrayList<>();
+
+		chatMemberRepository.findByChatRoomAndActive(room, true).stream()
+			.map(member -> member.getUser())
+			.filter(user -> !user.equals(currentUser))
+			.forEach(user -> {
+				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
+				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
+			});
+
+		return firebaseTokens;
 	}
 
 	/**

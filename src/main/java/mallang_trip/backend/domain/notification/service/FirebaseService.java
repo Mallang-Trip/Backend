@@ -6,9 +6,12 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 
 import com.google.firebase.messaging.*;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import mallang_trip.backend.domain.notification.dto.FirebaseRequest;
+import mallang_trip.backend.domain.notification.dto.FirebaseUpdateDeleteRequest;
 import mallang_trip.backend.domain.notification.entity.Firebase;
 import mallang_trip.backend.domain.notification.repository.FirebaseRepository;
 import mallang_trip.backend.domain.user.entity.User;
@@ -59,48 +62,51 @@ public class FirebaseService{
      * Firebase Token 제거
      *
      */
-    public void deleteToken(){
+    public void deleteToken(FirebaseUpdateDeleteRequest request){
         User user = currentUserService.getCurrentUser();
 
-        Optional<Firebase> firebase = firebaseRepository.findByUserAndTokenNotNull(user);
+        Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
         if(firebase.isPresent()){
-            firebase.get().setToken(null);
+            List<String> tokens = firebase.get().getTokens();
+            tokens.remove(request.getFirebaseToken());
+            firebase.get().changeTokens(tokens);
         } else {
             log.error("Firebase Token Not Found : {}", user.getId());
         }
     }
 
     /**
-     * Firebase Token 등록
+     * Firebase Token 추가 (등록)
+     *
      */
-    public void saveToken(String token) {
+    public void updateToken(FirebaseUpdateDeleteRequest request) {
         User user = currentUserService.getCurrentUser();
+        Firebase firebase = firebaseRepository.findByUser(user).orElse(null);
 
-        if(firebaseRepository.existsByUser(user)) {
-            Firebase firebase = firebaseRepository.findByUser(user).get();
-            firebase.setToken(token);
-        } else {
-            Firebase firebase = Firebase.builder()
-                    .user(user)
-                    .token(token)
-                    .build();
-            firebaseRepository.save(firebase);
+        // 처음 등록하는 경우
+        if(firebase == null){
+            List<String> tokens = new ArrayList<>();
+            tokens.add(request.getFirebaseToken());
+            firebaseRepository.save(
+				Firebase.builder()
+                		.user(user)
+                		.tokens(tokens)
+                		.build()
+			);
+            return;
         }
-    }
 
-    /**
-     * Firebase Token 갱신
-     * @param token
-     */
-    public void updateToken(String token) {
-        User user = currentUserService.getCurrentUser();
-
-        Optional<Firebase> firebase = firebaseRepository.findByUser(user);
-        if(firebase.isPresent()){
-            firebase.get().setToken(token);
-        } else {
-            log.error("Firebase Token Not Found : {}", user.getId());
+        // 추가하는 경우
+        List<String> tokens = firebase.getTokens();
+        if(tokens == null){
+            tokens = new ArrayList<>();
         }
+        // 중복 체크
+        if(tokens.contains(request.getFirebaseToken())){
+            return;
+        }
+        tokens.add(request.getFirebaseToken());
+        firebase.changeTokens(tokens);
     }
 
     /**
@@ -108,13 +114,14 @@ public class FirebaseService{
      *
      */
     @Async
-    public void sendPushMessage(List<String> tokens, String title, String body) {
+    public void sendPushMessage(List<String> tokens, String title, String body, String url) {
         try{
             MulticastMessage message = MulticastMessage.builder()
                     .setNotification(Notification.builder()
                             .setTitle(title)
                             .setBody(body)
                             .build())
+                    .putData("tag",url)
                     .addAllTokens(tokens)
                     .build();
             BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
@@ -129,13 +136,14 @@ public class FirebaseService{
      *
      */
     @Async
-    public void sendPushMessage(String token, String title, String body) {
+    public void sendPushMessage(String token, String title, String body, String url) {
         try{
             Message message = Message.builder().setToken(token)
                     .setNotification(Notification.builder()
                             .setTitle(title)
                             .setBody(body)
                             .build())
+                    .putData("tag",url)
                     .build();
 
             String response = firebaseMessaging.send(message);
@@ -150,13 +158,14 @@ public class FirebaseService{
      * 테스트용
      */
 //    @Async
-    public String sendPushMessageTest(String token, String title, String body) {
+    public String sendPushMessageTest(String token, String title, String body, String url) {
         try{
         Message message = Message.builder().setToken(token)
                 .setNotification(Notification.builder()
                         .setTitle(title)
                         .setBody(body)
                         .build())
+                .putData("tag",url)
                 .build();
 
         String response = firebaseMessaging.send(message);

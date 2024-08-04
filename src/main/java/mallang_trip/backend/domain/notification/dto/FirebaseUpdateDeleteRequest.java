@@ -12,9 +12,9 @@ import java.util.List;
 @Getter
 @Builder
 @Jacksonized
-public class FirebaseRequest {
+public class FirebaseUpdateDeleteRequest {
 
-    @NotNull
-    @ApiModelProperty(value = "Firebase Tokens", required = true)
-    private List<String> firebaseTokens;
+    @NotBlank
+    @ApiModelProperty(value = "Firebase Token", required = true)
+    private String firebaseToken;
 }

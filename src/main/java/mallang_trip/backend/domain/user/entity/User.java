@@ -30,6 +30,9 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String di;
+
     @Column(name = "login_id", nullable = false)
     private String loginId;
 
@@ -94,5 +97,10 @@ public class User extends BaseEntity {
     public Integer getAgeRange() {
         int age = LocalDate.now().getYear() - this.birthday.getYear();
         return (int) (age / 10) * 10;
+    }
+
+    // nickname Getter 재정의
+    public String getNickname() {
+        return this.role == Role.ROLE_USER ? this.nickname : this.name + " 드라이버";
     }
 }
