@@ -79,6 +79,7 @@ dependencies {
 	implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.15.0"
 	implementation "com.fasterxml.jackson.core:jackson-core:2.15.0"
 	implementation "com.fasterxml.jackson.core:jackson-annotations:2.15.0"
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
 
 	implementation 'com.github.napstr:logback-discord-appender:1.0.0'
 
