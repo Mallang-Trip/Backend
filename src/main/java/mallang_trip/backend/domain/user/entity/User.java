@@ -101,6 +101,6 @@ public class User extends BaseEntity {
 
     // nickname Getter 재정의
     public String getNickname() {
-        return this.role == Role.ROLE_USER ? this.nickname : this.name + " 드라이버";
+        return this.role == Role.ROLE_DRIVER ? this.name + " 드라이버" : this.nickname;
     }
 }
