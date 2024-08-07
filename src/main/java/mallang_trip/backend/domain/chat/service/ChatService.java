@@ -196,7 +196,7 @@ public class ChatService {
 		ChatRoom room = chatRoomRepository.findById(chatRoomId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_CHATROOM));
 		// 그룹 채팅방이 아닌 경우
-		if (!room.getType().equals(GROUP)) {
+		if (!room.getType().equals(GROUP) && !room.getType().equals(PARTY_PUBLIC)) {
 			throw new BaseException(Forbidden);
 		}
 		// 초대 권한 CHECK
