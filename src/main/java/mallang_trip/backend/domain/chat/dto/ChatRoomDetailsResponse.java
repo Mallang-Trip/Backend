@@ -17,7 +17,7 @@ public class ChatRoomDetailsResponse {
     private Long publicRoomId;
     private Integer headCount;
     private String roomName;
-    private List<UserBriefResponse> members;
+    private List<ChatMemberResponse> members;
     private List<ChatMessageResponse> messages;
 
 }

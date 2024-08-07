@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.chat.constant.ChatRoomType;
+import mallang_trip.backend.domain.chat.dto.ChatMemberResponse;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
 import mallang_trip.backend.global.io.BaseException;
@@ -146,7 +147,7 @@ public class ChatRoomService {
 	/**
 	 * 내가 속한 파티를 제외한 모든 채팅방 나가기
 	 */
-	public void leaveAllChatExceptMyParty(User user){
+	public void leaveAllChatExceptMyParty(User user) {
 		chatMemberRepository.findByUserAndActive(user, true).stream()
 			.map(member -> member.getChatRoom())
 			.filter(room -> !chatMemberService.isMyParty(user, room.getParty()))
@@ -216,8 +217,9 @@ public class ChatRoomService {
 	 */
 	public ChatRoomDetailsResponse toDetailResponse(ChatRoom room, User user) {
 		ChatRoom publicRoom = getPublicRoomByPrivateRoom(room);
-		List<UserBriefResponse> members = chatMemberService.getChatMembers(room).stream()
-			.map(member -> UserBriefResponse.of(member.getUser()))
+		List<ChatMemberResponse> members = chatMemberService.getChatMembers(room).stream()
+			.map(member -> ChatMemberResponse.of(member,
+				chatMemberService.isMyParty(member.getUser(), room.getParty())))
 			.collect(Collectors.toList());
 		return ChatRoomDetailsResponse.builder()
 			.chatRoomId(room.getId())
