@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
+import mallang_trip.backend.domain.user.service.UserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.chat.dto.ChatMessageResponse;
 import mallang_trip.backend.domain.chat.entity.ChatMember;
@@ -99,28 +100,11 @@ public class ChatMemberService {
 	}
 
 	/**
-	 * COUPLE 채팅방에서 상대방을 차단했을 때, 활성화 하지 않음.
-	 */
-	private boolean shouldSkipActivation(ChatMember member) {
-		ChatRoom chatRoom = member.getChatRoom();
-		User currentUser = member.getUser();
-		if (chatRoom.getType().equals(COUPLE) &&
-			chatBlockService.isBlocked(currentUser, getOtherUserInCoupleChatRoom(chatRoom, currentUser))) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * 채팅방 모든 멤버 활성화
 	 */
 	public void activeAllMembers(ChatRoom room) {
 		chatMemberRepository.findByChatRoom(room)
-			.stream().forEach(member -> {
-				if (!shouldSkipActivation(member)) {
-					member.setActiveTrue();
-				}
-			});
+			.stream().forEach(member -> member.setActiveTrue());
 	}
 
 	/**

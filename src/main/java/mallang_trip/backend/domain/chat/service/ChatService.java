@@ -309,7 +309,7 @@ public class ChatService {
 		// 현재 유저에게 업데이트된 채팅방 리스트 STOMP publish
 		sendNewChatRoomList(currentUser);
 
-		return chatRoomService.toDetailResponse(room, currentUser);
+		return chatRoomService.toDetailResponse(currentMember);
 	}
 
 	/**
@@ -319,9 +319,12 @@ public class ChatService {
 		StompHeaderAccessor accessor) {
 		Long roomId = Long.parseLong(accessor.getFirstNativeHeader("room-id"));
 		User currentUser = currentUserService.getCurrentUser(accessor);
-
 		ChatRoom room = chatRoomRepository.findById(roomId)
 			.orElseThrow(() -> new MessageDeliveryException("CANNOT_FOUND_CHATROOM"));
+		// 차단하거나 차단당한 1:1 채팅방일 경우
+		if(chatRoomService.isBlockOrBlockedChatRoom(room)){
+			throw new MessageDeliveryException("BLOCK_OR_BLOCKED_USER");
+		}
 		// 모든 멤버 활성화
 		chatMemberService.activeAllMembers(room);
 		// 채팅 메시지 생성

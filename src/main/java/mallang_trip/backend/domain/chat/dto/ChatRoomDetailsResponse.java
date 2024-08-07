@@ -19,5 +19,7 @@ public class ChatRoomDetailsResponse {
     private String roomName;
     private List<ChatMemberResponse> members;
     private List<ChatMessageResponse> messages;
+    private Boolean isBlock;
+    private Boolean isBlocked;
 
 }

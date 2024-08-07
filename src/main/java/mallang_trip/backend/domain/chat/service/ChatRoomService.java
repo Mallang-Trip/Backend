@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.chat.constant.ChatRoomType;
 import mallang_trip.backend.domain.chat.dto.ChatMemberResponse;
+import mallang_trip.backend.domain.chat.entity.ChatMember;
 import mallang_trip.backend.domain.chat.repository.ChatMemberRepository;
 import mallang_trip.backend.domain.chat.repository.ChatRoomRepository;
 import mallang_trip.backend.global.io.BaseException;
@@ -35,6 +36,7 @@ public class ChatRoomService {
 	private final ChatMemberService chatMemberService;
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMemberRepository chatMemberRepository;
+	private final ChatBlockService chatBlockService;
 
 	/**
 	 * 채팅방 생성
@@ -215,24 +217,78 @@ public class ChatRoomService {
 	/**
 	 * ChatRoom -> ChatRoomDetailsResponse
 	 */
-	public ChatRoomDetailsResponse toDetailResponse(ChatRoom room, User user) {
+	public ChatRoomDetailsResponse toDetailResponse(ChatMember chatMember) {
+		ChatRoom room = chatMember.getChatRoom();
+		User user = chatMember.getUser();
 		ChatRoom publicRoom = getPublicRoomByPrivateRoom(room);
+
 		List<ChatMemberResponse> members = chatMemberService.getChatMembers(room).stream()
 			.map(member -> ChatMemberResponse.of(member,
 				chatMemberService.isMyParty(member.getUser(), room.getParty())))
 			.collect(Collectors.toList());
+
 		return ChatRoomDetailsResponse.builder()
 			.chatRoomId(room.getId())
 			.type(room.getType())
 			.publicRoomId(publicRoom == null ? null : publicRoom.getId())
 			.partyId(room.getParty() == null ? null : room.getParty().getId())
-			.myParty(
-				room.getParty() == null ? null : chatMemberService.isMyParty(user, room.getParty()))
+			.myParty(room.getParty() == null ?
+				null : chatMemberService.isMyParty(user, room.getParty()))
 			.headCount(chatMemberService.countChatMembers(room))
 			.roomName(getChatRoomName(room, user))
 			.members(members)
 			.messages(chatMessageService.getChatMessages(room, user))
+			.isBlock(isBlockCoupleChatRoom(chatMember))
+			.isBlocked(isBlockedCoupleChatRoom(chatMember))
 			.build();
 	}
 
+	/**
+	 * 차단한 1:1 채팅방인지 유무
+	 */
+	public boolean isBlockCoupleChatRoom(ChatMember member){
+		ChatRoom chatRoom = member.getChatRoom();
+		User currentUser = member.getUser();
+		if (chatRoom.getType().equals(COUPLE) &&
+			chatBlockService.isBlocked(
+				currentUser, chatMemberService.getOtherUserInCoupleChatRoom(chatRoom, currentUser))
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 차단당한 1:1 채팅방인지 유무
+	 */
+	public boolean isBlockedCoupleChatRoom(ChatMember member){
+		ChatRoom chatRoom = member.getChatRoom();
+		User currentUser = member.getUser();
+		if (chatRoom.getType().equals(COUPLE) &&
+			chatBlockService.isBlocked(
+				chatMemberService.getOtherUserInCoupleChatRoom(chatRoom, currentUser), currentUser)
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 차단하거나 차단당한  1:1 채팅방인지 유무
+	 */
+	public boolean isBlockOrBlockedChatRoom(ChatRoom room){
+		if(!room.getType().equals(COUPLE)){
+			return false;
+		}
+
+		List<ChatMember> chatMembers = chatMemberService.getChatMembers(room);
+		if(chatMembers.size() != 2){
+			return false;
+		}
+
+		User user1 = chatMembers.get(0).getUser();
+		User user2 = chatMembers.get(1).getUser();
+
+		return chatBlockService.isBlocked(user1, user2) || chatBlockService.isBlocked(user2, user1);
+	}
 }
