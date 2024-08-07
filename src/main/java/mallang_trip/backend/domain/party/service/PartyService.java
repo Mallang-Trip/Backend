@@ -321,6 +321,7 @@ public class PartyService {
         mailService.sendEmailParty(party, MailStatus.SEALED,null,MallangTripReservationUrl);
         alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CONFIRM, party);
         party.setStatus(SEALED);
+        partyNotificationService.dayBeforeTravelToMembers(party);
     }
 
     /**

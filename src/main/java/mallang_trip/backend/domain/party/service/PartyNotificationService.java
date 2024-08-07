@@ -705,7 +705,7 @@ public class PartyNotificationService {
 	}
 
 	// 1-1. 파티원
-	private void dayBeforeTravelToMembers(Party party) {
+	public void dayBeforeTravelToMembers(Party party) {
 		Driver driver = party.getDriver();
 		String content = new StringBuilder()
 			.append("드라이버의 정보를 확인해주세요. 드라이버 [")
