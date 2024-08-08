@@ -28,4 +28,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 		+ "WHERE u.id = :user_id\n"
 		+ "ORDER BY r.updated_at DESC;", nativeQuery = true)
 	List<Reservation> findByUser(@Param(value = "user_id") Long userId);
+
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END\n"
+		+ "FROM reservation r\n"
+		+ "    JOIN party_member pm ON r.party_member_id = pm.id\n"
+		+ "    JOIN user u ON pm.user_id = u.id\n"
+		+ "WHERE u.id = :user_id AND r.status = 'PAYMENT_FAILED';" , nativeQuery = true)
+	Boolean isPaymentFailedExistsByUser(@Param(value = "user_id") Long userId);
 }
