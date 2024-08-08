@@ -103,7 +103,7 @@ public class UserWithdrawalService {
 		user.setEmail(EMPTY_STRING);
 		user.setIntroduction(null);
 		user.setLoginId(EMPTY_STRING);
-		//user.setName(UNKNOWN_USER);
+		user.setName(UNKNOWN_USER);
 		user.setNickname(UNKNOWN_USER);
 		user.setPassword(EMPTY_STRING);
 		user.setPhoneNumber(EMPTY_STRING);
