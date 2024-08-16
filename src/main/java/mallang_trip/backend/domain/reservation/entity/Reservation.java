@@ -58,6 +58,9 @@ public class Reservation extends BaseEntity {
 	@Builder.Default()
 	private Integer refundAmount = 0;
 
+	@Column
+	private Integer penaltyAmount;
+
 	@Enumerated(EnumType.STRING)
 	private ReservationStatus status;
 
@@ -78,5 +81,9 @@ public class Reservation extends BaseEntity {
 
 	public void setRefundAmount(Integer refundAmount){
 		this.refundAmount = refundAmount;
+	}
+
+	public void setPenaltyAmount(Integer penaltyAmount){
+		this.penaltyAmount = penaltyAmount;
 	}
 }

@@ -82,6 +82,7 @@ public class ReservationService {
             if (penaltyAmount > 0) {
                 reservationNotificationService.penaltyPaymentRequired(
                     reservation.getMember().getUser(), penaltyAmount);
+                reservation.setPenaltyAmount(penaltyAmount);
             }
             reservation.changeStatus(REFUND_COMPLETE);
             return penaltyAmount;

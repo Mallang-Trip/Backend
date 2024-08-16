@@ -60,8 +60,9 @@ public class UserWithdrawalService {
 		if (isOngoingPartyExists(user)) {
 			throw new BaseException(ONGOING_PARTY_EXISTS);
 		}
-		// 미납금이 존재할 경우
-		if (reservationRepository.isPaymentFailedExistsByUser(user.getId())) {
+		// 미납금 또는 위약금이 존재할 경우
+		if (reservationRepository.isPaymentFailedExistsByUser(user.getId())
+			|| reservationRepository.isPenaltyExistsByUser(user.getId())) {
 			throw new BaseException(PAYMENT_FAILED_EXISTS);
 		}
 		deletePersonalInformation(user);
