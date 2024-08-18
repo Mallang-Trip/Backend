@@ -37,6 +37,7 @@ public class RegionService {
 		regionRepository.save(Region.builder()
 			.name(request.getName())
 			.image(request.getImage())
+			.province(request.getProvince())
 			.build());
 	}
 
