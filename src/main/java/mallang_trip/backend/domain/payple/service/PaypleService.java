@@ -161,7 +161,7 @@ public class PaypleService {
 	 * @throws BaseException Forbidden 결제가 필요하지 않은 상태일 경우 발생하는 예외
 	 * @throws BaseException BILLING_FAIL 결제가 실패했을 경우 발생하는 예외
 	 */
-	public void manualBilling(Long reservationId){
+	public void manualBilling(String reservationId){
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		if(!reservation.getStatus().equals(PAYMENT_FAILED)){

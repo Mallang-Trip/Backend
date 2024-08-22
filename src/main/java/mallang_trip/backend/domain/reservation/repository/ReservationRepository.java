@@ -12,7 +12,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+public interface ReservationRepository extends JpaRepository<Reservation, String> {
 
 	Optional<Reservation> findByMemberAndStatus(PartyMember member, ReservationStatus status);
 
