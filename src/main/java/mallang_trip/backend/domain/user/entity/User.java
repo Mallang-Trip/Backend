@@ -30,7 +30,7 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String di;
 
     @Column(name = "login_id", nullable = false)

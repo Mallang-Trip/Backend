@@ -40,6 +40,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
 		+ "FROM reservation r\n"
 		+ "    JOIN party_member pm ON r.party_member_id = pm.id\n"
 		+ "    JOIN user u ON pm.user_id = u.id\n"
-		+ "WHERE u.id = :user_id AND r.penalty_amount NOT NULL;" , nativeQuery = true)
+		+ "WHERE u.id = :user_id AND r.penalty_amount IS NOT NULL;" , nativeQuery = true)
 	Boolean isPenaltyExistsByUser(@Param(value = "user_id") Long userId);
 }
