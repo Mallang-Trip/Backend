@@ -31,4 +31,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findById(Long id);
 
     Boolean existsByDi(String di);
+
+    Long countByRoleAndDeleted(Role role, Boolean deleted);
+
+    List<User> findByDeleted(Boolean deleted);
 }

@@ -34,8 +34,8 @@ public class AlimTalkRequest {
 		Button button = Button.builder()
 			.type("WL")
 			.name("파티 페이지로")
-			.linkMobile("https://mallangtrip.com/party/detail/" + partyId)
-			.linkPc("https://mallangtrip.com/party/detail/" + partyId)
+			.linkMobile("https://mallangtrip.com/party/detail/" + partyId+"?login_required=true")
+			.linkPc("https://mallangtrip.com/party/detail/" + partyId+"?login_required=true")
 			.build();
 		Message message = Message.builder()
 			.to(to)

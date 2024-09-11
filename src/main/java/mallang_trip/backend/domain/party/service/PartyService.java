@@ -18,6 +18,7 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.WAITING_JOI
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.party.repository.*;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -107,10 +109,11 @@ public class PartyService {
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())
             .content(request.getContent())
+            .monopoly(request.getMonopoly())
             .build());
         // 자신을 멤버로 추가
         partyMemberService.createMember(party, user, request.getHeadcount(),
-            request.getCompanions());
+            request.getCompanions(),request.getUserPromotionCodeId());
         // 드라이버 파티 신청 알림
         partyNotificationService.newParty(driver.getUser(), party);
         alimTalkService.sendDriverAlimTalk(DRIVER_NEW_PARTY, party);
@@ -131,6 +134,14 @@ public class PartyService {
         // status CHECK
         if (!party.getStatus().equals(WAITING_DRIVER_APPROVAL)) {
             throw new BaseException(Forbidden);
+        }
+        PartyMember member = partyMemberRepository.findByPartyAndUser(party, currentUserService.getCurrentUser())
+            .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+
+        UserPromotionCode userPromotionCode = member.getUserPromotionCode();
+        if (userPromotionCode != null) {
+            userPromotionCode.changeStatus(CANCEL);
+            userPromotionCode.getCode().cancel();
         }
         party.setStatus(CANCELED_BY_PROPOSER);
     }
@@ -180,7 +191,7 @@ public class PartyService {
             throw new BaseException(SUSPENDING);
         }
         // STATUS CHECK
-        if (!party.getStatus().equals(RECRUITING)) {
+        if (!party.getStatus().equals(RECRUITING) || party.getMonopoly()) {
             throw new BaseException(PARTY_NOT_RECRUITING);
         }
         // 인원수 CHECK
@@ -198,7 +209,7 @@ public class PartyService {
             alimTalkService.sendDriverAlimTalk(DRIVER_COURSE_CHANGE, party);
         } else {
             partyNotificationService.newMember(user, party);
-            joinParty(party, user, request.getHeadcount(), request.getCompanions());
+            joinParty(party, user, request.getHeadcount(), request.getCompanions(),request.getUserPromotionCodeId());
         }
     }
 
@@ -206,8 +217,8 @@ public class PartyService {
      * 파티 가입 (멤버 추가) : 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정. 최대인원 모집 미완료 시, 전원 레디 취소 처리.
      */
     private void joinParty(Party party, User user, Integer headcount,
-        List<PartyMemberCompanionRequest> requests) {
-        partyMemberService.createMember(party, user, headcount, requests);
+        List<PartyMemberCompanionRequest> requests,Long userPromotionCodeId) {
+        partyMemberService.createMember(party, user, headcount, requests,userPromotionCodeId);
         if (party.getHeadcount() == party.getCapacity()) {
             partyMemberService.setReadyAllMembers(party, true);
             partyNotificationService.partyFulled(party);
@@ -237,7 +248,11 @@ public class PartyService {
         if (!isMyParty(user, party)) {
             throw new BaseException(NOT_PARTY_MEMBER);
         }
-        PartyProposal proposal = partyProposalService.createCourseChange(party, request);
+        // 프로모션 코드 사용 여부 확인
+        PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)
+            .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+        PartyProposal proposal = partyProposalService.createCourseChange(party, request,member.getUserPromotionCode());
+
         party.setStatus(WAITING_COURSE_CHANGE_APPROVAL);
         partyNotificationService.newCourseChange(proposal);
         alimTalkService.sendDriverAlimTalk(DRIVER_COURSE_CHANGE, party);
@@ -281,7 +296,7 @@ public class PartyService {
                     proposal).stream().map(PartyMemberCompanionRequest::of)
                 .collect(Collectors.toList());
             partyNotificationService.joinAcceptedAndCourseChanged(proposer, party);
-            joinParty(party, proposer, proposal.getHeadcount(), companionRequests);
+            joinParty(party, proposer, proposal.getHeadcount(), companionRequests,proposal.getUserPromotionCode() == null ? -1 : proposal.getUserPromotionCode().getId());
             partyNotificationService.joinAccepted(proposer, party);
             mailService.sendEmailParty(party, MailStatus.MODIFIED_JOIN,"새 파티원의 코스 변경 신청을 모두 수락하였습니다.",MallangTripReservationUrl);
         }
@@ -387,6 +402,14 @@ public class PartyService {
             throw new BaseException(NOT_PARTY_MEMBER);
         }
         // 탈퇴 진행
+        PartyMember partyMember = partyMemberRepository.findByPartyAndUser(party, user)
+            .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+        UserPromotionCode userPromotionCode = partyMember.getUserPromotionCode();
+        if (userPromotionCode != null) {
+            userPromotionCode.changeStatus(CANCEL);
+            userPromotionCode.getCode().cancel();
+        }
+
         if (partyMemberService.isLastMember(party)) {
             quitPartyBeforeReservationByLastMember(party);
         } else {
@@ -480,6 +503,13 @@ public class PartyService {
         PartyMember member = partyMemberRepository.findByPartyAndUser(party,
                 currentUserService.getCurrentUser())
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+
+        UserPromotionCode userPromotionCode = member.getUserPromotionCode();
+        if (userPromotionCode != null) {
+            userPromotionCode.changeStatus(CANCEL);
+            userPromotionCode.getCode().cancel();
+        }
+
         if (partyMemberService.isLastMember(party)) {
             cancelReservationByLastMember(member);
         } else {
@@ -511,7 +541,7 @@ public class PartyService {
         Integer penaltyAmount = reservationService.refund(member);
         // 멤버 삭제
         partyMemberService.deleteMemberAndDecreaseHeadcount(party, member);
-        if (dDay > 7) { // 위약금이 발생하지 않은 경우
+        if (dDay > 7 || penaltyAmount==0) { // 위약금이 발생하지 않은 경우 + 0원 환불
             partyNotificationService.cancelReservation(member.getUser(), party);
             reservationService.refundAllMembers(party);
             party.setStatus(RECRUITING);
@@ -539,4 +569,54 @@ public class PartyService {
             party.setDriverReady(false);
         }
     }
+
+    /**
+     * (관리자) 파티 취소 멤버용
+     */
+    public void cancelReservationMember(Party party) {
+        List<PartyMember> members = partyMemberRepository.findByParty(party);
+
+        members.forEach(member->{
+            UserPromotionCode userPromotionCode = member.getUserPromotionCode();
+            if (userPromotionCode != null) {
+                userPromotionCode.changeStatus(CANCEL);
+                userPromotionCode.getCode().cancel();
+            }
+
+            if (partyMemberService.isLastMember(party)) {
+                cancelReservationByLastMember(member);
+            } else {
+                cancelReservationByNotLastMember(member);
+            }
+        });
+
+        // 모든 멤버 레디 해제
+        partyMemberService.setReadyAllMembers(party, false);
+    }
+
+    /**
+     * (관리자) 파티 취소
+     *
+     */
+    public void cancelParty(Long partyId, String reason) {
+
+        Party party = partyRepository.findById(partyId)
+                .orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
+        // status CHECK
+        PartyStatus status = party.getStatus();
+        if (!(status.equals(SEALED) || status.equals(WAITING_COURSE_CHANGE_APPROVAL))) {
+            throw new BaseException(Forbidden);
+        }
+        // 진행중인 코스 변경 신청이 있을 경우 제안 종료
+        if (status.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
+            partyProposalService.expireWaitingProposalByParty(party);
+        }
+        cancelReservationByDriver(party);
+        cancelReservationMember(party);
+        chatService.leavePrivateChatWhenLeavingParty(currentUserService.getCurrentUser(), party);
+        partyMemberService.setReadyAllMembers(party, false);
+        mailService.sendEmailParty(party, MailStatus.CANCELLED, reason, MallangTripReservationUrl);
+        alimTalkService.sendDriverAlimTalk(DRIVER_RESERVATION_CANCELED, party);
+    }
+
 }

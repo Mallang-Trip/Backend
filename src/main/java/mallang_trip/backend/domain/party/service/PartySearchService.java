@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.admin.dto.PartyAdminBriefResponse;
+import mallang_trip.backend.domain.admin.dto.PartyAdminDetailsResponse;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.region.repository.RegionRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
@@ -60,8 +62,8 @@ public class PartySearchService {
 			throw new BaseException(REGION_NOT_FOUND);
 		}
 
-		List<Party> parties = region.equals("all") ? partyRepository.findByStatus(RECRUITING)
-			: partyRepository.findByRegionAndStatus(region, RECRUITING);
+		List<Party> parties = region.equals("all") ? partyRepository.findByStatusAndMonopoly(RECRUITING, false)
+			: partyRepository.findByRegionAndStatusAndMonopoly(region, RECRUITING, false);
 		return parties.stream()
 			.filter(party -> party.isHeadcountAvailable(headcount))
 			.filter(party -> party.checkDate(startDate, endDate))
@@ -154,19 +156,83 @@ public class PartySearchService {
 	/**
 	 * (관리자) Status 별 파티 조회
 	 */
-	public List<PartyBriefResponse> getPartiesByAdmin(String status) {
+	public List<PartyAdminBriefResponse> getPartiesByAdmin(String status) {
 		switch (status.toLowerCase()){
 			case "canceled":
-				return getCanceledParties();
+				return getCanceledPartiesAdmin();
 			case "before_reservation":
-				return getBeforeReservationParties();
+				return getBeforeReservationPartiesAdmin();
 			case "after_reservation":
-				return getReservedParties();
+				return getReservedPartiesAdmin();
 			case "finished":
-				return getFinishedParties();
+				return getFinishedPartiesAdmin();
 			default:
 				throw new BaseException(Bad_Request);
 		}
+	}
+
+	/**
+	 * (관리자)
+	 * 취소된 (CANCELED_%) 파티 조회
+	 */
+	private List<PartyAdminBriefResponse> getCanceledPartiesAdmin() {
+		return partyRepository.findByStatusStartWithCanceled().stream()
+				.map(party ->{
+					List<PartyMember> members = partyMemberService.getMembers(party);
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+				})
+				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * (관리자)
+	 * 예약 전 (WAITING_DRIVER_APPROVAL, RECRUITING, WAITING_JOIN_APPROVAL) 파티 조회
+	 */
+	private List<PartyAdminBriefResponse> getBeforeReservationPartiesAdmin() {
+		return Stream.of(
+						partyRepository.findByStatus(WAITING_DRIVER_APPROVAL),
+						partyRepository.findByStatus(RECRUITING),
+						partyRepository.findByStatus(WAITING_JOIN_APPROVAL))
+				.flatMap(x -> x.stream())
+				.map(party -> {
+					List<PartyMember> members = partyMemberService.getMembers(party);
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+				})
+				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * (관리자)
+	 * 예약 된 (SEALED, WAITING_COURSE_CHANGE_APPROVAL, DAY_OF_TRAVEL) 파티 조회
+	 */
+	private List<PartyAdminBriefResponse> getReservedPartiesAdmin() {
+		return Stream.of(
+						partyRepository.findByStatus(SEALED),
+						partyRepository.findByStatus(WAITING_COURSE_CHANGE_APPROVAL),
+						partyRepository.findByStatus(DAY_OF_TRAVEL))
+				.flatMap(x -> x.stream())
+				.map(party -> {
+					List<PartyMember> members = partyMemberService.getMembers(party);
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+				})
+				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * (관리자)
+	 * 완료된 (FINISHED) 파티 조회
+	 */
+	private List<PartyAdminBriefResponse> getFinishedPartiesAdmin() {
+		return partyRepository.findByStatus(FINISHED).stream()
+				.map(party -> {
+					List<PartyMember> members = partyMemberService.getMembers(party);
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+				})
+				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -220,10 +286,12 @@ public class PartySearchService {
 	/**
 	 * (관리자) 파티 상세 조회
 	 */
-	public PartyDetailsResponse viewPartyForAdmin(Long partyId){
+	public PartyAdminDetailsResponse viewPartyForAdmin(Long partyId){
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
-		return myPartyToPartyDetailsResponse(party);
+		List<PartyMember> members = partyMemberService.getMembers(party);
+		Boolean promotion = members.stream().anyMatch(member -> member.getUserPromotionCode() != null); // 프로모션코드 사용자 존재 여부
+		return adminPartyDetailsResponse(party, promotion);
 	}
 
 	/**
@@ -254,6 +322,7 @@ public class PartySearchService {
 			.course(courseService.getCourseDetails(party.getCourse()))
 			.content(party.getContent())
 			.members(partyMemberService.getMembersDetails(party))
+			.monopoly(false)
 			.build();
 	}
 
@@ -283,7 +352,34 @@ public class PartySearchService {
 			.proposalExists(proposal == null ? false : true)
 			.proposal(partyProposalService.toPartyProposalResponse(proposal))
 			.reservation(reservationService.getReservationResponse(party))
+			.monopoly(party.getMonopoly())
 			.build();
+	}
+
+	private PartyAdminDetailsResponse adminPartyDetailsResponse(Party party, Boolean promotion) {
+		PartyProposal proposal = partyProposalService.getWaitingProposalByParty(party);
+		return PartyAdminDetailsResponse.builder()
+				.partyId(party.getId())
+				.myParty(partyService.isMyParty(currentUserService.getCurrentUser(), party))
+				.dibs(partyDibsService.checkPartyDibs(party))
+				.partyStatus(party.getStatus())
+				.driverId(party.getDriver().getId())
+				.driverName(party.getDriver().getUser().getName())
+				.driverReady(party.getDriverReady())
+				.capacity(party.getCapacity())
+				.headcount(party.getHeadcount())
+				.region(party.getRegion())
+				.startDate(party.getStartDate())
+				.endDate(party.getEndDate())
+				.course(courseService.getCourseDetails(party.getCourse()))
+				.content(party.getContent())
+				.members(partyMemberService.getMembersDetails(party))
+				.proposalExists(proposal == null ? false : true)
+				.proposal(partyProposalService.toPartyProposalResponse(proposal))
+				.reservation(reservationService.getReservationResponse(party))
+				.monopoly(party.getMonopoly())
+				.promotion(promotion)
+				.build();
 	}
 
 

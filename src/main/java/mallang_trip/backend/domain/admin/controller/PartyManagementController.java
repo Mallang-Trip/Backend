@@ -8,6 +8,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.admin.dto.PartyAdminBriefResponse;
+import mallang_trip.backend.domain.admin.dto.PartyAdminCancelRequest;
+import mallang_trip.backend.domain.admin.dto.PartyAdminDetailsResponse;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
 import mallang_trip.backend.domain.party.dto.PartyDetailsResponse;
 import mallang_trip.backend.domain.party.service.PartySearchService;
@@ -15,11 +18,7 @@ import mallang_trip.backend.domain.party.service.PartyService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Api(tags = "Party Management API")
 @RestController
@@ -44,7 +43,7 @@ public class PartyManagementController {
         @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<List<PartyBriefResponse>> getPartiesByStatusForAdmin(
+    public BaseResponse<List<PartyAdminBriefResponse>> getPartiesByStatusForAdmin(
         @RequestParam(value = "status") String status) throws BaseException {
         return new BaseResponse<>(partySearchService.getPartiesByAdmin(status));
     }
@@ -63,7 +62,7 @@ public class PartyManagementController {
         @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
     })
     @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
-    public BaseResponse<PartyDetailsResponse> viewPartyForAdmin(
+    public BaseResponse<PartyAdminDetailsResponse> viewPartyForAdmin(
         @PathVariable(value = "party_id") Long partyId) throws BaseException {
         return new BaseResponse<>(partySearchService.viewPartyForAdmin(partyId));
     }
@@ -87,6 +86,26 @@ public class PartyManagementController {
     public BaseResponse<String> changeDriverReady(
         @PathVariable(value = "party_id") Long partyId, @RequestParam(value = "ready") Boolean ready) throws BaseException {
         partyService.changeDriverReady(partyId, ready);
+        return new BaseResponse<>("성공");
+    }
+
+    @ApiOperation(value = "(관리자) 파티 취소")
+    @PostMapping("/cancel/{party_id}")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
+        @ApiImplicitParam(name = "party_id", value = "party_id", required = true, paramType = "path", dataTypeClass = Long.class)
+    })
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+        @ApiResponse(code = 403, message = "권한이 없는 사용자입니다."),
+        @ApiResponse(code = 404, message = "해당 파티를 찾을 수 없습니다."),
+        @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+        @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+    })
+    @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+    public BaseResponse<String> cancelParty(
+        @PathVariable(value = "party_id") Long partyId, @RequestBody PartyAdminCancelRequest request) throws BaseException {
+        partyService.cancelParty(partyId,request.getReason());
         return new BaseResponse<>("성공");
     }
 }

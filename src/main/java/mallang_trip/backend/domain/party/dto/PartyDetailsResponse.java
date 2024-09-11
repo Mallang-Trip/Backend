@@ -30,4 +30,5 @@ public class PartyDetailsResponse {
     private Boolean proposalExists;
     private PartyProposalResponse proposal;
     private ReservationResponse reservation;
+    private Boolean monopoly;
 }

@@ -119,8 +119,12 @@ public class PaypleService {
 		int amount = reservation.getPaymentAmount();
 		String goods = reservation.getMember().getParty().getCourse().getName();
 
-		// 등록된 카드가 없는 경우
-		if(card == null){
+
+		if(amount == 0){// 결제 금액이 0원인 경우
+			reservation.changeStatus(PAYMENT_COMPLETE);
+			return true;
+		}
+		else if(card == null){// 등록된 카드가 없는 경우
 			reservation.changeStatus(PAYMENT_FAILED);
 			return false;
 		}
@@ -161,7 +165,7 @@ public class PaypleService {
 	 * @throws BaseException Forbidden 결제가 필요하지 않은 상태일 경우 발생하는 예외
 	 * @throws BaseException BILLING_FAIL 결제가 실패했을 경우 발생하는 예외
 	 */
-	public void manualBilling(Long reservationId){
+	public void manualBilling(String reservationId){
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new BaseException(Not_Found));
 		if(!reservation.getStatus().equals(PAYMENT_FAILED)){

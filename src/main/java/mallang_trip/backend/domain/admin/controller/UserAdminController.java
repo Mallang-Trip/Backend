@@ -2,6 +2,7 @@ package mallang_trip.backend.domain.admin.controller;
 
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.admin.dto.UserCountResponse;
 import mallang_trip.backend.domain.admin.dto.UserInfoForAdminResponse;
 import mallang_trip.backend.domain.admin.service.UserAdminService;
 import mallang_trip.backend.domain.admin.dto.GrantAdminRoleRequest;
@@ -19,6 +20,23 @@ import java.util.List;
 public class UserAdminController {
 
     private final UserAdminService userAdminService;
+
+    /**
+     * (관리자) 회원 수 조회
+     */
+    @GetMapping("/admin/user/count")
+    @ApiOperation(value = "(관리자) 회원 수 조회")
+    @ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class)
+    @ApiResponses({
+        @ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+        @ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+        @ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+        @ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+    })
+    @PreAuthorize("hasRole('ROLE_ADMIN')") // 관리자
+    public BaseResponse<UserCountResponse> countUser() throws BaseException{
+        return new BaseResponse<>(userAdminService.countUser());
+    }
 
     /**
      * (관리자) 회원 정보 목록 조회

@@ -82,6 +82,7 @@ public class ReservationService {
             if (penaltyAmount > 0) {
                 reservationNotificationService.penaltyPaymentRequired(
                     reservation.getMember().getUser(), penaltyAmount);
+                reservation.setPenaltyAmount(penaltyAmount);
             }
             reservation.changeStatus(REFUND_COMPLETE);
             return penaltyAmount;
@@ -116,6 +117,11 @@ public class ReservationService {
      * 결제 금액 계산
      */
     private int calculatePaymentAmount(PartyMember member) {
+        // TODO : 일단 무료로 처리
+        // 추후에 프로모션 코드 적용 로직 추가 (할인 등)
+        if(member.getUserPromotionCode().getCode().getFree())
+            return 0;
+
         Party party = member.getParty();
         int totalPrice = party.getCourse().getTotalPrice();
         int discountPrice = party.getCourse().getDiscountPrice();

@@ -19,6 +19,7 @@ import lombok.Setter;
 import mallang_trip.backend.domain.party.constant.AgreementStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.party.constant.ProposalType;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.user.entity.User;
@@ -69,4 +70,8 @@ public class PartyProposal extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default()
     private ProposalStatus status = ProposalStatus.WAITING;
+
+    @ManyToOne
+    @JoinColumn(name = "user_promotion_code_id", nullable = true)
+    private UserPromotionCode userPromotionCode;
 }

@@ -77,7 +77,7 @@ public class PaypleController {
 	@PostMapping("/{reservation_id}")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "access-token", value = "Access Token", required = true, paramType = "header", dataTypeClass = String.class),
-		@ApiImplicitParam(name = "reservation_id", value = "reservation_id", required = true, paramType = "path", dataTypeClass = Long.class)
+		@ApiImplicitParam(name = "reservation_id", value = "reservation_id", required = true, paramType = "path", dataTypeClass = String.class)
 	})
 	@ApiResponses({
 		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
@@ -87,7 +87,7 @@ public class PaypleController {
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
 	@PreAuthorize("isAuthenticated()") // 로그인 사용자
-	public BaseResponse<String> retry(@PathVariable(value = "reservation_id") Long reservationId) throws BaseException{
+	public BaseResponse<String> retry(@PathVariable(value = "reservation_id") String reservationId) throws BaseException{
 		paypleService.manualBilling(reservationId);
 		return new BaseResponse<>("성공");
 	}
