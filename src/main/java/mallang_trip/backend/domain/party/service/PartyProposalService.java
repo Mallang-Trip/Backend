@@ -4,8 +4,7 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
-import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.TRY;
-import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.*;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXPIRED_PROPOSAL;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
@@ -126,6 +125,11 @@ public class PartyProposalService {
 		proposal.setStatus(ProposalStatus.CANCELED);
 		if(proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)){
 			proposal.getParty().setStatus(RECRUITING);
+			if(proposal.getUserPromotionCode() != null)
+			{
+				proposal.getUserPromotionCode().changeStatus(CANCEL);
+				proposal.getUserPromotionCode().getCode().cancel();
+			}
 		} else if (proposal.getType().equals(COURSE_CHANGE)){
 			proposal.getParty().setStatus(SEALED);
 		}
