@@ -5,6 +5,7 @@ import static mallang_trip.backend.domain.reservation.constant.ReservationStatus
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_FAILED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 
@@ -115,7 +116,8 @@ public class ReservationService {
             .forEach(member -> {
                 freeRefund(member);
                 UserPromotionCode userPromotionCode = member.getUserPromotionCode();
-                if (userPromotionCode != null) {
+                if (userPromotionCode != null && userPromotionCode.getStatus().equals(USE))
+                {
                     userPromotionCode.changeStatus(CANCEL);
                     userPromotionCode.getCode().cancel();
                 }
@@ -128,7 +130,7 @@ public class ReservationService {
     private int calculatePaymentAmount(PartyMember member) {
         // TODO : 일단 무료로 처리
         // 추후에 프로모션 코드 적용 로직 추가 (할인 등)
-        if(member.getUserPromotionCode().getCode().getFree())
+        if(member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE) && member.getUserPromotionCode().getCode().getFree())
             return 0;
 
         Party party = member.getParty();

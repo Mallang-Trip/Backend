@@ -86,7 +86,6 @@ public class PartyMemberService {
         if (partyMemberRepository.existsByPartyAndUser(party, user)) {
             throw new BaseException(ALREADY_PARTY_MEMBER);
         }
-        System.out.println(userPromotionCodeId);
         Optional<UserPromotionCode> userPromotionCode = userPromotionCodeRepository.findByIdAndStatus(userPromotionCodeId, TRY);
         if(userPromotionCode.isPresent()){
             userPromotionCode.get().changeStatus(USE);

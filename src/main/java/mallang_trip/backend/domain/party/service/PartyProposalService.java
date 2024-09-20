@@ -101,7 +101,7 @@ public class PartyProposalService {
 			.headcount(null)
 			.content(request.getContent())
 			.type(COURSE_CHANGE)
-			.userPromotionCode(userPromotionCode)
+			.userPromotionCode(userPromotionCode != null && userPromotionCode.getStatus().equals(USE) ? userPromotionCode : null)
 			.build());
 		createPartyProposalAgreements(proposal);
 		// 생성자는 자동 수락
@@ -125,7 +125,7 @@ public class PartyProposalService {
 		proposal.setStatus(ProposalStatus.CANCELED);
 		if(proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)){
 			proposal.getParty().setStatus(RECRUITING);
-			if(proposal.getUserPromotionCode() != null)
+			if(proposal.getUserPromotionCode() != null && proposal.getUserPromotionCode().getStatus().equals(USE))
 			{
 				proposal.getUserPromotionCode().changeStatus(CANCEL);
 				proposal.getUserPromotionCode().getCode().cancel();
@@ -271,6 +271,11 @@ public class PartyProposalService {
 		PartyProposal proposal = getWaitingProposalByParty(party);
 		if (proposal != null) {
 			expireProposal(proposal);
+			if(proposal.getUserPromotionCode() != null && proposal.getUserPromotionCode().getStatus().equals(USE))
+			{
+				proposal.getUserPromotionCode().changeStatus(CANCEL);
+				proposal.getUserPromotionCode().getCode().cancel();
+			}
 		}
 	}
 

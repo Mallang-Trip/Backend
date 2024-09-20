@@ -19,6 +19,7 @@ import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHA
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
 import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
 
 import java.time.LocalDate;
@@ -139,7 +140,8 @@ public class PartyService {
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 
         UserPromotionCode userPromotionCode = member.getUserPromotionCode();
-        if (userPromotionCode != null) {
+        if (userPromotionCode != null && userPromotionCode.getStatus().equals(USE))
+        {
             userPromotionCode.changeStatus(CANCEL);
             userPromotionCode.getCode().cancel();
         }
@@ -405,7 +407,8 @@ public class PartyService {
         PartyMember partyMember = partyMemberRepository.findByPartyAndUser(party, user)
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
         UserPromotionCode userPromotionCode = partyMember.getUserPromotionCode();
-        if (userPromotionCode != null) {
+        if (userPromotionCode != null && userPromotionCode.getStatus().equals(USE))
+        {
             userPromotionCode.changeStatus(CANCEL);
             userPromotionCode.getCode().cancel();
         }
@@ -505,7 +508,8 @@ public class PartyService {
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
 
         UserPromotionCode userPromotionCode = member.getUserPromotionCode();
-        if (userPromotionCode != null) {
+        if (userPromotionCode != null && userPromotionCode.getStatus().equals(USE))
+        {
             userPromotionCode.changeStatus(CANCEL);
             userPromotionCode.getCode().cancel();
         }
@@ -578,7 +582,8 @@ public class PartyService {
 
         members.forEach(member->{
             UserPromotionCode userPromotionCode = member.getUserPromotionCode();
-            if (userPromotionCode != null) {
+            if (userPromotionCode != null && userPromotionCode.getStatus().equals(USE))
+            {
                 userPromotionCode.changeStatus(CANCEL);
                 userPromotionCode.getCode().cancel();
             }
