@@ -4,6 +4,8 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.*;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
 import static mallang_trip.backend.domain.region.exception.RegionException.REGION_NOT_FOUND;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Bad_Request;
 
 import java.util.Comparator;
@@ -16,6 +18,7 @@ import mallang_trip.backend.domain.admin.dto.PartyAdminBriefResponse;
 import mallang_trip.backend.domain.admin.dto.PartyAdminDetailsResponse;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.region.repository.RegionRepository;
+import mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.domain.party.dto.PartyBriefResponse;
@@ -179,7 +182,7 @@ public class PartySearchService {
 		return partyRepository.findByStatusStartWithCanceled().stream()
 				.map(party ->{
 					List<PartyMember> members = partyMemberService.getMembers(party);
-					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE)));
 				})
 				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
 				.collect(Collectors.toList());
@@ -197,7 +200,7 @@ public class PartySearchService {
 				.flatMap(x -> x.stream())
 				.map(party -> {
 					List<PartyMember> members = partyMemberService.getMembers(party);
-					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE)));
 				})
 				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
 				.collect(Collectors.toList());
@@ -215,7 +218,7 @@ public class PartySearchService {
 				.flatMap(x -> x.stream())
 				.map(party -> {
 					List<PartyMember> members = partyMemberService.getMembers(party);
-					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE)));
 				})
 				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
 				.collect(Collectors.toList());
@@ -229,7 +232,7 @@ public class PartySearchService {
 		return partyRepository.findByStatus(FINISHED).stream()
 				.map(party -> {
 					List<PartyMember> members = partyMemberService.getMembers(party);
-					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null));
+					return PartyAdminBriefResponse.of(party, members.stream().anyMatch(member -> member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE)));
 				})
 				.sorted(Comparator.comparing(PartyAdminBriefResponse::getUpdatedAt).reversed())
 				.collect(Collectors.toList());
@@ -290,7 +293,7 @@ public class PartySearchService {
 		Party party = partyRepository.findById(partyId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_PARTY));
 		List<PartyMember> members = partyMemberService.getMembers(party);
-		Boolean promotion = members.stream().anyMatch(member -> member.getUserPromotionCode() != null); // 프로모션코드 사용자 존재 여부
+		Boolean promotion = members.stream().anyMatch(member -> member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE));
 		return adminPartyDetailsResponse(party, promotion);
 	}
 
