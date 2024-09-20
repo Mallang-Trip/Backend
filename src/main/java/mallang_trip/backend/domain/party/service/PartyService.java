@@ -253,6 +253,15 @@ public class PartyService {
         // 프로모션 코드 사용 여부 확인
         PartyMember member = partyMemberRepository.findByPartyAndUser(party, user)
             .orElseThrow(() -> new BaseException(NOT_PARTY_MEMBER));
+
+        List<PartyMember> members = partyMemberRepository.findByParty(party);
+        members.forEach(m->{
+            if(m.getUserPromotionCode() != null && m.getUserPromotionCode().getStatus().equals(USE)){
+                if(m.getUserPromotionCode().getCode().getMaximumPrice() < request.getCourse().getTotalPrice()){
+                    throw new BaseException(CANNOT_CHANGE_COURSE_PROMOTION_CODE);
+                }
+            }
+        });
         PartyProposal proposal = partyProposalService.createCourseChange(party, request,member.getUserPromotionCode());
 
         party.setStatus(WAITING_COURSE_CHANGE_APPROVAL);

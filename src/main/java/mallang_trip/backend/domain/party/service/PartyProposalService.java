@@ -4,10 +4,9 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
 import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.*;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXPIRED_PROPOSAL;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
 
 import java.util.List;
 import java.util.Optional;
@@ -65,16 +64,19 @@ public class PartyProposalService {
 	 * PartyProposal, PartyProposalAgreement 생성 (Type: JOIN_WITH_COURSE_CHANGE)
 	 */
 	public void createJoinWithCourseChange(Party party, JoinPartyRequest request) {
-		Course course = courseService.createCourse(request.getNewCourse());
 		Optional<UserPromotionCode> userPromotionCode = userPromotionCodeRepository.findById(
 				request.getUserPromotionCodeId());
 		if(userPromotionCode.isPresent()){
 			if(!userPromotionCode.get().getUser().equals(currentUserService.getCurrentUser())||!userPromotionCode.get().getStatus().equals(TRY)){
 				throw new BaseException(Forbidden);
 			}
+			if(userPromotionCode.get().getCode().getMaximumPrice() < request.getNewCourse().getTotalPrice()){
+				throw new BaseException(CANNOT_CHANGE_COURSE_PROMOTION_CODE);
+			}
 			userPromotionCode.get().changeStatus(USE);
 			userPromotionCode.get().getCode().use();
 		}
+		Course course = courseService.createCourse(request.getNewCourse());
 
 		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
