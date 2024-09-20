@@ -4,6 +4,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_FAILED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.payple.service.PaypleService;
 import mallang_trip.backend.domain.reservation.dto.PaymentResponse;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.reservation.dto.ReservationResponse;
 import mallang_trip.backend.domain.party.entity.Party;
@@ -110,7 +112,14 @@ public class ReservationService {
      */
     public void refundAllMembers(Party party) {
         partyMemberService.getMembers(party).stream()
-            .forEach(member -> freeRefund(member));
+            .forEach(member -> {
+                freeRefund(member);
+                UserPromotionCode userPromotionCode = member.getUserPromotionCode();
+                if (userPromotionCode != null) {
+                    userPromotionCode.changeStatus(CANCEL);
+                    userPromotionCode.getCode().cancel();
+                }
+            });
     }
 
     /**
