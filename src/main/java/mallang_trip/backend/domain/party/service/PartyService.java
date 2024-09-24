@@ -625,7 +625,7 @@ public class PartyService {
         if (status.equals(WAITING_COURSE_CHANGE_APPROVAL)) {
             partyProposalService.expireWaitingProposalByParty(party);
         }
-        cancelReservationByDriver(party);
+        //cancelReservationByDriver(party);
         cancelReservationMember(party);
         chatService.leavePrivateChatWhenLeavingParty(currentUserService.getCurrentUser(), party);
         partyMemberService.setReadyAllMembers(party, false);
