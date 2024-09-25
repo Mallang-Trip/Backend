@@ -225,9 +225,9 @@ public class MobileOKService {
 				throw new BaseException(TOKEN_TIMEOUT);
 			}
 
-			/*if(userRepository.existsByDi(di) || userRepository.existsByPhoneNumber(userPhone)){
+			if(userRepository.existsByDi(di) || userRepository.existsByPhoneNumber(userPhone)){
 				throw new BaseException(Conflict);
-			}*/
+			}
 
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 			LocalDate birthday = LocalDate.parse(userBirthday, dateFormatter);
