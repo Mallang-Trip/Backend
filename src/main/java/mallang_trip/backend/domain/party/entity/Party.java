@@ -83,6 +83,10 @@ public class  Party extends BaseEntity {
 	@Builder.Default()
 	private DriverPenaltyStatus driverPenaltyStatus = NO_PENALTY;
 
+	@Column
+	@Builder.Default()
+	private Boolean monopoly = false;
+
 	public void increaseHeadcount(int headcount) {
 		this.headcount += headcount;
 	}
@@ -120,10 +124,14 @@ public class  Party extends BaseEntity {
 
 	/**
 	 * 드라이버 예약 취소로 인한 위약금 발생 시, 위약금을 저장하고 driverPenaltyStatus 를 변경
+	 * 위약금이 0원일 경우 변경하지 않음.
 	 *
 	 * @param penalty 위약금 금액
 	 */
 	public void setDriverPenaltyAmount(Integer penalty){
+		if(penalty == 0 || penalty == null){
+			return;
+		}
 		this.driverPenaltyStatus = PENALTY_EXISTS;
 		this.driverPenaltyAmount = penalty;
 	}

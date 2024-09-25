@@ -1,16 +1,19 @@
-package mallang_trip.backend.domain.party.dto;
+package mallang_trip.backend.domain.admin.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+import mallang_trip.backend.domain.course.dto.CourseDetailsResponse;
+import mallang_trip.backend.domain.party.constant.PartyStatus;
+import mallang_trip.backend.domain.party.dto.PartyMemberResponse;
+import mallang_trip.backend.domain.party.dto.PartyProposalResponse;
+import mallang_trip.backend.domain.reservation.dto.ReservationResponse;
 
 import java.time.LocalDate;
 import java.util.List;
-import lombok.Builder;
-import lombok.Getter;
-import mallang_trip.backend.domain.party.constant.PartyStatus;
-import mallang_trip.backend.domain.reservation.dto.ReservationResponse;
-import mallang_trip.backend.domain.course.dto.CourseDetailsResponse;
 
 @Getter
 @Builder
-public class PartyDetailsResponse {
+public class PartyAdminDetailsResponse {
 
     private Long partyId;
     private Boolean myParty;
@@ -31,4 +34,5 @@ public class PartyDetailsResponse {
     private PartyProposalResponse proposal;
     private ReservationResponse reservation;
     private Boolean monopoly;
+    private Boolean promotion; // 프로모션코드 사용자 존재 여부
 }

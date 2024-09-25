@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.admin.dto.UserCountResponse;
 import mallang_trip.backend.domain.admin.dto.UserInfoForAdminResponse;
 import mallang_trip.backend.domain.admin.dto.GrantAdminRoleRequest;
 import mallang_trip.backend.domain.driver.entity.Driver;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static mallang_trip.backend.domain.driver.constant.DriverStatus.ACCEPTED;
 import static mallang_trip.backend.domain.driver.exception.DriverExceptionStatus.CANNOT_FOUND_DRIVER;
 import static mallang_trip.backend.domain.user.constant.Role.*;
 import static mallang_trip.backend.domain.user.exception.UserExceptionStatus.CANNOT_FOUND_USER;
@@ -29,11 +31,21 @@ public class UserAdminService {
     private final DriverRepository driverRepository;
 
     /**
+     * (관리자) 회원 수 조회
+     */
+    public UserCountResponse countUser(){
+        return UserCountResponse.builder()
+            .userCount(userRepository.countByRoleAndDeleted(ROLE_USER, false))
+            .driverCount(driverRepository.countByStatus(ACCEPTED))
+            .build();
+    }
+
+    /**
      * (관리자) 회원 정보 목록 조회
      */
     public List<UserInfoForAdminResponse> getUserList(String nicknameOrId) {
         if (nicknameOrId == null) {
-            return userRepository.findAll().stream()
+            return userRepository.findByDeleted(false).stream()
                     .map(user -> {
                         if (user.getRole().equals(ROLE_DRIVER)) {
                             Driver driver = driverRepository.findByUser(user)

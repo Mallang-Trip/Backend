@@ -15,4 +15,5 @@ public class JoinPartyRequest {
     // 코스 제안
     private Boolean changeCourse;
     private CourseRequest newCourse;
+    private Long userPromotionCodeId; //없으면 -1
 }

@@ -29,4 +29,6 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
         + "FROM driver d JOIN driver_region r ON d.id = r.driver_id "
         + "WHERE r.region = :region AND d.status = 'ACCEPTED' ", nativeQuery = true)
     Boolean existsByRegion(@Param("region") String region);
+
+    Long countByStatus(DriverStatus status);
 }

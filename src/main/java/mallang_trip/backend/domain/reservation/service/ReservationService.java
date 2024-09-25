@@ -4,6 +4,8 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_FAILED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.payple.service.PaypleService;
 import mallang_trip.backend.domain.reservation.dto.PaymentResponse;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.reservation.dto.ReservationResponse;
 import mallang_trip.backend.domain.party.entity.Party;
@@ -82,6 +85,7 @@ public class ReservationService {
             if (penaltyAmount > 0) {
                 reservationNotificationService.penaltyPaymentRequired(
                     reservation.getMember().getUser(), penaltyAmount);
+                reservation.setPenaltyAmount(penaltyAmount);
             }
             reservation.changeStatus(REFUND_COMPLETE);
             return penaltyAmount;
@@ -109,13 +113,26 @@ public class ReservationService {
      */
     public void refundAllMembers(Party party) {
         partyMemberService.getMembers(party).stream()
-            .forEach(member -> freeRefund(member));
+            .forEach(member -> {
+                freeRefund(member);
+                UserPromotionCode userPromotionCode = member.getUserPromotionCode();
+                if (userPromotionCode != null && userPromotionCode.getStatus().equals(USE))
+                {
+                    userPromotionCode.changeStatus(CANCEL);
+                    userPromotionCode.getCode().cancel();
+                }
+            });
     }
 
     /**
      * 결제 금액 계산
      */
     private int calculatePaymentAmount(PartyMember member) {
+        // TODO : 일단 무료로 처리
+        // 추후에 프로모션 코드 적용 로직 추가 (할인 등)
+        if(member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE) && member.getUserPromotionCode().getCode().getFree())
+            return 0;
+
         Party party = member.getParty();
         int totalPrice = party.getCourse().getTotalPrice();
         int discountPrice = party.getCourse().getDiscountPrice();

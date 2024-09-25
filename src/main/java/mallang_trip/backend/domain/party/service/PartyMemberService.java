@@ -2,10 +2,18 @@ package mallang_trip.backend.domain.party.service;
 
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.ALREADY_PARTY_MEMBER;
 import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.TRY;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
+import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
+import mallang_trip.backend.domain.reservation.repository.PromotionCodeRepository;
+import mallang_trip.backend.domain.reservation.repository.UserPromotionCodeRepository;
+import mallang_trip.backend.domain.reservation.service.PromotionService;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -30,6 +38,7 @@ public class PartyMemberService {
     private final CurrentUserService currentUserService;
     private final PartyMemberRepository partyMemberRepository;
     private final PartyMemberCompanionRepository partyMemberCompanionRepository;
+    private final UserPromotionCodeRepository userPromotionCodeRepository;
 
     /**
      * 파티 멤버 상세 조회
@@ -73,15 +82,22 @@ public class PartyMemberService {
      * 파티 멤버 추가 및 파티 headcount 증가
      */
     public PartyMember createMember(Party party, User user, Integer headcount,
-        List<PartyMemberCompanionRequest> requests) {
+        List<PartyMemberCompanionRequest> requests,Long userPromotionCodeId) {
         if (partyMemberRepository.existsByPartyAndUser(party, user)) {
             throw new BaseException(ALREADY_PARTY_MEMBER);
         }
+        Optional<UserPromotionCode> userPromotionCode = userPromotionCodeRepository.findByIdAndStatus(userPromotionCodeId, TRY);
+        if(userPromotionCode.isPresent()){
+            userPromotionCode.get().changeStatus(USE);
+            userPromotionCode.get().getCode().use();
+        }
+
         party.increaseHeadcount(headcount);
         PartyMember member = partyMemberRepository.save(PartyMember.builder()
             .party(party)
             .user(user)
             .headcount(headcount)
+            .userPromotionCode(userPromotionCode.orElse(null))
             .build());
         createCompanion(member, requests);
         return member;

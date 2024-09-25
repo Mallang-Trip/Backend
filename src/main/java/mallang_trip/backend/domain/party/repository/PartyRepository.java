@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.party.repository;
 
 import java.util.List;
+import mallang_trip.backend.domain.party.constant.DriverPenaltyStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.party.entity.Party;
@@ -49,10 +50,16 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 	List<Party> findByStatus(PartyStatus status);
 
+	//findByStatus + monopoly false
+	List<Party> findByStatusAndMonopoly(PartyStatus status, Boolean monopoly);
+
 	@Query(value = "SELECT * FROM party WHERE status LIKE 'CANCELED_%'", nativeQuery = true)
 	List<Party> findByStatusStartWithCanceled();
 
 	List<Party> findByRegionAndStatus(String region, PartyStatus status);
+
+	//findByRegionAndStatus + monopoly false
+	List<Party> findByRegionAndStatusAndMonopoly(String region, PartyStatus status, Boolean monopoly);
 
 	List<Party> findByDriver(Driver driver);
 
@@ -76,4 +83,12 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 		+ "   OR status = 'DAY_OF_TRAVEL'\n"
 		+ "ORDER BY start_date DESC;", nativeQuery = true)
 	List<Party> findReservedParties();
+
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM party\n"
+		+ "WHERE driver_id = :driver_id\n"
+		+ "  AND status NOT LIKE 'CANCELED%'\n"
+		+ "  AND status != 'FINISHED'\n", nativeQuery = true)
+	Boolean isOngoingPartyExistsByDriver(@Param(value = "driver_id") Long driverId);
+
+	Boolean existsByDriverAndDriverPenaltyStatus(Driver driver, DriverPenaltyStatus status);
 }

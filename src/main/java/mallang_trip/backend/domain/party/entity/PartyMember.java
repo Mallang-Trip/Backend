@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.user.entity.User;
 import org.hibernate.annotations.SQLDelete;
@@ -48,4 +49,8 @@ public class PartyMember extends BaseEntity {
     @Column
     @Builder.Default()
     private Boolean ready = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_promotion_code_id", nullable = true) // nullable = true
+    private UserPromotionCode userPromotionCode;
 }

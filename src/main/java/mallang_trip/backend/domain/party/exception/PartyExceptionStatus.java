@@ -14,6 +14,7 @@ public enum PartyExceptionStatus implements ResponseStatus {
 	PARTY_NOT_RECRUITING(403, "모집이 종료되었거나, 다른 신청자가 존재합니다."),
 	EXCEED_PARTY_CAPACITY(403, "모집 인원 초과입니다."),
 	CANNOT_CHANGE_COURSE(403, "코스 변경이 불가능한 상태입니다."),
+	CANNOT_CHANGE_COURSE_PROMOTION_CODE(403, "프로모션 코드 제한으로 인해 코스 변경이 불가능합니다."),
 	EXPIRED_PROPOSAL(403, "종료된 제안입니다."),
 	ONGOING_PARTY_EXISTS(403, "진행중인 여행이 있습니다."),
 	;

@@ -21,4 +21,6 @@ public class CreatePartyRequest {
 	private Long driverId;
 	private String content;
 	private CourseRequest course;
+	private Boolean monopoly;
+	private Long userPromotionCodeId; // 유저 프로모션 코드 아이디 없으면 -1
 }

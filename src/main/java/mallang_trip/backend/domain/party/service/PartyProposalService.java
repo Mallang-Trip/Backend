@@ -4,16 +4,19 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.RECRUITING;
 import static mallang_trip.backend.domain.party.constant.PartyStatus.SEALED;
 import static mallang_trip.backend.domain.party.constant.ProposalType.COURSE_CHANGE;
 import static mallang_trip.backend.domain.party.constant.ProposalType.JOIN_WITH_COURSE_CHANGE;
+import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.*;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.*;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.EXPIRED_PROPOSAL;
-import static mallang_trip.backend.domain.party.exception.PartyExceptionStatus.NOT_PARTY_MEMBER;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.party.constant.AgreementStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
+import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
+import mallang_trip.backend.domain.reservation.repository.UserPromotionCodeRepository;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -55,12 +58,26 @@ public class PartyProposalService {
 	private final PartyProposalAgreementRepository partyProposalAgreementRepository;
 	private final PartyMemberRepository partyMemberRepository;
 	private final PartyMemberCompanionRepository partyMemberCompanionRepository;
+	private final UserPromotionCodeRepository userPromotionCodeRepository;
 
 	/**
 	 * PartyProposal, PartyProposalAgreement 생성 (Type: JOIN_WITH_COURSE_CHANGE)
 	 */
 	public void createJoinWithCourseChange(Party party, JoinPartyRequest request) {
+		Optional<UserPromotionCode> userPromotionCode = userPromotionCodeRepository.findById(
+				request.getUserPromotionCodeId());
+		if(userPromotionCode.isPresent()){
+			if(!userPromotionCode.get().getUser().equals(currentUserService.getCurrentUser())||!userPromotionCode.get().getStatus().equals(TRY)){
+				throw new BaseException(Forbidden);
+			}
+			if(userPromotionCode.get().getCode().getMaximumPrice() < request.getNewCourse().getTotalPrice()){
+				throw new BaseException(CANNOT_CHANGE_COURSE_PROMOTION_CODE);
+			}
+			userPromotionCode.get().changeStatus(USE);
+			userPromotionCode.get().getCode().use();
+		}
 		Course course = courseService.createCourse(request.getNewCourse());
+
 		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
 			.party(party)
@@ -68,6 +85,7 @@ public class PartyProposalService {
 			.headcount(request.getHeadcount())
 			.content(request.getContent())
 			.type(JOIN_WITH_COURSE_CHANGE)
+			.userPromotionCode(userPromotionCode.orElse(null))
 			.build());
 		createPartyMemberCompanions(proposal, request.getCompanions());
 		createPartyProposalAgreements(proposal);
@@ -76,7 +94,7 @@ public class PartyProposalService {
 	/**
 	 * PartyProposal, PartyProposalAgreement 생성 (Type: COURSE_CHANGE)
 	 */
-	public PartyProposal createCourseChange(Party party, ChangeCourseRequest request) {
+	public PartyProposal createCourseChange(Party party, ChangeCourseRequest request,UserPromotionCode userPromotionCode) {
 		Course course = courseService.createCourse(request.getCourse());
 		PartyProposal proposal = partyProposalRepository.save(PartyProposal.builder()
 			.course(course)
@@ -85,6 +103,7 @@ public class PartyProposalService {
 			.headcount(null)
 			.content(request.getContent())
 			.type(COURSE_CHANGE)
+			.userPromotionCode(userPromotionCode != null && userPromotionCode.getStatus().equals(USE) ? userPromotionCode : null)
 			.build());
 		createPartyProposalAgreements(proposal);
 		// 생성자는 자동 수락
@@ -108,6 +127,11 @@ public class PartyProposalService {
 		proposal.setStatus(ProposalStatus.CANCELED);
 		if(proposal.getType().equals(JOIN_WITH_COURSE_CHANGE)){
 			proposal.getParty().setStatus(RECRUITING);
+			if(proposal.getUserPromotionCode() != null && proposal.getUserPromotionCode().getStatus().equals(USE))
+			{
+				proposal.getUserPromotionCode().changeStatus(CANCEL);
+				proposal.getUserPromotionCode().getCode().cancel();
+			}
 		} else if (proposal.getType().equals(COURSE_CHANGE)){
 			proposal.getParty().setStatus(SEALED);
 		}
@@ -249,6 +273,11 @@ public class PartyProposalService {
 		PartyProposal proposal = getWaitingProposalByParty(party);
 		if (proposal != null) {
 			expireProposal(proposal);
+			if(proposal.getUserPromotionCode() != null && proposal.getUserPromotionCode().getStatus().equals(USE))
+			{
+				proposal.getUserPromotionCode().changeStatus(CANCEL);
+				proposal.getUserPromotionCode().getCode().cancel();
+			}
 		}
 	}
 

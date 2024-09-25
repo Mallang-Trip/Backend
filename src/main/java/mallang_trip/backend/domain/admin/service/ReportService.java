@@ -51,11 +51,11 @@ public class ReportService {
 			.build());
 
 		String reason = new StringBuilder()
-			.append("신고자: ").append(currentUserService.getCurrentUser().getNickname()).append(" ")
-			.append("신고 대상: ").append(reportee.getNickname()).append(" ")
-			.append("신고 타입: ").append(request.getType().toString()).append(" ")
-			.append("신고 target Id: ").append(request.getTargetId().toString()).append(" ")
-			.append("신고 내용: ").append(request.getContent()).toString();
+				.append("신고자: ").append(currentUserService.getCurrentUser().getNickname()).append(" ")
+				.append("신고 대상: ").append(reportee.getNickname()).append(" ")
+				.append("신고 타입: ").append(request.getType().toString()).append(" ")
+				.append("신고 target Id: ").append(request.getTargetId().toString()).append(" ")
+				.append("신고 내용: ").append(request.getContent()).toString();
 
 		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"신고가 접수되었습니다.",MallangTripUrl);
 	}
