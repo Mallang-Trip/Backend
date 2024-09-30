@@ -46,9 +46,9 @@ public class BillingService {
 	// real
 	private final String hostname = "https://cpay.payple.kr/php";
 
-//	private final String settlement_hostname = "https://hub.payple.kr";
+	private final String settlement_hostname = "https://hub.payple.kr";
 
-	private final String settlement_hostname = "https://demohub.payple.kr";
+//	private final String settlement_hostname = "https://demohub.payple.kr";
 
 	private final PartnerAuthService partnerAuthService;
 
