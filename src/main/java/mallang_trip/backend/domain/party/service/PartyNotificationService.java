@@ -270,7 +270,7 @@ public class PartyNotificationService {
 		notificationService.create(proposal.getProposer(), content, PARTY,
 			proposal.getParty().getId());
 		mailService.sendEmailNotification(proposal.getProposer().getEmail(), proposal.getProposer().getName(), content,"변경안 및 가입 신청이 거절되었습니다.",absoluteUrl);
-
+		mailService.sendEmailNotification("mallangtrip@gmail.com", proposal.getProposer().getName(), content,"변경안 및 가입 신청이 거절되었습니다.",absoluteUrl);
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(proposal.getProposer());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
 	}
@@ -472,7 +472,7 @@ public class PartyNotificationService {
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.",absoluteUrl);
-
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.",absoluteUrl);
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
 	}
@@ -672,10 +672,28 @@ public class PartyNotificationService {
 
 	// 2-2. 드라이버
 	private void allReadyToDriver(Party party) {
+		/* '<고객 이름 : 고객 전화번호 >' ... */
+		String customers = partyMemberService.getMembers(party).stream()
+			.map(PartyMember::getUser)
+			.map(user -> new StringBuilder()
+				.append("<")
+				.append(user.getName())
+				.append(" : ")
+				.append(user.getPhoneNumber())
+				.append(">")
+				.toString())
+			.reduce((a, b) -> new StringBuilder()
+				.append(a)
+				.append(", ")
+				.append(b)
+				.toString())
+			.orElse("");
 		String content = new StringBuilder()
 			.append("[")
 			.append(getPartyName(party))
 			.append("] 모든 멤버들이 말랑레디를 확정하여 파티원들의 결제가 완료되었습니다.")
+			.append("고객 정보를 확인해주세요.")
+			.append(customers)
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
@@ -735,7 +753,7 @@ public class PartyNotificationService {
 			.forEach(user -> {
 				notificationService.create(user, content, PARTY, party.getId());
 				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"드라이버의 정보를 확인해주세요.",absoluteUrl);
-
+				mailService.sendEmailNotification("mallangtrip@gmail.com", user.getName(), content,"드라이버의 정보를 확인해주세요.",absoluteUrl);
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
 			});
@@ -819,6 +837,7 @@ public class PartyNotificationService {
 				.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
 		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@gmail.com", party.getDriver().getUser().getName(), content,"여행이 시작되었습니다!",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
