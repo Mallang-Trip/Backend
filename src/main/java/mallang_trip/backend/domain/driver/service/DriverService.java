@@ -67,7 +67,7 @@ public class DriverService {
 
 		// 이메일 전송
 		HashMap<String,String> reason= request.driverInfoEmail(currentUser);
-		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청이 완료되었습니다.",MallangTripUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com","말랑트립",reason,"드라이버 신청이 완료되었습니다.",MallangTripUrl);
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class DriverService {
 
 		// 이메일 전송
 		HashMap<String,String> reason= request.driverInfoEmail(driver.getUser());
-		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청 정보가 수정되었습니다.",MallangTripUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com","말랑트립",reason,"드라이버 신청 정보가 수정되었습니다.",MallangTripUrl);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class DriverService {
 
 		// 이메일 전송
 		String reason= new StringBuilder().append(driver.getUser().getName()).append("님의 드라이버 신청이 취소되었습니다.").toString();
-		mailService.sendEmailNotification("mallangtrip@gmail.com","말랑트립",reason,"드라이버 신청이 취소되었습니다.",MallangTripUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com","말랑트립",reason,"드라이버 신청이 취소되었습니다.",MallangTripUrl);
 	}
 
 	/**
