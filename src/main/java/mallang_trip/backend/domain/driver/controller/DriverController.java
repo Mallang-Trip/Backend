@@ -146,8 +146,11 @@ public class DriverController {
     @GetMapping("/search")
     @ApiOperation(value = "지역, 인원, 날짜로 가능한 드라이버 조회")
     @PreAuthorize("permitAll()") // anyone
-    public BaseResponse<List<DriverBriefResponse>> getDriversByRegion(@RequestParam String region,
-        @RequestParam Integer headcount, @RequestParam String startDate)
+    public BaseResponse<List<DriverBriefResponse>> getDriversByRegion(
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) Integer headcount,
+            @RequestParam(required = false) String startDate
+    )
         throws BaseException {
         return new BaseResponse<>(driverService.getPossibleDriver(region, headcount, startDate));
     }
