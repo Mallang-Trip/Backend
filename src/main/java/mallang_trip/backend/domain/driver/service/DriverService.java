@@ -227,8 +227,8 @@ public class DriverService {
 		String startDate) {
 		return driverRepository.findByRegionContaining(region)
 			.stream()
-			.filter(driver -> driver.getVehicleCapacity() >= headcount)
-			.filter(driver -> isDatePossible(driver, startDate))
+			.filter(driver -> headcount == null || driver.getVehicleCapacity() >= headcount)
+			.filter(driver -> startDate == null || isDatePossible(driver, startDate))
 			.map(DriverBriefResponse::of)
 			.collect(Collectors.toList());
 	}

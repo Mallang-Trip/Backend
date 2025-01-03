@@ -20,9 +20,10 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     Optional<Driver> findByUser(User user);
 
     @Query(value = "SELECT d.* "
-        + "FROM driver d JOIN driver_region r "
-        + "ON d.id = r.driver_id "
-        + "WHERE r.region = :region AND d.status = 'ACCEPTED' ", nativeQuery = true)
+            + "FROM driver d JOIN driver_region r "
+            + "ON d.id = r.driver_id "
+            + "WHERE (:region IS NULL OR r.region = :region) AND d.status = 'ACCEPTED'",
+            nativeQuery = true)
     List<Driver> findByRegionContaining(@Param("region") String region);
 
     @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END "
