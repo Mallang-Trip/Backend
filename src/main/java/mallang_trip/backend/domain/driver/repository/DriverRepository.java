@@ -20,7 +20,7 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     Optional<Driver> findByUser(User user);
 
     @Query(value = "SELECT d.*, r.region "
-            + "FROM driver d INNNER JOIN driver_region r "
+            + "FROM driver d INNER JOIN driver_region r "
             + "ON d.id = r.driver_id "
             + "WHERE (:region IS NULL OR r.region = :region) AND d.status = 'ACCEPTED' "
             + "GROUP BY d.id"
