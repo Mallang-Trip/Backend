@@ -43,6 +43,7 @@ public class PartySchedulerService {
 	 * 24시간 초과된 제안 만료 (1분마다 반복 실행)
 	 */
 	@Scheduled(fixedDelay = 60000)
+	@Transactional
 	public void expireProposal() {
 		String yesterday = LocalDateTime.now().minusDays(1).toString();
 
@@ -68,6 +69,7 @@ public class PartySchedulerService {
 	 * 매일 0시에 파티 STATUS 업데이트
 	 */
 	@Scheduled(cron = "0 0 0 * * *")
+	@Transactional
 	public void expireParty() {
 		String today = LocalDate.now().toString();
 
@@ -113,6 +115,7 @@ public class PartySchedulerService {
 	 * 여행 시작 전날 알림 전송 (매일 18시 실행)
 	 */
 	@Scheduled(cron = "0 0 18 * * *")
+	@Transactional
 	public void handleDayBeforeTravelParties(){
 		String tomorrow = LocalDate.now().plusDays(1).toString();
 		partyRepository.findDayOfTravelParties(tomorrow).stream()
@@ -127,6 +130,7 @@ public class PartySchedulerService {
 	 * 여행 당일 시작 시간 알림 전송 (1시간마다 실행)
 	 */
 	@Scheduled(cron = "0 0 0/1 * * *")
+	@Transactional
 	public void handleStartingParties(){
 		partyRepository.findByStatus(DAY_OF_TRAVEL).stream()
 			.filter(party -> isStartTime(party))
@@ -146,6 +150,7 @@ public class PartySchedulerService {
 	 * 여행이 끝난 다음날 알림 전송 (매일 09시 실행)
 	 */
 	@Scheduled(cron = "0 0 9 * * *")
+	@Transactional
 	public void handleFinishedParties(){
 		String yesterday = LocalDate.now().minusDays(1).toString();
 		partyRepository.findFinishedParties(yesterday).stream()
