@@ -52,7 +52,10 @@ public class PartySchedulerService {
 		// 	.stream()
 		// 	.forEach(proposal -> partyProposalService.expireProposal(proposal));
 
-		log.warn("파티 제안 후 24시간이 지났습니다. party: {}", expiredProposal);
+		if(!expiredProposal.isEmpty()) {
+			log.warn("파티 제안 후 24시간이 지났습니다. party: {}", expiredProposal);
+		}
+
 
 		List<Party> expiredWaitingDriverApprovalParties = partyRepository.findExpiredWaitingDriverApprovalParties(yesterday);
 		// expiredWaitingDriverApprovalParties
@@ -62,7 +65,9 @@ public class PartySchedulerService {
 		// 		partyNotificationService.creationRefused(party);
 		// 	});
 
-		log.warn("파티 제안 후 드라이버 승낙 기한이 24시간 지났습니다. party: {}", expiredWaitingDriverApprovalParties);
+		if(!expiredWaitingDriverApprovalParties.isEmpty()) {
+			log.warn("파티 제안 후 드라이버 승낙 기한이 24시간 지났습니다. party: {}", expiredWaitingDriverApprovalParties);
+		}
 	}
 
 	/**
