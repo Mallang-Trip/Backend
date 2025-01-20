@@ -10,11 +10,15 @@ import static mallang_trip.backend.domain.party.constant.PartyStatus.FINISHED;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.income.service.IncomeService;
 import mallang_trip.backend.domain.kakao.service.AlimTalkService;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
+import mallang_trip.backend.domain.party.entity.PartyProposal;
 import mallang_trip.backend.domain.party.repository.PartyProposalRepository;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j(topic = "SCHEDULE")
 public class PartySchedulerService {
 
 	private final PartyRepository partyRepository;
@@ -41,16 +47,22 @@ public class PartySchedulerService {
 	public void expireProposal() {
 		String yesterday = LocalDateTime.now().minusDays(1).toString();
 
-		partyProposalRepository.findExpiredProposal(yesterday)
-			.stream()
-			.forEach(proposal -> partyProposalService.expireProposal(proposal));
+		List<PartyProposal> expiredProposal = partyProposalRepository.findExpiredProposal(yesterday);
+		// expiredProposal
+		// 	.stream()
+		// 	.forEach(proposal -> partyProposalService.expireProposal(proposal));
 
-		partyRepository.findExpiredWaitingDriverApprovalParties(yesterday)
-			.stream()
-			.forEach(party -> {
-				party.setStatus(CANCELED_BY_DRIVER_REFUSED);
-				partyNotificationService.creationRefused(party);
-			});
+		log.warn("파티 제안 후 24시간이 지났습니다. party: {}", expiredProposal);
+
+		List<Party> expiredWaitingDriverApprovalParties = partyRepository.findExpiredWaitingDriverApprovalParties(yesterday);
+		// expiredWaitingDriverApprovalParties
+		// 	.stream()
+		// 	.forEach(party -> {
+		// 		party.setStatus(CANCELED_BY_DRIVER_REFUSED);
+		// 		partyNotificationService.creationRefused(party);
+		// 	});
+
+		log.warn("파티 제안 후 드라이버 승낙 기한이 24시간 지났습니다. party: {}", expiredWaitingDriverApprovalParties);
 	}
 
 	/**
