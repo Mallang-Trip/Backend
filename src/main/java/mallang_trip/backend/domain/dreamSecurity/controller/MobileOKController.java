@@ -4,8 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mallang_trip.backend.domain.dreamSecurity.dto.MobileOKStdResponse;
 import mallang_trip.backend.domain.dreamSecurity.dto.MobileOKStdResultResponse;
 import mallang_trip.backend.domain.dreamSecurity.service.MobileOKService;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j(topic = "PASS")
 @Api(tags = "mobileOK API")
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +30,11 @@ public class MobileOKController {
 	@PostMapping
 	@PreAuthorize("permitAll()") // anyone
 	public MobileOKStdResponse std_request() throws BaseException {
-		return mobileOKService.mobileOK_std_request();
+
+		MobileOKStdResponse mobileOKStdResponse = mobileOKService.mobileOK_std_request();
+
+		log.info("mobileOKStdResponse: {}", mobileOKStdResponse);
+		return mobileOKStdResponse;
 	}
 
 	@ApiOperation(value = "본인인증-표준창 검증결과 요청")
@@ -43,6 +48,12 @@ public class MobileOKController {
 	})
 	public BaseResponse<MobileOKStdResultResponse> std_result(@RequestBody String result)
 		throws BaseException {
-		return new BaseResponse<>(mobileOKService.mobileOK_std_result(result));
+
+		log.info("PASS 인증 결과 파라미터: {}", result);
+
+		MobileOKStdResultResponse mobileOKStdResultResponse = mobileOKService.mobileOK_std_result(result);
+		log.info("PASS 인증 결과 반환: {}", mobileOKStdResultResponse);
+
+		return new BaseResponse<>(mobileOKStdResultResponse);
 	}
 }
