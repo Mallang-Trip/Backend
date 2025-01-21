@@ -2,6 +2,8 @@ package mallang_trip.backend.domain.dreamSecurity.controller;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -13,6 +15,9 @@ import mallang_trip.backend.domain.dreamSecurity.dto.MobileOKStdResultResponse;
 import mallang_trip.backend.domain.dreamSecurity.service.MobileOKService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,14 +37,23 @@ public class MobileOKController {
 	@ApiOperation(value = "본인인증-표준창 인증요청")
 	@PostMapping
 	@PreAuthorize("permitAll()") // anyone
-	public MobileOKStdResponse std_request(@RequestHeader(value = "User-Agent", required = false) String userAgent) throws BaseException {
+	public ResponseEntity<?> std_request(HttpServletRequest request) throws BaseException {
 
-		log.info("agent: {}", userAgent);
+		String agent = request.getHeader("User-Agent");// 사용자 기기 정보 추출
+		log.info("인증 표준창. agent: {}", agent);
 
 		MobileOKStdResponse mobileOKStdResponse = mobileOKService.mobileOK_std_request();
 
+		/*사용자가 IOS 이용자일 경우*/
+		if(agent!=null && (agent.contains("iPhone") || agent.contains("iPad"))) {
+			return ResponseEntity.status(HttpStatus.FOUND)
+				.header("Location", "https://mallangtrip.com")// 말랑트립 메인페이지로 리다이렉트(임시)
+				.body(mobileOKStdResponse);
+		}
+
+
 		log.info("mobileOKStdResponse: {}", mobileOKStdResponse);
-		return mobileOKStdResponse;
+		return ResponseEntity.ok(mobileOKStdResponse);
 	}
 
 	@ApiOperation(value = "본인인증-표준창 검증결과 요청")
@@ -56,11 +70,11 @@ public class MobileOKController {
 		@RequestBody String result)
 		throws BaseException {
 
-		log.info("agent: {}", userAgent);
+		log.info("인증 완료. agent: {}", userAgent);
 		log.info("PASS 인증 결과 파라미터: {}", result);
 
 		MobileOKStdResultResponse mobileOKStdResultResponse = mobileOKService.mobileOK_std_result(result);
-		log.info("PASS 인증 결과 반환: {}", mobileOKStdResultResponse);
+		log.info("PASS 인증 결과 반환: {}", mobileOKStdResultResponse.toString());
 
 		return new BaseResponse<>(mobileOKStdResultResponse);
 	}
