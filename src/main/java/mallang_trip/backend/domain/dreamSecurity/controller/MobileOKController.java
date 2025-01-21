@@ -1,7 +1,5 @@
 package mallang_trip.backend.domain.dreamSecurity.controller;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 import io.swagger.annotations.Api;
@@ -40,14 +38,16 @@ public class MobileOKController {
 	public ResponseEntity<?> std_request(HttpServletRequest request) throws BaseException {
 
 		String agent = request.getHeader("User-Agent");// 사용자 기기 정보 추출
+		String iosRedirectUri = "https://mallangtrip.com";
 		log.info("인증 표준창. agent: {}", agent);
 
 		MobileOKStdResponse mobileOKStdResponse = mobileOKService.mobileOK_std_request();
 
 		/*사용자가 IOS 이용자일 경우*/
 		if(agent!=null && (agent.contains("iPhone") || agent.contains("iPad"))) {
-			return ResponseEntity.status(HttpStatus.FOUND)
-				.header("Location", "https://mallangtrip.com")// 말랑트립 메인페이지로 리다이렉트(임시)
+			log.info("ios 유저입니다. 요청을 리다이렉트 합니다. agent: {}, redirect uri: {}", agent, iosRedirectUri);
+			return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+				.header("Location", iosRedirectUri)// 말랑트립 메인페이지로 리다이렉트(임시)
 				.body(mobileOKStdResponse);
 		}
 
