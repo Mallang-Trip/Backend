@@ -32,12 +32,9 @@ public class MobileOKController {
 	@ApiOperation(value = "본인인증-표준창 인증요청")
 	@PostMapping
 	@PreAuthorize("permitAll()") // anyone
-	public MobileOKStdResponse std_request(
-		@RequestHeader(value = "User-Agent", required = false) String userAgent,
-		@RequestBody Map<String, Object> body) throws BaseException {
+	public MobileOKStdResponse std_request(@RequestHeader(value = "User-Agent", required = false) String userAgent) throws BaseException {
 
 		log.info("agent: {}", userAgent);
-		log.info("body data: {}", body);
 
 		MobileOKStdResponse mobileOKStdResponse = mobileOKService.mobileOK_std_request();
 
