@@ -152,7 +152,7 @@ public class PartyNotificationService {
 		partyMemberService.getMembersAndDriver(party).stream()
 			.forEach(user ->
 					{notificationService.create(user, content, PARTY, party.getId());
-					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티에 새로운 멤버가 가입했습니다.",absoluteUrl);
+					mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"일정에 새로운 멤버가 가입했습니다.",absoluteUrl);
 
 					Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 					firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -423,7 +423,7 @@ public class PartyNotificationService {
 			.append(runner.getNickname())
 			.append("님이 [")
 			.append(getPartyName(party))
-			.append("]을/를 탈퇴하여 파티원들의 말랑레디가 전원 OFF로 변경되었습니다.")
+			.append("]을/를 탈퇴하여 동행자들의 말랑레디가 전원 OFF로 변경되었습니다.")
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
@@ -471,8 +471,8 @@ public class PartyNotificationService {
 				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.",absoluteUrl);
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"파티를 탈퇴하였습니다.",absoluteUrl);
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"일정을 탈퇴하였습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"일정을 탈퇴하였습니다.",absoluteUrl);
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
 	}
@@ -501,7 +501,7 @@ public class PartyNotificationService {
 			.forEach(user ->
 			{
 				notificationService.create(user, content, PARTY, party.getId());
-				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
+				mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"일정이 완전히 취소되었습니다.",absoluteUrl);
 
 				Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 				firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -530,8 +530,8 @@ public class PartyNotificationService {
 				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"일정이 완전히 취소되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"일정이 완전히 취소되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -540,7 +540,7 @@ public class PartyNotificationService {
 	// 4. 모집기간 만료로 파티가 취소되었을 경우
 	public void cancelByExpiration(Party party) {
 		String content = new StringBuilder()
-			.append("파티가 당일까지 확정되지 않아 [")
+			.append("일정이 당일까지 확정되지 않아 [")
 			.append(getPartyName(party))
 			.append("]이/가 자동 취소되었습니다.")
 			.toString();
@@ -560,7 +560,7 @@ public class PartyNotificationService {
 			.forEach(user ->
 					{
 						notificationService.create(user, content, PARTY, party.getId());
-						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"파티가 자동 취소되었습니다.",absoluteUrl);
+						mailService.sendEmailNotification(user.getEmail(), user.getName(), content,"일정이 자동 취소되었습니다.",absoluteUrl);
 
 						Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(user);
 						firebase.ifPresent(f -> firebaseTokens.addAll(f.getTokens()));
@@ -615,7 +615,7 @@ public class PartyNotificationService {
 		String content = new StringBuilder()
 			.append("[")
 			.append(getPartyName(party))
-			.append("]의 인원 4명이 최종 확정되어 파티원들의 결제가 완료되었습니다.")
+			.append("]의 인원 4명이 최종 확정되어 동행자들의 결제가 완료되었습니다.")
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
@@ -628,8 +628,8 @@ public class PartyNotificationService {
 				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl); // party의 driver에게 이메일
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"동행자들의 결제가 완료되었습니다.",absoluteUrl); // party의 driver에게 이메일
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"동행자들의 결제가 완료되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -691,7 +691,7 @@ public class PartyNotificationService {
 		String content = new StringBuilder()
 			.append("[")
 			.append(getPartyName(party))
-			.append("] 모든 멤버들이 말랑레디를 확정하여 파티원들의 결제가 완료되었습니다.")
+			.append("] 모든 멤버들이 말랑레디를 확정하여 동행자들의 결제가 완료되었습니다.")
 			.append("고객 정보를 확인해주세요.")
 			.append(customers)
 			.toString();
@@ -706,8 +706,8 @@ public class PartyNotificationService {
 				.toString();
 
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl);
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"파티원들의 결제가 완료되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"동행자들의 결제가 완료되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"동행자들의 결제가 완료되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -890,7 +890,7 @@ public class PartyNotificationService {
 			.append(runner.getNickname())
 			.append("님의 [")
 			.append(getPartyName(party))
-			.append("] 예약 취소로 영업일 기준 3일 내에 예약금 전액이 환불되며 파티원을 재모집합니다.")
+			.append("] 예약 취소로 영업일 기준 3일 내에 예약금 전액이 환불되며 동행자를 재모집합니다.")
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
@@ -921,7 +921,7 @@ public class PartyNotificationService {
 			.append(runner.getNickname())
 			.append("님의 [")
 			.append(getPartyName(party))
-			.append("] 예약 취소로 파티원을 재모집합니다.")
+			.append("] 예약 취소로 동행자를 재모집합니다.")
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
@@ -933,8 +933,8 @@ public class PartyNotificationService {
 				.append(url)
 				.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.",absoluteUrl);
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"파티원을 재모집합니다.",absoluteUrl);
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"동행자를 재모집합니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"동행자를 재모집합니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));
@@ -1018,8 +1018,8 @@ public class PartyNotificationService {
 				.append(url)
 				.toString();
 		notificationService.create(party.getDriver().getUser(), content, PARTY, party.getId());
-		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"파티가 완전히 취소되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification(party.getDriver().getUser().getEmail(), party.getDriver().getUser().getName(), content,"일정이 완전히 취소되었습니다.",absoluteUrl);
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", party.getDriver().getUser().getName(), content,"일정이 완전히 취소되었습니다.",absoluteUrl);
 
 		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(party.getDriver().getUser());
 		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(), "말랑트립", content, url));

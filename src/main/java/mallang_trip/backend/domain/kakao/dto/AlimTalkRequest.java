@@ -33,7 +33,7 @@ public class AlimTalkRequest {
 	public static AlimTalkRequest of(AlimTalkTemplate template, String to, String content, Long partyId){
 		Button button = Button.builder()
 			.type("WL")
-			.name("파티 페이지로")
+			.name("일정 페이지로")
 			.linkMobile("https://mallangtrip.com/party/detail/" + partyId+"?login_required=true")
 			.linkPc("https://mallangtrip.com/party/detail/" + partyId+"?login_required=true")
 			.build();

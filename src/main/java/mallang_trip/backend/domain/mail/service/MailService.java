@@ -143,17 +143,17 @@ public class MailService {
             mailContents.put("party_people_name",peopleNameBuilder.toString());
             mailContents.put("driver_name",party.getDriver().getUser().getName());
 
-            mailContents.put("title","확정된 파티 안내드립니다.");
+            mailContents.put("title","확정된 일정 안내드립니다.");
             mailContents.put("url",url);
         }
         else if(mailStatus.equals(MailStatus.CANCELLED)){
             mailContents.put("reason",reason);
-            mailContents.put("title","파티 취소 안내드립니다.");
+            mailContents.put("title","일정 취소 안내드립니다.");
             mailContents.put("url",url);
         }
         else{
             mailContents.put("reason",reason);
-            mailContents.put("title","파티 코스 수정 안내드립니다.");
+            mailContents.put("title","일정 코스 수정 안내드립니다.");
             mailContents.put("url",url);
         }
 
