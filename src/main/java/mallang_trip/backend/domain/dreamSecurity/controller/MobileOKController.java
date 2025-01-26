@@ -1,7 +1,5 @@
 package mallang_trip.backend.domain.dreamSecurity.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -33,11 +31,11 @@ public class MobileOKController {
 	@ApiOperation(value = "본인인증-표준창 인증요청")
 	@PostMapping
 	@PreAuthorize("permitAll()") // anyone
-	public ResponseEntity<?> std_request(HttpServletRequest request) throws BaseException {
+	public ResponseEntity<MobileOKStdResponse> std_request() throws BaseException {
 
 		MobileOKStdResponse mobileOKStdResponse = mobileOKService.mobileOK_std_request();
 
-		log.info("mobileOKStdResponse: {}", mobileOKStdResponse);
+		log.info("mobileOKStdResponse: {}", mobileOKStdResponse.toString());
 		return ResponseEntity.ok(mobileOKStdResponse);
 	}
 
@@ -50,37 +48,35 @@ public class MobileOKController {
 		@ApiResponse(code = 409, message = "이미 가입된 아이디가 존재합니다."),
 		@ApiResponse(code = 500, message = "본인인증 서버 통신 실패.")
 	})
-	public ResponseEntity<MobileOKStdResultResponse> std_result(
-		HttpServletRequest request,
-		@RequestBody String result)
+	public ResponseEntity<Void> std_result(@RequestBody String result)
 		throws BaseException {
+		MobileOKStdResultResponse mobileOKStdResultResponse = null;
+		int statusCode = 200;
 
-		String agent = request.getHeader("User-Agent");// 사용자 기기 정보 추출
 		String iosRedirectUri = "https://mallangtrip.com/signup";
-		log.info("인증 표준창. agent: {}", agent);
-		log.info("PASS 인증 결과 파라미터: {}", result);
 
-		MobileOKStdResultResponse mobileOKStdResultResponse = mobileOKService.mobileOK_std_result(result);
-		log.info("PASS 인증 결과 반환: {}", mobileOKStdResultResponse.toString());
+		/*예외 코드를 쿼리파라미터 형태로 반환하기 위한 작업*/
+		try{
+			mobileOKStdResultResponse = mobileOKService.mobileOK_std_result(result);
+		} catch (BaseException e) {
+			statusCode = e.getStatus().getStatusCode();
+		} catch (RuntimeException e) {
+			statusCode = 500;// 예상치 못한 예외
+			log.error("예상하지 못한 예외 발생! cause: {}, message: {}", e.getCause().getMessage(), e.getMessage() );
+		}
 
 		/*쿼리파라미터 추가*/
-		iosRedirectUri += "?impUid=" + mobileOKStdResultResponse.getImpUid();
-		iosRedirectUri += "&statusCode=200";
+		if(mobileOKStdResultResponse == null) {// 인증 실패
+			iosRedirectUri += "?statusCode=" + statusCode;
+			log.warn("pass 인증 실패. redirect uri: {}", iosRedirectUri);
+		} else {// 인증 성공
+			iosRedirectUri += "?impUid=" + mobileOKStdResultResponse.getImpUid();
+			iosRedirectUri += "&statusCode=" + statusCode;
+			log.info("pass 인증 성공. redirect uri: {}", iosRedirectUri);
+		}
 
-		/*ios 리다이렉트*/
-		log.info("redirect uri: {}", iosRedirectUri);
 		return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
-			.header("Location", iosRedirectUri)// 말랑트립 메인페이지로 리다이렉트(임시)
+			.header("Location", iosRedirectUri)// 말랑트립 회원가입 페이지로 리다이렉트
 			.build();
-
-		/**사용자 기기 인식*/
-		// if(agent!=null && (agent.contains("iPhone") || agent.contains("iPad") ||agent.contains("Macintosh"))) {
-		// 	log.info("ios 유저입니다. 요청을 리다이렉트 합니다. agent: {}, redirect uri: {}", agent, iosRedirectUri);
-		// 	return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
-		// 		.header("Location", iosRedirectUri)// 말랑트립 메인페이지로 리다이렉트(임시)
-		// 		.body(mobileOKStdResultResponse);
-		// }
-		//
-		// return ResponseEntity.ok(mobileOKStdResultResponse);
 	}
 }
