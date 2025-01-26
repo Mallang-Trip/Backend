@@ -35,7 +35,7 @@ public class MobileOKController {
 
 		MobileOKStdResponse mobileOKStdResponse = mobileOKService.mobileOK_std_request();
 
-		log.info("mobileOKStdResponse: {}", mobileOKStdResponse);
+		log.info("mobileOKStdResponse: {}", mobileOKStdResponse.toString());
 		return ResponseEntity.ok(mobileOKStdResponse);
 	}
 
