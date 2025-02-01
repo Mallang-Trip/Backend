@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mallang_trip.backend.domain.party.constant.DriverPenaltyStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
+import mallang_trip.backend.domain.party.constant.PartyType;
 import mallang_trip.backend.global.entity.BaseEntity;
 import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.driver.entity.Driver;
@@ -86,6 +87,11 @@ public class  Party extends BaseEntity {
 	@Column
 	@Builder.Default()
 	private Boolean monopoly = false;
+
+	@Column
+	@Enumerated(EnumType.STRING)
+	private PartyType partyType = PartyType.PUBLIC;// 파티 예약 방식
+
 
 	public void increaseHeadcount(int headcount) {
 		this.headcount += headcount;

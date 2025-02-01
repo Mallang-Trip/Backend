@@ -32,6 +32,7 @@ import mallang_trip.backend.domain.kakao.service.AlimTalkService;
 import mallang_trip.backend.domain.mail.constant.MailStatus;
 import mallang_trip.backend.domain.mail.service.MailService;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
+import mallang_trip.backend.domain.party.constant.PartyType;
 import mallang_trip.backend.domain.party.constant.ProposalStatus;
 import mallang_trip.backend.domain.party.repository.*;
 import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
@@ -101,17 +102,26 @@ public class PartyService {
         // 코스 생성
         Course course = courseService.createCourse(request.getCourse());
 
+
+        /*단독예약 여부 확인(모집인원 = 현재 인원)*/
+        PartyType partyType = PartyType.PUBLIC;// 기본은 단독예약X
+        if(request.getHeadcount() == request.getCourse().getCapacity()) {
+            partyType = PartyType.PRIVATE;
+        }
+
         // 파티 생성
         Party party = partyRepository.save(Party.builder()
             .driver(driver)
             .course(course)
             .region(course.getRegion())
-            .capacity(driver.getVehicleCapacity())
+            .capacity(request.getCourse().getCapacity())
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())
             .content(request.getContent())
             .monopoly(request.getMonopoly())
+            .partyType(partyType)
             .build());
+
         // 자신을 멤버로 추가
         partyMemberService.createMember(party, user, request.getHeadcount(),
             request.getCompanions(),request.getUserPromotionCodeId());
