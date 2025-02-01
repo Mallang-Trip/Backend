@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,8 +66,12 @@ public class PartySchedulerService {
 		// 		partyNotificationService.creationRefused(party);
 		// 	});
 
+		List<Long> expiredPartyIds = expiredWaitingDriverApprovalParties.stream()
+			.map(Party::getId)
+			.toList();
+
 		if(!expiredWaitingDriverApprovalParties.isEmpty()) {
-			log.warn("파티 제안 후 드라이버 승낙 기한이 24시간 지났습니다. party: {}", expiredWaitingDriverApprovalParties);
+			log.warn("파티 제안 후 드라이버 승낙 기한이 24시간 지났습니다. party id: {}", expiredPartyIds.toString());
 		}
 	}
 
