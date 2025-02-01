@@ -585,7 +585,9 @@ public class PartyNotificationService {
 		String content = new StringBuilder()
 			.append("[")
 			.append(getPartyName(party))
-			.append("]의 인원 4명이 최종 확정되어 결제를 진행합니다.")
+			.append("]의 인원 ")
+			.append(party.getHeadcount())
+			.append("명이 최종 확정되어 결제를 진행합니다.")
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
@@ -615,7 +617,9 @@ public class PartyNotificationService {
 		String content = new StringBuilder()
 			.append("[")
 			.append(getPartyName(party))
-			.append("]의 인원 4명이 최종 확정되어 동행자들의 결제가 완료되었습니다.")
+			.append("]의 인원 ")
+			.append(party.getHeadcount())
+			.append("명이 최종 확정되어 동행자들의 결제가 완료되었습니다.")
 			.toString();
 		String url = new StringBuilder()
 				.append("/party/detail/")
