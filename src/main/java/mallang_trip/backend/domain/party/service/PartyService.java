@@ -228,6 +228,7 @@ public class PartyService {
 
     /**
      * 파티 가입 (멤버 추가) : 최대인원 모집 완료 시 전원 레디처리, 자동결제 후 파티확정. 최대인원 모집 미완료 시, 전원 레디 취소 처리.
+     *
      */
     private void joinParty(Party party, User user, Integer headcount,
         List<PartyMemberCompanionRequest> requests,Long userPromotionCodeId) {
