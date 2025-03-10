@@ -85,6 +85,7 @@ public class PartyService {
 
     /**
      * 파티 생성 신청
+     * @param request 파티 생성dto
      */
     public PartyIdResponse createParty(CreatePartyRequest request) {
         Driver driver = driverRepository.findById(request.getDriverId())
