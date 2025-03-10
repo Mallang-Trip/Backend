@@ -28,6 +28,7 @@ public class PartyDibsService {
 
 	/**
 	 * 파티 찜하기
+	 * @param partyId 파티 id
 	 */
 	public void createPartyDibs(Long partyId) {
 		Party party = partyRepository.findById(partyId)
