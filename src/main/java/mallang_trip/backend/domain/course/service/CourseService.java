@@ -7,11 +7,13 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.course.dto.CourseDayRequest;
+import mallang_trip.backend.domain.course.dto.CourseSearchCondition;
 import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
@@ -109,6 +111,27 @@ public class CourseService {
 		// 기존 courseDay 삭제 후 재생성
 		courseDayRepository.deleteAllByCourse(course);
 		createCourseDays(request.getDays(), course);
+	}
+
+	/**
+	 * 코스 리스트 조회
+	 * @param condition 코스 검색 조건()
+	 * */
+	public List<CourseDetailsResponse> getCourseList(CourseSearchCondition condition){
+
+		/*TODO: FIND ALL -> 동적 쿼리 형태로 개선(V2)*/
+		List<CourseDetailsResponse> courseList = courseRepository.findAll()
+			.stream()
+			.filter(course -> !course.getDeleted())
+			.filter(course -> condition.getHeadcount() < course.getCapacity())// 인원수 초과 여부
+			.filter(course -> condition.getRegion().equals("all") || condition.getRegion().equals(course.getRegion()) )// 지역 일치 여부
+			.filter(course -> checkMaxPrice(course, condition))// 최대 금액 초과 여부
+			.sorted(Comparator
+				.comparing(Course::getTotalPrice).reversed())
+			.map(course -> getCourseDetails(course))
+			.toList();
+
+		return courseList;
 	}
 
 	/**
@@ -223,5 +246,9 @@ public class CourseService {
 			.toString();
 
 		return content;
+	}
+
+	private Boolean checkMaxPrice(Course course, CourseSearchCondition condition) {
+		return (course.getTotalPrice() / condition.getHeadcount()) <= condition.getMaxPrice() ? true : false;
 	}
 }

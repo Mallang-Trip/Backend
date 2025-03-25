@@ -1,11 +1,17 @@
 package mallang_trip.backend.domain.course.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 import io.swagger.annotations.*;
 
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiImplicitParam;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.course.dto.CourseSearchCondition;
 import mallang_trip.backend.domain.course.service.CourseService;
 import mallang_trip.backend.global.io.BaseException;
 import mallang_trip.backend.global.io.BaseResponse;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Api(tags = "Course API")
@@ -43,6 +50,26 @@ public class CourseController {
 	public BaseResponse<CourseIdResponse> createCourse(@RequestBody @Valid CourseRequest request)
 		throws BaseException {
 		return new BaseResponse<>(CourseIdResponse.of(courseService.createCourse(request)));
+	}
+
+
+	@GetMapping("/list")
+	@ApiOperation(value = "코스 전체 조회")
+	@ApiResponses({
+		@ApiResponse(code = 401, message = "인증되지 않은 사용자입니다."),
+		@ApiResponse(code = 403, message = "권한이 없거나, 정지된 사용자입니다."),
+		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
+		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
+	})
+	public BaseResponse<List<CourseDetailsResponse>> getCourse(
+		@RequestParam String region,
+		@RequestParam Integer headcount,
+		@RequestParam Integer maxPrice) throws UnsupportedEncodingException {
+
+		region = URLDecoder.decode(region, StandardCharsets.UTF_8);
+		CourseSearchCondition condition = new CourseSearchCondition(region, headcount, maxPrice);
+
+		return new BaseResponse<>(courseService.getCourseList(condition));
 	}
 
 	@PutMapping("/{course_id}")
