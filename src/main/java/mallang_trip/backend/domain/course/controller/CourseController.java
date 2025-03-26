@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiImplicitParam;
 import lombok.RequiredArgsConstructor;
+import mallang_trip.backend.domain.course.dto.CourseListResponse;
 import mallang_trip.backend.domain.course.dto.CourseSearchCondition;
 import mallang_trip.backend.domain.course.service.CourseService;
 import mallang_trip.backend.global.io.BaseException;
@@ -61,7 +62,7 @@ public class CourseController {
 		@ApiResponse(code = 10002, message = "유효하지 않은 Refresh Token 입니다."),
 		@ApiResponse(code = 10003, message = "만료된 Refresh Token 입니다.")
 	})
-	public BaseResponse<List<CourseDetailsResponse>> getCourse(
+	public BaseResponse<List<CourseListResponse>> getCourse(
 		@RequestParam String region,
 		@RequestParam Integer headcount,
 		@RequestParam Integer maxPrice) throws UnsupportedEncodingException {

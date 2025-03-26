@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.course.dto.CourseDayRequest;
+import mallang_trip.backend.domain.course.dto.CourseListResponse;
 import mallang_trip.backend.domain.course.dto.CourseSearchCondition;
 import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
@@ -117,10 +118,10 @@ public class CourseService {
 	 * 코스 리스트 조회
 	 * @param condition 코스 검색 조건()
 	 * */
-	public List<CourseDetailsResponse> getCourseList(CourseSearchCondition condition){
+	public List<CourseListResponse> getCourseList(CourseSearchCondition condition){
 
 		/*TODO: FIND ALL -> 동적 쿼리 형태로 개선(V2)*/
-		List<CourseDetailsResponse> courseList = courseRepository.findAll()
+		List<CourseListResponse> courseList = courseRepository.findAll()
 			.stream()
 			.filter(course -> !course.getDeleted())
 			.filter(course -> condition.getHeadcount() < course.getCapacity())// 인원수 초과 여부
@@ -128,7 +129,7 @@ public class CourseService {
 			.filter(course -> checkMaxPrice(course, condition))// 최대 금액 초과 여부
 			.sorted(Comparator
 				.comparing(Course::getTotalPrice).reversed())
-			.map(course -> getCourseDetails(course))
+			.map(this::getCourseList)
 			.toList();
 
 		return courseList;
@@ -248,7 +249,28 @@ public class CourseService {
 		return content;
 	}
 
+	private CourseListResponse getCourseList(Course course) {
+
+		List<CourseDayResponse> days = courseDayRepository.findAllByCourse(course)
+			.stream()
+			.map(this::courseDayToResponse)
+			.collect(Collectors.toList());
+
+		return CourseListResponse.builder()
+				.courseId(course.getId())
+				.driverId(course.getOwner().getId())
+				.images(course.getImages())
+				.totalDays(course.getTotalDays())
+				.name(course.getName())
+				.capacity(course.getCapacity())
+				.region(course.getRegion())
+				.totalPrice(course.getTotalPrice())
+				.discountPrice(course.getDiscountPrice())
+				.days(days)
+				.build();
+	}
+
 	private Boolean checkMaxPrice(Course course, CourseSearchCondition condition) {
-		return (course.getTotalPrice() / condition.getHeadcount()) <= condition.getMaxPrice() ? true : false;
+		return (course.getTotalPrice() / condition.getHeadcount()) <= condition.getMaxPrice();
 	}
 }
