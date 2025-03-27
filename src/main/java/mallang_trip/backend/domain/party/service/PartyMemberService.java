@@ -87,10 +87,10 @@ public class PartyMemberService {
             throw new BaseException(ALREADY_PARTY_MEMBER);
         }
         Optional<UserPromotionCode> userPromotionCode = userPromotionCodeRepository.findByIdAndStatus(userPromotionCodeId, TRY);
-        if(userPromotionCode.isPresent()){
-            userPromotionCode.get().changeStatus(USE);
-            userPromotionCode.get().getCode().use();
-        }
+        // if(userPromotionCode.isPresent()){
+        //     userPromotionCode.get().changeStatus(USE);
+        //     userPromotionCode.get().getCode().use();
+        // }
 
         party.increaseHeadcount(headcount);
         PartyMember member = partyMemberRepository.save(PartyMember.builder()

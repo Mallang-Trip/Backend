@@ -4,8 +4,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_COMPLETE;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.PAYMENT_FAILED;
 import static mallang_trip.backend.domain.reservation.constant.ReservationStatus.REFUND_COMPLETE;
-import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.CANCEL;
-import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.USE;
+import static mallang_trip.backend.domain.reservation.constant.UserPromotionCodeStatus.*;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_ADMIN;
 import static mallang_trip.backend.domain.user.constant.Role.ROLE_DRIVER;
 
@@ -16,6 +15,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.payple.service.PaypleService;
 import mallang_trip.backend.domain.reservation.dto.PaymentResponse;
+import mallang_trip.backend.domain.reservation.entity.PromotionCode;
 import mallang_trip.backend.domain.reservation.entity.UserPromotionCode;
 import mallang_trip.backend.domain.user.constant.Role;
 import mallang_trip.backend.domain.reservation.dto.ReservationResponse;
@@ -128,16 +128,39 @@ public class ReservationService {
      * 결제 금액 계산
      */
     private int calculatePaymentAmount(PartyMember member) {
-        // TODO : 일단 무료로 처리
-        // 추후에 프로모션 코드 적용 로직 추가 (할인 등)
-        if(member.getUserPromotionCode() != null && member.getUserPromotionCode().getStatus().equals(USE) && member.getUserPromotionCode().getCode().getFree())
-            return 0;
+
+        UserPromotionCode promotionCode = member.getUserPromotionCode();
+        int promotionDiscountAmount = 0;
 
         Party party = member.getParty();
         int totalPrice = party.getCourse().getTotalPrice();
         int discountPrice = party.getCourse().getDiscountPrice();
         int totalHeadcount = partyMemberService.getTotalHeadcount(party);
-        return (totalPrice - discountPrice) / totalHeadcount * member.getHeadcount();
+
+        /*프로모션 코드 적용*/
+        if(promotionCode != null) {
+            /*무료 여행인 경우*/
+            if(promotionCode.getCode().getFree()) {
+                return 0;
+            }
+
+            /*프로모션 코드 사용*/
+            if(promotionCode.getStatus().equals(TRY)) {
+                /*정액할인*/
+                if(promotionCode.getCode().getDiscountRate() == 0) {
+                    promotionDiscountAmount = promotionCode.getCode().getDiscountPrice();
+                } else { /*비율 할인*/
+                    promotionDiscountAmount =  ( (totalPrice - discountPrice) / totalHeadcount * member.getHeadcount() ) *
+                        (promotionCode.getCode().getDiscountRate()/100);// 원래 내가 총 내야하는 금액에 대한 할인률 적용
+                }
+
+                /*프로모션 코드 사용 처리*/
+                promotionCode.changeStatus(USE);
+                promotionCode.getCode().use();
+            }
+        }
+
+        return ((totalPrice - discountPrice) / totalHeadcount * member.getHeadcount()) - promotionDiscountAmount;
     }
 
     /**
