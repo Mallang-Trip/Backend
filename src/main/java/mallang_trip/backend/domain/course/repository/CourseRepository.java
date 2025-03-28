@@ -11,14 +11,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
-    @Query(
+    @Query(value =
         "SELECT c " +
         "FROM Course c " +
         "WHERE c.deleted = false " +
         "AND c.capacity >= :headcount " +
         "AND (:region = 'all' OR c.region = :region) " +
         "AND (c.totalPrice / :headcount) <= :maxPrice " +
-        "ORDER BY c.totalPrice DESC")
+        "ORDER BY c.totalPrice DESC",
+    nativeQuery = false)
     List<Course> findAllByCondition(
         @Param("headcount") int headcount,
         @Param("region") String region,
