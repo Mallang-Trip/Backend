@@ -7,6 +7,7 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -120,8 +121,13 @@ public class CourseService {
 	public List<CourseListResponse> getCourseList(CourseSearchCondition condition){
 
 		/*TODO: 동적 쿼리 형태로 개선(V2)*/
-		List<CourseListResponse> courseList = courseRepository.findAllByCondition(condition.getHeadcount(), condition.getRegion(), condition.getMaxPrice())
+		List<CourseListResponse> courseList = courseRepository.findAllCourse()
 			.stream()
+			.filter(course -> condition.getHeadcount() <= course.getCapacity())// 인원수 초과 여부
+			.filter(course -> condition.getRegion().equals("all") || condition.getRegion().equals(course.getRegion()) )// 지역 일치 여부
+			.filter(course -> checkMaxPrice(course, condition))// 최대 금액 초과 여부
+			.sorted(Comparator
+				.comparing(Course::getTotalPrice).reversed())
 			.map(this::getCourseList)
 			.toList();
 
@@ -261,5 +267,9 @@ public class CourseService {
 				.discountPrice(course.getDiscountPrice())
 				.days(days)
 				.build();
+	}
+
+	private Boolean checkMaxPrice(Course course, CourseSearchCondition condition) {
+		return (course.getTotalPrice() / condition.getHeadcount()) <= condition.getMaxPrice();
 	}
 }
