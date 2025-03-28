@@ -49,7 +49,7 @@ public class DestinationService {
 	/**
 	 * 여행지 삭제
 	 */
-	@CacheEvict(value = "destination", key = "#destinationId")
+	// @CacheEvict(value = "destination", key = "#destinationId")
 	public void delete(Long destinationId) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION));
@@ -81,7 +81,7 @@ public class DestinationService {
 	/**
 	 * 여행지 수정
 	 */
-	@CacheEvict(value = "destination", key = "#destinationId")
+	// @CacheEvict(value = "destination", key = "#destinationId")
 	public void change(Long destinationId, DestinationRequest request) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -112,7 +112,7 @@ public class DestinationService {
 			.build();
 	}
 
-	@Cacheable(value = "destination", key = "#destinationId")
+	// @Cacheable(value = "destination", key = "#destinationId")
 	public Optional<Destination> getDestination(Long destinationId) {
 		return destinationRepository.findById(destinationId);
 	}
