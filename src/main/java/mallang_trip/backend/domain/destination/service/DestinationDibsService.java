@@ -5,7 +5,6 @@ import static mallang_trip.backend.domain.destination.exception.DestinationExcep
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import mallang_trip.backend.domain.destination.repository.DestinationRepository;
 import mallang_trip.backend.domain.destination.repository.DestinationReviewRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -14,7 +13,6 @@ import mallang_trip.backend.domain.destination.entity.Destination;
 import mallang_trip.backend.domain.destination.entity.DestinationDibs;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.destination.repository.DestinationDibsRepository;
-import mallang_trip.backend.domain.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,15 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class DestinationDibsService {
 
 	private final CurrentUserService currentUserService;
-	private final DestinationRepository destinationRepository;
 	private final DestinationDibsRepository destinationDibsRepository;
 	private final DestinationReviewRepository destinationReviewRepository;
+	private final DestinationService destinationService;
 
 	/**
 	 * 여행지 찜하기
 	 */
 	public void create(Long destinationId) {
-		Destination destination = destinationRepository.findById(destinationId)
+		Destination destination = destinationService.getDestination(destinationId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION));
 		User currentUser = currentUserService.getCurrentUser();
 		// 이미 찜한 경우
@@ -49,7 +47,7 @@ public class DestinationDibsService {
 	 * 여행지 찜 취소
 	 */
 	public void delete(Long destinationId) {
-		Destination destination = destinationRepository.findById(destinationId)
+		Destination destination = destinationService.getDestination(destinationId)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION));
 		User currentUser = currentUserService.getCurrentUser();
 		// 찜한 여행지 아닐 때

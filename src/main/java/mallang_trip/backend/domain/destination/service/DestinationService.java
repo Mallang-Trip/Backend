@@ -5,6 +5,7 @@ import static mallang_trip.backend.domain.destination.exception.DestinationExcep
 import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,9 @@ import mallang_trip.backend.domain.destination.dto.DestinationMarkerResponse;
 import mallang_trip.backend.domain.destination.dto.DestinationRequest;
 import mallang_trip.backend.domain.destination.entity.Destination;
 import mallang_trip.backend.domain.user.entity.User;
-import mallang_trip.backend.domain.user.service.UserService;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,6 +49,7 @@ public class DestinationService {
 	/**
 	 * 여행지 삭제
 	 */
+	@CacheEvict(value = "destination", key = "#destinationId")
 	public void delete(Long destinationId) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION));
@@ -77,6 +81,7 @@ public class DestinationService {
 	/**
 	 * 여행지 수정
 	 */
+	@CacheEvict(value = "destination", key = "#destinationId")
 	public void change(Long destinationId, DestinationRequest request) {
 		Destination destination = destinationRepository.findByIdAndDeleted(destinationId, false)
 			.orElseThrow(() -> new BaseException(Not_Found));
@@ -105,5 +110,10 @@ public class DestinationService {
 			.dibs(destinationDibsService.checkDestinationDibs(currentUserService.getCurrentUser(),
 				destination))
 			.build();
+	}
+
+	@Cacheable(value = "destination", key = "#destinationId")
+	public Optional<Destination> getDestination(Long destinationId) {
+		return destinationRepository.findById(destinationId);
 	}
 }
