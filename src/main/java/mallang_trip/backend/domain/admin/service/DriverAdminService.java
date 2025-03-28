@@ -9,9 +9,7 @@ import mallang_trip.backend.domain.course.repository.CourseRepository;
 import mallang_trip.backend.domain.course.service.CourseService;
 import mallang_trip.backend.domain.driver.dto.AdminDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.AdminDriverProfileResponse;
-import mallang_trip.backend.domain.driver.dto.ChangeDriverProfileRequest;
 import mallang_trip.backend.domain.driver.dto.DriverRegistrationResponse;
-import mallang_trip.backend.domain.driver.dto.MyDriverProfileResponse;
 import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.driver.entity.DriverPrice;
 import mallang_trip.backend.domain.driver.repository.DriverPriceRepository;
@@ -20,6 +18,8 @@ import mallang_trip.backend.domain.driver.service.DriverService;
 import mallang_trip.backend.domain.user.entity.User;
 import mallang_trip.backend.domain.user.repository.UserRepository;
 import mallang_trip.backend.global.io.BaseException;
+
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -197,6 +197,7 @@ public class DriverAdminService {
     /**
      * (관리자) 드라이버 코스 수정
      */
+    @CacheEvict(value = "courseDayResponses", key = "#courseDay.id")
     public void changeCourse(Long driverId, Long courseId, CourseRequest request) {
         Driver driver = driverRepository.findByIdAndStatus(driverId, ACCEPTED)
                 .orElseThrow(() -> new BaseException(CANNOT_FOUND_DRIVER));

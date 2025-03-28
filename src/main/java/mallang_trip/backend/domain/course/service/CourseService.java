@@ -7,7 +7,6 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -18,6 +17,7 @@ import mallang_trip.backend.domain.course.dto.CourseSearchCondition;
 import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
+import mallang_trip.backend.domain.destination.service.DestinationService;
 import mallang_trip.backend.domain.region.repository.RegionRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -28,7 +28,6 @@ import mallang_trip.backend.domain.course.dto.CourseRequest;
 import mallang_trip.backend.domain.destination.dto.DestinationResponse;
 import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.user.entity.User;
-import mallang_trip.backend.domain.destination.repository.DestinationRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,8 +38,8 @@ public class CourseService {
 	private final CurrentUserService currentUserService;
 	private final CourseRepository courseRepository;
 	private final CourseDayRepository courseDayRepository;
-	private final DestinationRepository destinationRepository;
 	private final RegionRepository regionRepository;
+	private final DestinationService destinationService;
 
 	/**
 	 * (드라이버) 코스 생성
@@ -120,15 +119,9 @@ public class CourseService {
 	 * */
 	public List<CourseListResponse> getCourseList(CourseSearchCondition condition){
 
-		/*TODO: FIND ALL -> 동적 쿼리 형태로 개선(V2)*/
-		List<CourseListResponse> courseList = courseRepository.findAll()
+		/*TODO: 동적 쿼리 형태로 개선(V2)*/
+		List<CourseListResponse> courseList = courseRepository.findAllByCondition(condition.getHeadcount(), condition.getRegion(), condition.getMaxPrice())
 			.stream()
-			.filter(course -> !course.getDeleted())
-			.filter(course -> condition.getHeadcount() < course.getCapacity())// 인원수 초과 여부
-			.filter(course -> condition.getRegion().equals("all") || condition.getRegion().equals(course.getRegion()) )// 지역 일치 여부
-			.filter(course -> checkMaxPrice(course, condition))// 최대 금액 초과 여부
-			.sorted(Comparator
-				.comparing(Course::getTotalPrice).reversed())
 			.map(this::getCourseList)
 			.toList();
 
@@ -174,10 +167,10 @@ public class CourseService {
 	/**
 	 * CourseDay -> CourseDayResponse
 	 */
-	private CourseDayResponse courseDayToResponse(CourseDay courseDay){
+	public CourseDayResponse courseDayToResponse(CourseDay courseDay){
 		List<DestinationResponse> destinations = courseDay.getDestinations().stream() // 병렬 처리
 			.map(destinationId ->
-				destinationRepository.findById(destinationId)
+				destinationService.getDestination(destinationId)
 				.orElseThrow(() -> new BaseException(CANNOT_FOUND_DESTINATION))
 			)
 			.map(DestinationResponse::of)
@@ -268,9 +261,5 @@ public class CourseService {
 				.discountPrice(course.getDiscountPrice())
 				.days(days)
 				.build();
-	}
-
-	private Boolean checkMaxPrice(Course course, CourseSearchCondition condition) {
-		return (course.getTotalPrice() / condition.getHeadcount()) <= condition.getMaxPrice();
 	}
 }
