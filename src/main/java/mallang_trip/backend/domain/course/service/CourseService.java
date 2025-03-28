@@ -167,7 +167,7 @@ public class CourseService {
 	/**
 	 * CourseDay -> CourseDayResponse
 	 */
-	public CourseDayResponse courseDayToResponse(CourseDay courseDay){
+	private CourseDayResponse courseDayToResponse(CourseDay courseDay){
 		List<DestinationResponse> destinations = courseDay.getDestinations().stream() // 병렬 처리
 			.map(destinationId ->
 				destinationService.getDestination(destinationId)
