@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
-    @Query("" +
-        "SELECT Course " +
+    @Query(
+        "SELECT c " +
         "FROM Course c " +
         "WHERE c.deleted = false " +
         "AND c.capacity >= :headcount " +
