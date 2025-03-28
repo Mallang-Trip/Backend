@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.destination.entity;
 
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -25,7 +26,7 @@ import org.hibernate.annotations.SQLDelete;
 @AllArgsConstructor
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE destination SET deleted = true WHERE id = ?")
-public class Destination extends BaseEntity {
+public class Destination extends BaseEntity implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
