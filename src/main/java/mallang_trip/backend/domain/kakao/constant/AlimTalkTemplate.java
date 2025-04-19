@@ -44,6 +44,15 @@ public enum AlimTalkTemplate {
 			+ "- 여행일시: #{date}\n"
 			+ "- 예약자 명단:\n"
 			+ "  #{member_info}"),
+
+	USER_NEW_PARTY("UserNewParty1",
+		"[여행 신청 안내]\n"
+			+ "새로운 여행을 신청하셨습니다. 드라이버님과 함께 일정을 상의해보아요.\n"
+			+ "\n"
+			+ "- 파티명: #{party_name}\n"
+			+ "- 여행일시: #{date}\n"
+			+ "- 드라이버 성함: #{driver_name}\n"
+			+ "- 드라이버 연락처: #{driver_phone}"),
 	;
 
 	private final String templateCode;
