@@ -48,7 +48,10 @@ public class PartyNotificationService {
 			.toString();
 
 		String userContent = new StringBuilder()
-			.append("새로운 여행을 신청하셨습니다.")
+			.append("새로운 여행을 신청하셨습니다.\n")
+			.append("드라이버와 함께 여행에 대해 자세히 논의해봐요!\n")
+			.append("- 드라이버 성함: " + driver.getName() + "\n")
+			.append("- 드라이버 연락처: " + driver.getPhoneNumber())
 			.toString();
 		
 		String url = new StringBuilder()
