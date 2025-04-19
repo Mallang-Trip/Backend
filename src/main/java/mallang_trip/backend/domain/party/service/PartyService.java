@@ -129,6 +129,13 @@ public class PartyService {
         // 드라이버 파티 신청 알림
         partyNotificationService.newParty(driver.getUser(), party);
         alimTalkService.sendDriverAlimTalk(DRIVER_NEW_PARTY, party);
+        /**
+         * TODO: 알림 메시지 전송
+         * 기사님: 승객 정보
+         * 승객: 기사님 정보
+         * 푸시알림 외에 카톡알림, 메일알림 3중으로 동작하도록 수정
+         * */
+        alimTalkService.sendUserAlimTalk(user, party);
 
         return PartyIdResponse.builder().partyId(party.getId()).build();
     }

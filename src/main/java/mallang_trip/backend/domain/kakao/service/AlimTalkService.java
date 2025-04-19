@@ -13,6 +13,8 @@ import mallang_trip.backend.domain.kakao.constant.AlimTalkTemplate;
 import mallang_trip.backend.domain.kakao.dto.AlimTalkRequest;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.service.PartyMemberService;
+import mallang_trip.backend.domain.user.entity.User;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +45,23 @@ public class AlimTalkService {
 
 		String to = party.getDriver().getUser().getPhoneNumber();
 		alimTalkRequestService.send(AlimTalkRequest.of(template, to, content, party.getId()));
+	}
+
+
+	/**
+	 * 사용자에게 알림톡 발송
+	 * */
+	@Async
+	public void sendUserAlimTalk(User owner, Party party){
+		Map<String, String> templateValues = new HashMap<>();
+		templateValues.put("party_name", party.getCourse().getName());
+		templateValues.put("date", getReservationDateTime(party));
+		templateValues.put("driver_name", party.getDriver().getUser().getName());
+		templateValues.put("driver_phone", party.getDriver().getUser().getPhoneNumber());
+
+		String content = applyTemplate(USER_NEW_PARTY.getContent(), templateValues);
+		String to = owner.getPhoneNumber();
+		alimTalkRequestService.send(AlimTalkRequest.of(USER_NEW_PARTY, to, content, party.getId()));
 	}
 
 	/**
