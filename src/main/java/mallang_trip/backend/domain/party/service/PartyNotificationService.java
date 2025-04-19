@@ -42,10 +42,15 @@ public class PartyNotificationService {
 	 * 파티 가입 & 제안 관련
 	 */
 	// 1. 새로운 파티 생성 신청이 들어왔을 경우
-	public void newParty(User driver, Party party) {
+	public void newParty(User driver, Party party, User partyOwner) {
 		String content = new StringBuilder()
 			.append("새로운 여행 신청이 존재합니다. 24시간 내에 수락/거절을 선택해주세요.")
 			.toString();
+
+		String userContent = new StringBuilder()
+			.append("새로운 여행을 신청하셨습니다.")
+			.toString();
+		
 		String url = new StringBuilder()
 				.append("/party/detail/")
 				.append(party.getId())
@@ -55,12 +60,18 @@ public class PartyNotificationService {
 				.append(MallangTripUrl)
 				.append(url)
 				.toString();
-		notificationService.create(driver, content, PARTY, party.getId());
-		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.",absoluteUrl);
-		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", driver.getName(), content,"새로운 여행 신청이 존재합니다.",absoluteUrl);
+		notificationService.create(driver, content, PARTY, party.getId());// 드라이버
+		notificationService.create(partyOwner, userContent, PARTY, party.getId());// 파티 개설자
 
-		Optional<Firebase> firebase = firebaseRepository.findByUserAndTokensNotNull(driver);
-		firebase.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(),"말랑트립", content, url));
+		mailService.sendEmailNotification(driver.getEmail(), driver.getName(), content,"새로운 여행 신청이 존재합니다.",absoluteUrl);// 드라이버에게 전송
+		mailService.sendEmailNotification(partyOwner.getEmail(), partyOwner.getName(), userContent,"환영합니다! 말랑트립에서 즐거운 여행을 시작해봐요.",absoluteUrl);// 사용자에게게 전송
+		mailService.sendEmailNotification("mallangtrip@mallangtrip.com", driver.getName(), content,"새로운 여행 신청이 존재합니다.",absoluteUrl);// 말랑트립 계정에 전송
+
+		Optional<Firebase> firebaseToDriver = firebaseRepository.findByUserAndTokensNotNull(driver);
+		firebaseToDriver.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(),"말랑트립", content, url));
+
+		Optional<Firebase> firebaseToUser = firebaseRepository.findByUserAndTokensNotNull(partyOwner);
+		firebaseToUser.ifPresent(f -> firebaseService.sendPushMessage(f.getTokens(),"말랑트립", content, url));
 	}
 
 	// 2. 내 파티 생성 신청을 드라이버가 수락했을 경우
