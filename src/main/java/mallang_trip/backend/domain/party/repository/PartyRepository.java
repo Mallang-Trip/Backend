@@ -1,6 +1,8 @@
 package mallang_trip.backend.domain.party.repository;
 
 import java.util.List;
+import java.util.Optional;
+
 import mallang_trip.backend.domain.party.constant.DriverPenaltyStatus;
 import mallang_trip.backend.domain.party.constant.PartyStatus;
 import mallang_trip.backend.domain.driver.entity.Driver;
@@ -91,4 +93,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 	Boolean isOngoingPartyExistsByDriver(@Param(value = "driver_id") Long driverId);
 
 	Boolean existsByDriverAndDriverPenaltyStatus(Driver driver, DriverPenaltyStatus status);
+
+	Optional<Party> findByCourseId(Long courseId);
 }

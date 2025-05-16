@@ -1,5 +1,6 @@
 package mallang_trip.backend.domain.course.service;
 
+import static mallang_trip.backend.domain.course.entity.QCourse.*;
 import static mallang_trip.backend.domain.destination.exception.DestinationExceptionStatus.CANNOT_FOUND_DESTINATION;
 import static mallang_trip.backend.domain.region.exception.RegionException.REGION_NOT_FOUND;
 import static mallang_trip.backend.global.io.BaseResponseStatus.Forbidden;
@@ -7,7 +8,6 @@ import static mallang_trip.backend.global.io.BaseResponseStatus.Not_Found;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -19,6 +19,7 @@ import mallang_trip.backend.domain.course.entity.CourseDay;
 import mallang_trip.backend.domain.course.repository.CourseDayRepository;
 import mallang_trip.backend.domain.course.repository.CourseRepository;
 import mallang_trip.backend.domain.destination.service.DestinationService;
+import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.region.repository.RegionRepository;
 import mallang_trip.backend.domain.user.service.CurrentUserService;
 import mallang_trip.backend.global.io.BaseException;
@@ -31,6 +32,9 @@ import mallang_trip.backend.domain.course.entity.Course;
 import mallang_trip.backend.domain.user.entity.User;
 import org.springframework.stereotype.Service;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -41,6 +45,8 @@ public class CourseService {
 	private final CourseDayRepository courseDayRepository;
 	private final RegionRepository regionRepository;
 	private final DestinationService destinationService;
+	private final JPAQueryFactory queryFactory;
+	private final CourseHelper courseHelper;
 
 	/**
 	 * (드라이버) 코스 생성
@@ -121,17 +127,23 @@ public class CourseService {
 	public List<CourseListResponse> getCourseList(CourseSearchCondition condition){
 
 		/*TODO: 동적 쿼리 형태로 개선(V2)*/
-		List<CourseListResponse> courseList = courseRepository.findAllCourse()
-			.stream()
-			.filter(course -> condition.getHeadcount() <= course.getCapacity())// 인원수 초과 여부
-			.filter(course -> condition.getRegion().equals("all") || condition.getRegion().equals(course.getRegion()) )// 지역 일치 여부
-			.filter(course -> checkMaxPrice(course, condition))// 최대 금액 초과 여부
-			.sorted(Comparator
-				.comparing(Course::getTotalPrice).reversed())
+		BooleanExpression isNotDeleted = course.deleted.isFalse();
+		BooleanExpression headcountCond = course.capacity.goe(condition.getHeadcount());
+		BooleanExpression regionCond = isAllRegion(condition.getRegion())
+			? null
+			: course.region.eq(condition.getRegion());
+
+		BooleanExpression priceCond = condition.getMaxPrice() == null
+			? null
+			: course.totalPrice.loe(condition.getMaxPrice());
+
+		return queryFactory
+			.selectFrom(course)
+			.where(isNotDeleted, headcountCond, regionCond, priceCond)
+			.orderBy(course.totalPrice.desc())
+			.fetch().stream()
 			.map(this::getCourseList)
 			.toList();
-
-		return courseList;
 	}
 
 	/**
@@ -190,6 +202,11 @@ public class CourseService {
 			.price(courseDay.getPrice())
 			.destinations(destinations)
 			.build();
+	}
+	
+	/**QueryDSL 지역 전체여부 구분*/
+	private boolean isAllRegion(String region) {
+		return "all".equalsIgnoreCase(region);
 	}
 
 	/**
@@ -250,14 +267,11 @@ public class CourseService {
 
 	private CourseListResponse getCourseList(Course course) {
 
-		List<CourseDayResponse> days = courseDayRepository.findAllByCourse(course)
-			.stream()
-			.map(this::courseDayToResponse)
-			.collect(Collectors.toList());
+		Driver driver = courseHelper.getDriverByCourse(course);
 
 		return CourseListResponse.builder()
 				.courseId(course.getId())
-				.driverId(course.getOwner().getId())
+				.driverId(driver.getId())
 				.images(course.getImages())
 				.totalDays(course.getTotalDays())
 				.name(course.getName())
@@ -265,11 +279,8 @@ public class CourseService {
 				.region(course.getRegion())
 				.totalPrice(course.getTotalPrice())
 				.discountPrice(course.getDiscountPrice())
-				.days(days)
+				.days(null)
 				.build();
 	}
 
-	private Boolean checkMaxPrice(Course course, CourseSearchCondition condition) {
-		return (course.getTotalPrice() / condition.getHeadcount()) <= condition.getMaxPrice();
-	}
 }
