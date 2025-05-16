@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import mallang_trip.backend.domain.course.entity.Course;
-import mallang_trip.backend.domain.driver.entity.Driver;
 import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 
@@ -20,14 +19,18 @@ public class CourseHelper {
 	 * @param course 코스 정보
 	 * @return 드라이버 엔티티
 	 */
-	@Cacheable(value = "getDriverByCourse", key = "#course.id")
-	public Driver getDriverByCourse(Course course){
-		Party party = partyRepository.findByCourseId(course.getId())
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 파티입니다. courseId: " + course.getId()));
+	@Cacheable(value = "getDriverIdByCourse", key = "#course.id")
+	public Long getDriverIdByCourse(Course course){
+		Party party = partyRepository.findByCourseId(course.getId()).get();
+
+		/*드라이버가 임의로 파티를 만든 경우*/
+		if(party == null){
+			return course.getOwner().getId();
+		}
 
 		if(party.getDeleted()) {
 			throw new RuntimeException("유효하지 않은 파티입니다.");
 		}
-		return party.getDriver();
+		return party.getDriver().getId();
 	}
 }

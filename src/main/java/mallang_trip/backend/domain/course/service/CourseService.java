@@ -267,11 +267,11 @@ public class CourseService {
 
 	private CourseListResponse getCourseList(Course course) {
 
-		Driver driver = courseHelper.getDriverByCourse(course);
+		Long driverId = courseHelper.getDriverIdByCourse(course);
 
 		return CourseListResponse.builder()
 				.courseId(course.getId())
-				.driverId(driver.getId())
+				.driverId(driverId)
 				.images(course.getImages())
 				.totalDays(course.getTotalDays())
 				.name(course.getName())
