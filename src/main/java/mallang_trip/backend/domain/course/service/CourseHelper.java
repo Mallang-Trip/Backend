@@ -1,6 +1,7 @@
 package mallang_trip.backend.domain.course.service;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import mallang_trip.backend.domain.party.entity.Party;
 import mallang_trip.backend.domain.party.repository.PartyRepository;
 
 @Service
+@Slf4j(topic = "PARTY_HELPER")
 @RequiredArgsConstructor
 public class CourseHelper {
 	private final PartyRepository partyRepository;
@@ -23,8 +25,10 @@ public class CourseHelper {
 	public Long getDriverIdByCourse(Course course){
 		Party party = partyRepository.findByCourseId(course.getId()).get();
 
+
 		/*드라이버가 임의로 파티를 만든 경우*/
 		if(party == null){
+			log.info("드라이버가 만든 코스. course id: {}, driver id: {}", course.getId(), course.getOwner().getId());
 			return course.getOwner().getId();
 		}
 
