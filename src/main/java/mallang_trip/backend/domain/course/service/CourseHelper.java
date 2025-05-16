@@ -23,7 +23,7 @@ public class CourseHelper {
 	@Cacheable(value = "getDriverByCourse", key = "#course.id")
 	public Driver getDriverByCourse(Course course){
 		Party party = partyRepository.findByCourseId(course.getId())
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 파티입니다."));
+			.orElseThrow(() -> new RuntimeException("존재하지 않는 파티입니다. courseId: " + course.getId()));
 
 		if(party.getDeleted()) {
 			throw new RuntimeException("유효하지 않은 파티입니다.");
