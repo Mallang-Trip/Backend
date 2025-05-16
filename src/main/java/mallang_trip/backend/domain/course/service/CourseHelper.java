@@ -28,7 +28,6 @@ public class CourseHelper {
 
 		/*드라이버가 임의로 파티를 만든 경우*/
 		if(party.getId() == -100L){
-			log.info("드라이버가 만든 코스. course id: {}, driver id: {}", course.getId(), course.getOwner().getId());
 			return course.getOwner().getId();
 		}
 
