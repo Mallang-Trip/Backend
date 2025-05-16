@@ -23,11 +23,11 @@ public class CourseHelper {
 	 */
 	@Cacheable(value = "getDriverIdByCourse", key = "#course.id")
 	public Long getDriverIdByCourse(Course course){
-		Party party = partyRepository.findByCourseId(course.getId()).get();
+		Party party = partyRepository.findByCourseId(course.getId()).orElse(Party.builder().id(-100L).build());
 
 
 		/*드라이버가 임의로 파티를 만든 경우*/
-		if(party == null){
+		if(party.getId() == -100L){
 			log.info("드라이버가 만든 코스. course id: {}, driver id: {}", course.getId(), course.getOwner().getId());
 			return course.getOwner().getId();
 		}
