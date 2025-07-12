@@ -63,8 +63,8 @@ public class InicisIdentificationService {
             MID,
             "03",// 본인인증
             mTxId,
-            "https://dev.mallangtrip-server.com/api/inicis/callback",
-            "https://dev.mallangtrip-server.com/api/inicis/callback",
+            "https://mallangtrip-server.com/api/inicis/callback",
+            "https://mallangtrip-server.com/api/inicis/callback",
             sha256Hex(MID + mTxId + API_KEY),
             "N",
             "isUseToken=Y"
