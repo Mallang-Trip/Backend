@@ -55,6 +55,7 @@ public class SecurityConfig {
             .antMatchers("/identification/**").permitAll() // identification API
             .antMatchers("/ws/chat/**").permitAll() // STOMP chat
             .antMatchers("/mobileOK/**").permitAll()
+            .antMatchers("/inicis", "/inicis/**").permitAll()// KG이니시스 본인인증
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
 
